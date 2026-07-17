@@ -24,10 +24,13 @@ export default async function ProjectTokenPage({
     if (!data) notFound();
     view = <CrewHome token={token} data={data} />;
   } else {
-    // epc: phase 0 summary, replaced by the dashboard in phase 1b.
+    // epc: phase 0 summary plus today's entries with photos.
+    // The full dashboard (history, gallery, chart, feed) is phase 1b.
     const t = await getTranslations("project");
+    const tc = await getTranslations("crew");
     const project = await getProjectSummary(actor);
     if (!project) notFound();
+    const today = await getCrewHome(actor);
     const address = [project.addressStreet, `${project.addressZip ?? ""} ${project.addressCity ?? ""}`.trim()]
       .filter(Boolean)
       .join(", ");
@@ -57,6 +60,35 @@ export default async function ProjectTokenPage({
               ))}
             </tbody>
           </table>
+        </div>
+        <div className="card card-full fade-up" style={{ marginTop: 20 }}>
+          <span className="b-label">{tc("todayPosts")}</span>
+          {!today || today.todayPosts.length === 0 ? (
+            <p className="b-sub">{tc("noPostsYet")}</p>
+          ) : (
+            today.todayPosts.map((post) => (
+              <div key={post.id} className="b-scope-row" style={{ alignItems: "flex-start", flexDirection: "column" }}>
+                <div>
+                  <div className="b-h" style={{ fontSize: 15 }}>
+                    {tc("postSummary", { headcount: post.headcount ?? 0, photos: post.photoCount })}
+                  </div>
+                  {post.quantities.map((q, i) => (
+                    <div key={i} className="b-sub">{q.name}: {q.qty} {q.unit}</div>
+                  ))}
+                  {post.note && <div className="b-sub" style={{ marginTop: 4 }}>{post.note}</div>}
+                </div>
+                {post.photoUrls.length > 0 && (
+                  <div className="b-thumbs">
+                    {post.photoUrls.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noreferrer" className="b-thumb">
+                        <img src={url} alt="" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </main>
     );
