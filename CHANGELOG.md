@@ -4,6 +4,9 @@ Every change to this repository is logged here, newest first, with date, what an
 
 ## 2026-07-17 (night)
 
+- Added CrewReportForm: photos, headcount, per-item quantity steppers, note, and a sticky submit that uploads photos to storage then writes the report, refreshing the screen on success. Why: this is the core sub action, built for one-handed use under 30 seconds.
+- Added PhotoCapture: camera input, in-browser downscale to 1600px JPEG (weak-LTE friendly), previews, tap to remove, capped at 12. Why: crews shoot progress photos; downscaling keeps uploads fast and storage small.
+- Added the Stepper client component (large plus/minus touch targets, clamped). Why: headcount and per-item quantities are entered by thumb, not keyboard, on a roof.
 - Added crew server actions requestPhotoTargets and submitReport, each re-resolving the actor from the token and requiring the sub role before acting. Why: the browser calls these; authorization lives server-side in the actor layer, never in the client.
 - Added the reports data layer: getCrewHome (project header, cumulative scope status, computed progress, today's posts) and submitDailyReport (idempotent entry plus quantities, photos, weather snapshot, activity row). Plan deviation: the pure summarizeTodayPosts helper moved to lib/reports-shared.ts because vitest cannot import server-only modules, the same split actor-shared.ts already uses; the plan file was written with it inside the server module. Why: the crew screen reads and writes through one actor-scoped module, and pure logic stays unit-testable.
 - Added storage helpers: server-minted signed upload URLs (client uploads photos directly to the private bucket) and signed download URLs for display. Why: keep the service role key server-side while photos flow through storage.
