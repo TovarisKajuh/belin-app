@@ -26,14 +26,19 @@ export async function createPhotoUploadTargets(
   return targets;
 }
 
-// Short-lived signed download URLs for private photos, for display.
-export async function getSignedPhotoUrls(
+// Short-lived signed download URLs for private photos, keyed by storage path
+// so callers can attach the right URL to the right photo.
+export async function getSignedPhotoUrlMap(
   paths: string[],
   expiresIn = 3600
-): Promise<string[]> {
-  if (paths.length === 0) return [];
+): Promise<Record<string, string>> {
+  if (paths.length === 0) return {};
   const db = createAdminClient();
   const { data, error } = await db.storage.from("photos").createSignedUrls(paths, expiresIn);
-  if (error || !data) return [];
-  return data.map((d) => d.signedUrl).filter((u): u is string => Boolean(u));
+  if (error || !data) return {};
+  const map: Record<string, string> = {};
+  for (const d of data) {
+    if (d.path && d.signedUrl) map[d.path] = d.signedUrl;
+  }
+  return map;
 }

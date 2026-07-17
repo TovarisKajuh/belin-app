@@ -30,7 +30,7 @@ export async function CrewHome({ token, data }: { token: string; data: CrewHomeD
           <p className="b-sub">{t("noPostsYet")}</p>
         ) : (
           data.todayPosts.map((post) => (
-            <div key={post.id} className="b-scope-row" style={{ alignItems: "flex-start" }}>
+            <div key={post.id} className="b-scope-row" style={{ alignItems: "flex-start", flexDirection: "column" }}>
               <div>
                 <div className="b-h" style={{ fontSize: 15 }}>
                   {t("postSummary", { headcount: post.headcount ?? 0, photos: post.photoCount })}
@@ -40,6 +40,15 @@ export async function CrewHome({ token, data }: { token: string; data: CrewHomeD
                 ))}
                 {post.note && <div className="b-sub" style={{ marginTop: 4 }}>{post.note}</div>}
               </div>
+              {post.photoUrls.length > 0 && (
+                <div className="b-thumbs">
+                  {post.photoUrls.map((url, i) => (
+                    <a key={i} href={url} target="_blank" rel="noreferrer" className="b-thumb">
+                      <img src={url} alt="" />
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           ))
         )}

@@ -33,6 +33,7 @@
     "todayPosts": "Današnji vnosi",
     "noPostsYet": "Danes še ni vnosov.",
     "postSummary": "{headcount} delavcev, {photos} fotografij",
+    "photoFailed": "Fotografij, ki jih ni bilo mogoče dodati: {count}",
     "weatherLabel": "Vreme",
     "installedOfTarget": "{installed} od {target} {unit}"
   },

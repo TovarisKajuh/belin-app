@@ -33,6 +33,7 @@
     "todayPosts": "Today's entries",
     "noPostsYet": "No entries yet today.",
     "postSummary": "{headcount} crew, {photos} photos",
+    "photoFailed": "Photos that could not be added: {count}",
     "weatherLabel": "Weather",
     "installedOfTarget": "{installed} of {target} {unit}"
   },

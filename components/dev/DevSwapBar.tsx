@@ -12,11 +12,16 @@ export function DevSwapBar({
   siblingToken: string;
   targetRole: "epc" | "sub";
 }) {
-  const label = targetRole === "epc" ? "EPC view" : "Crew view";
+  const label = targetRole === "epc" ? "switch to EPC view" : "switch to Crew view";
   return (
-    <Link href={`/${locale}/p/${siblingToken}`} className="b-devbar" prefetch={false}>
-      <span className="b-devbar-tag">DEV</span>
-      switch to {label}
+    <Link
+      href={`/${locale}/p/${siblingToken}`}
+      className="b-devbar"
+      prefetch={false}
+      title={label}
+      aria-label={label}
+    >
+      DEV
     </Link>
   );
 }

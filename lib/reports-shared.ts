@@ -6,6 +6,7 @@ export interface TodayPost {
   note: string | null;
   headcount: number | null;
   photoCount: number;
+  photoUrls: string[];
   quantities: { name: string; qty: number; unit: string }[];
   createdAt: string;
 }
@@ -20,19 +21,23 @@ export interface EntryRow {
 export function summarizeTodayPosts(
   entries: EntryRow[],
   quantitiesByEntry: Record<string, { scope_item_id: string; qty: number }[]>,
-  photoCountByEntry: Record<string, number>,
+  photoUrlsByEntry: Record<string, string[]>,
   scopeById: Record<string, { name: string; unit: string }>
 ): TodayPost[] {
-  return entries.map((e) => ({
-    id: e.id,
-    note: e.note,
-    headcount: e.headcount,
-    photoCount: photoCountByEntry[e.id] ?? 0,
-    quantities: (quantitiesByEntry[e.id] ?? []).map((q) => ({
-      name: scopeById[q.scope_item_id]?.name ?? "",
-      unit: scopeById[q.scope_item_id]?.unit ?? "",
-      qty: Number(q.qty),
-    })),
-    createdAt: e.created_at,
-  }));
+  return entries.map((e) => {
+    const photoUrls = photoUrlsByEntry[e.id] ?? [];
+    return {
+      id: e.id,
+      note: e.note,
+      headcount: e.headcount,
+      photoCount: photoUrls.length,
+      photoUrls,
+      quantities: (quantitiesByEntry[e.id] ?? []).map((q) => ({
+        name: scopeById[q.scope_item_id]?.name ?? "",
+        unit: scopeById[q.scope_item_id]?.unit ?? "",
+        qty: Number(q.qty),
+      })),
+      createdAt: e.created_at,
+    };
+  });
 }

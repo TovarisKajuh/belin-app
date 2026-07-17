@@ -33,6 +33,7 @@
     "todayPosts": "Heutige Einträge",
     "noPostsYet": "Heute noch keine Einträge.",
     "postSummary": "{headcount} Mitarbeiter, {photos} Fotos",
+    "photoFailed": "Nicht verarbeitbare Fotos: {count}",
     "weatherLabel": "Wetter",
     "installedOfTarget": "{installed} von {target} {unit}"
   },

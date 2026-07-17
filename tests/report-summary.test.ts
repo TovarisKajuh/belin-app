@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { summarizeTodayPosts } from "@/lib/reports-shared";
 
 describe("summarizeTodayPosts", () => {
-  it("shapes entries with their quantities and photo counts", () => {
+  it("shapes entries with their quantities and photo urls", () => {
     const posts = summarizeTodayPosts(
       [{ id: "e1", note: "Sued", headcount: 4, created_at: "2026-07-17T09:00:00Z" }],
       { e1: [{ scope_item_id: "s1", qty: 100 }] },
-      { e1: 3 },
+      { e1: ["https://x/a.jpg", "https://x/b.jpg", "https://x/c.jpg"] },
       { s1: { name: "Moduli", unit: "kos" } }
     );
     expect(posts).toEqual([
@@ -15,13 +15,14 @@ describe("summarizeTodayPosts", () => {
         note: "Sued",
         headcount: 4,
         photoCount: 3,
+        photoUrls: ["https://x/a.jpg", "https://x/b.jpg", "https://x/c.jpg"],
         quantities: [{ name: "Moduli", qty: 100, unit: "kos" }],
         createdAt: "2026-07-17T09:00:00Z",
       },
     ]);
   });
 
-  it("defaults missing photo counts and quantities to empty", () => {
+  it("defaults missing photos and quantities to empty", () => {
     const posts = summarizeTodayPosts(
       [{ id: "e2", note: null, headcount: null, created_at: "2026-07-17T10:00:00Z" }],
       {},
@@ -29,6 +30,7 @@ describe("summarizeTodayPosts", () => {
       {}
     );
     expect(posts[0].photoCount).toBe(0);
+    expect(posts[0].photoUrls).toEqual([]);
     expect(posts[0].quantities).toEqual([]);
   });
 });

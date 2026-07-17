@@ -4,6 +4,7 @@ import type { Actor } from "@/lib/actor";
 import type { Json } from "@/lib/database.types";
 import { projectProgress } from "@/lib/progress";
 import { fetchWeatherSnapshot } from "@/lib/weather";
+import { getSignedPhotoUrlMap } from "@/lib/storage";
 import { summarizeTodayPosts, type TodayPost } from "@/lib/reports-shared";
 
 export type { TodayPost } from "@/lib/reports-shared";
@@ -99,11 +100,15 @@ export async function getCrewHome(actor: Actor): Promise<CrewHomeData | null> {
   for (const s of scopeRes.data) scopeById[s.id] = { name: s.name, unit: s.unit };
 
   const quantitiesByEntry: Record<string, { scope_item_id: string; qty: number }[]> = {};
-  const photoCountByEntry: Record<string, number> = {};
+  const photoUrlsByEntry: Record<string, string[]> = {};
   if (todayEntryIds.length > 0) {
     const [eqRes, epRes] = await Promise.all([
       db.from("entry_quantities").select("entry_id, scope_item_id, qty").in("entry_id", todayEntryIds),
-      db.from("entry_photos").select("entry_id").in("entry_id", todayEntryIds),
+      db
+        .from("entry_photos")
+        .select("entry_id, storage_path, sort_order")
+        .in("entry_id", todayEntryIds)
+        .order("sort_order"),
     ]);
     for (const row of eqRes.data ?? []) {
       (quantitiesByEntry[row.entry_id] ??= []).push({
@@ -111,15 +116,18 @@ export async function getCrewHome(actor: Actor): Promise<CrewHomeData | null> {
         qty: Number(row.qty),
       });
     }
-    for (const row of epRes.data ?? []) {
-      photoCountByEntry[row.entry_id] = (photoCountByEntry[row.entry_id] ?? 0) + 1;
+    const photoRows = epRes.data ?? [];
+    const urlByPath = await getSignedPhotoUrlMap(photoRows.map((r) => r.storage_path));
+    for (const row of photoRows) {
+      const url = urlByPath[row.storage_path];
+      if (url) (photoUrlsByEntry[row.entry_id] ??= []).push(url);
     }
   }
 
   const todayPosts = summarizeTodayPosts(
     todayEntriesRes.data,
     quantitiesByEntry,
-    photoCountByEntry,
+    photoUrlsByEntry,
     scopeById
   );
 

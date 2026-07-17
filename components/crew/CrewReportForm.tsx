@@ -35,14 +35,18 @@ export function CrewReportForm({
       if (blobs.length > 0) {
         const targets = await requestPhotoTargets(token, clientGeneratedId, blobs.length);
         const supabase = createBrowserClient();
-        await Promise.all(
+        // Only paths whose upload actually succeeded are attached to the
+        // report; a failed upload must never become a broken photo row.
+        const results = await Promise.all(
           targets.map((tg, i) =>
             supabase.storage.from("photos").uploadToSignedUrl(tg.path, tg.token, blobs[i], {
               contentType: "image/jpeg",
             })
           )
         );
-        photoPaths = targets.map((tg) => tg.path);
+        photoPaths = targets.filter((_, i) => !results[i].error).map((tg) => tg.path);
+        const failed = results.filter((r) => r.error).length;
+        if (failed > 0) console.error(`Photo upload: ${failed} of ${targets.length} failed`);
       }
       await submitReport(token, {
         clientGeneratedId,

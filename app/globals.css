@@ -814,6 +814,10 @@ button.gal-item {
 .b-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 100px; background: var(--accent-soft); color: var(--accent-deep); font-weight: 700; font-size: 13px; }
 .b-progress-num { font-weight: 800; font-size: 44px; letter-spacing: -0.02em; color: var(--ink); font-variant-numeric: tabular-nums; }
 
-/* BELIN dev-only party swap bar. Remove before launch. */
-.b-devbar { position: fixed; right: 16px; bottom: calc(100px + env(safe-area-inset-bottom)); z-index: 60; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 100px; background: var(--ink); color: #fff; font-size: 13px; font-weight: 700; text-decoration: none; box-shadow: 0 12px 34px -12px rgba(10,22,40,0.55); }
-.b-devbar-tag { background: var(--warn); color: var(--ink); border-radius: 6px; padding: 1px 6px; font-size: 10px; letter-spacing: 0.06em; }
+/* BELIN dev-only party swap button. Remove before launch. */
+.b-devbar { position: fixed; right: 12px; top: calc(12px + env(safe-area-inset-top)); z-index: 60; display: inline-flex; align-items: center; justify-content: center; padding: 8px 12px; border-radius: 100px; background: var(--warn); color: var(--ink); font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-decoration: none; box-shadow: 0 10px 26px -10px rgba(10,22,40,0.5); }
+
+/* BELIN photo thumbnails in today's entries. */
+.b-thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.b-thumb { width: 64px; height: 64px; border-radius: 10px; overflow: hidden; background: var(--bg); display: block; }
+.b-thumb img { width: 100%; height: 100%; object-fit: cover; }
