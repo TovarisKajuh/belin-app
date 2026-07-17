@@ -110,8 +110,8 @@ export function BelinSplash({
       }}
     >
       <svg
-        viewBox="0 0 300 400"
-        style={{ width: "min(72vw, 58vh)", height: "auto", overflow: "visible", display: "block" }}
+        viewBox="64 34 172 322"
+        style={{ width: "min(92vw, 46vh)", height: "auto", overflow: "visible", display: "block" }}
       >
         <g transform="translate(78, 44)">
           {black.map((cell, i) => (
