@@ -6,6 +6,7 @@ import { getCrewHome } from "@/lib/data/reports";
 import { getSiblingToken } from "@/lib/data/tokens";
 import { CrewHome } from "@/components/crew/CrewHome";
 import { DevSwapBar } from "@/components/dev/DevSwapBar";
+import { ProjectStatusControl } from "@/components/project/ProjectStatusControl";
 
 export default async function ProjectTokenPage({
   params,
@@ -37,7 +38,10 @@ export default async function ProjectTokenPage({
     view = (
       <main className="container section">
         <div className="card card-full fade-up">
-          <span className="tl-tag">{t("roleEpc")}</span>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <span className="tl-tag">{t("roleEpc")}</span>
+            <ProjectStatusControl token={token} role="epc" status={project.status} />
+          </div>
           <h1 className="section-title" style={{ marginTop: 12 }}>{project.name}</h1>
           <p className="section-label">{t("address")}: {address}</p>
           <div className="stat-value" style={{ marginTop: 18 }}>

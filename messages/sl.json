@@ -45,5 +45,24 @@
     "rain": "Dež",
     "snow": "Sneg",
     "storm": "Nevihta"
+  },
+  "status": {
+    "draft": "Osnutek",
+    "active": "Aktivno",
+    "paused": "Na pavzi",
+    "reviewing": "V pregledu",
+    "finished": "Zaključeno",
+    "cancelled": "Preklicano",
+    "action": {
+      "activate": "Aktiviraj",
+      "pause": "Na pavzo",
+      "resume": "Nadaljuj",
+      "finish": "Zaključi",
+      "cancel": "Prekliči projekt",
+      "requestReview": "Zaključeno, zahtevaj pregled",
+      "withdrawReview": "Prekliči zahtevo",
+      "acceptReview": "Potrdi in zaključi",
+      "sendBack": "Vrni v delo"
+    }
   }
 }

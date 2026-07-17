@@ -2,6 +2,8 @@
 import { resolveActorFromToken } from "@/lib/actor";
 import { createPhotoUploadTargets, type UploadTarget } from "@/lib/storage";
 import { submitDailyReport, type SubmitReportPayload } from "@/lib/data/reports";
+import { updateProjectStatus } from "@/lib/data/projects";
+import type { ProjectStatus } from "@/lib/project-status";
 
 async function requireSubActor(token: string) {
   const actor = await resolveActorFromToken(token);
@@ -26,4 +28,15 @@ export async function submitReport(
   const actor = await requireSubActor(token);
   const entryId = await submitDailyReport(actor, payload);
   return { ok: true, entryId };
+}
+
+// Either party may call this; the legality of the move is enforced by role
+// inside updateProjectStatus, so no role gate is needed here beyond a valid token.
+export async function setProjectStatus(
+  token: string,
+  newStatus: ProjectStatus
+): Promise<{ ok: boolean; status: ProjectStatus }> {
+  const actor = await resolveActorFromToken(token);
+  if (!actor) throw new Error("Not authorized for this project.");
+  return updateProjectStatus(actor, newStatus);
 }

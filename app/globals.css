@@ -821,3 +821,20 @@ button.gal-item {
 .b-thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .b-thumb { width: 64px; height: 64px; border-radius: 10px; overflow: hidden; background: var(--bg); display: block; }
 .b-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* BELIN project status control (both parties). */
+.b-status { position: relative; display: inline-block; }
+.b-status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 100px; border: 1px solid var(--line); background: #fff; font: inherit; font-size: 13px; font-weight: 700; color: var(--ink); cursor: pointer; }
+.b-status-pill:disabled { cursor: default; }
+.b-status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: none; }
+.b-status-caret { color: var(--muted); font-size: 11px; }
+.s-active .b-status-dot { background: var(--success); }
+.s-paused .b-status-dot { background: var(--warn); }
+.s-reviewing .b-status-dot { background: var(--accent); }
+.s-finished .b-status-dot { background: var(--ink); }
+.s-cancelled .b-status-dot { background: #e5484d; }
+.s-draft .b-status-dot { background: var(--muted); }
+.b-status-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 40px -16px rgba(10,22,40,0.28); padding: 6px; min-width: 200px; }
+.b-status-opt { display: block; width: 100%; text-align: left; padding: 12px 12px; border: none; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); border-radius: 10px; cursor: pointer; }
+.b-status-opt:hover { background: var(--bg); }
+.b-status-opt:disabled { opacity: 0.5; }

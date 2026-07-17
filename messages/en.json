@@ -45,5 +45,24 @@
     "rain": "Rain",
     "snow": "Snow",
     "storm": "Storm"
+  },
+  "status": {
+    "draft": "Draft",
+    "active": "Active",
+    "paused": "Paused",
+    "reviewing": "In review",
+    "finished": "Finished",
+    "cancelled": "Cancelled",
+    "action": {
+      "activate": "Activate",
+      "pause": "Pause",
+      "resume": "Resume",
+      "finish": "Mark finished",
+      "cancel": "Cancel project",
+      "requestReview": "Finished, request review",
+      "withdrawReview": "Withdraw request",
+      "acceptReview": "Accept and finish",
+      "sendBack": "Send back to work"
+    }
   }
 }

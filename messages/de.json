@@ -45,5 +45,24 @@
     "rain": "Regen",
     "snow": "Schnee",
     "storm": "Gewitter"
+  },
+  "status": {
+    "draft": "Entwurf",
+    "active": "Aktiv",
+    "paused": "Pausiert",
+    "reviewing": "In Prüfung",
+    "finished": "Abgeschlossen",
+    "cancelled": "Abgebrochen",
+    "action": {
+      "activate": "Aktivieren",
+      "pause": "Pausieren",
+      "resume": "Fortsetzen",
+      "finish": "Abschließen",
+      "cancel": "Projekt abbrechen",
+      "requestReview": "Fertig, Prüfung anfordern",
+      "withdrawReview": "Anfrage zurückziehen",
+      "acceptReview": "Bestätigen und abschließen",
+      "sendBack": "Zurück in Bearbeitung"
+    }
   }
 }

@@ -6,6 +6,7 @@ import { projectProgress } from "@/lib/progress";
 import { fetchWeatherSnapshot } from "@/lib/weather";
 import { getSignedPhotoUrlMap } from "@/lib/storage";
 import { summarizeTodayPosts, type TodayPost } from "@/lib/reports-shared";
+import type { ProjectStatus } from "@/lib/project-status";
 
 export type { TodayPost } from "@/lib/reports-shared";
 
@@ -19,6 +20,7 @@ export interface CrewScopeStatus {
 export interface CrewHomeData {
   projectId: string;
   projectName: string;
+  status: ProjectStatus;
   addressStreet: string | null;
   addressZip: string | null;
   addressCity: string | null;
@@ -47,7 +49,7 @@ export async function getCrewHome(actor: Actor): Promise<CrewHomeData | null> {
   const [projectRes, scopeRes, qtyRes, todayEntriesRes] = await Promise.all([
     db
       .from("projects")
-      .select("id, name, address_street, address_zip, address_city")
+      .select("id, name, status, address_street, address_zip, address_city")
       .eq("id", actor.projectId)
       .maybeSingle(),
     db
@@ -134,6 +136,7 @@ export async function getCrewHome(actor: Actor): Promise<CrewHomeData | null> {
   return {
     projectId: projectRes.data.id,
     projectName: projectRes.data.name,
+    status: projectRes.data.status as ProjectStatus,
     addressStreet: projectRes.data.address_street,
     addressZip: projectRes.data.address_zip,
     addressCity: projectRes.data.address_city,

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { CrewReportForm } from "./CrewReportForm";
+import { ProjectStatusControl } from "@/components/project/ProjectStatusControl";
 import type { CrewHomeData } from "@/lib/data/reports";
 
 export async function CrewHome({ token, data }: { token: string; data: CrewHomeData }) {
@@ -10,8 +11,13 @@ export async function CrewHome({ token, data }: { token: string; data: CrewHomeD
 
   return (
     <main className="b-screen">
-      <h1 className="b-h" style={{ fontSize: 24 }}>{data.projectName}</h1>
-      {address && <p className="b-sub" style={{ marginTop: 4 }}>{address}</p>}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+        <div>
+          <h1 className="b-h" style={{ fontSize: 24 }}>{data.projectName}</h1>
+          {address && <p className="b-sub" style={{ marginTop: 4 }}>{address}</p>}
+        </div>
+        <ProjectStatusControl token={token} role="sub" status={data.status} />
+      </div>
 
       <div className="b-card" style={{ marginTop: 16 }}>
         <span className="b-label">{t("progress")}</span>
