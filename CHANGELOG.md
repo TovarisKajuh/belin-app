@@ -4,6 +4,7 @@ Every change to this repository is logged here, newest first, with date, what an
 
 ## 2026-07-17 (night)
 
+- Ported the AVE-DC design system (globals.css) verbatim as the Belin visual foundation, per DECISIONS.md 2026-07-17. Why: proven token set; Belin-specific utilities will be appended, existing tokens stay locked.
 - Scaffolded Next.js 15 + React 19 + Tailwind 4 + TypeScript, pinned to the AVE-DC dashboard's proven versions, with vitest and the Supabase CLI as dev tools, plus .claude/launch.json so sessions can boot the dev server in the preview browser. Why: phase 0 scaffold; matching AVE-DC versions lets its design system transfer without translation.
 - Added .gitignore, .env.example and README.md. Why: phase 0 starts; secrets must be untrackable before any env file exists, and the README gives future sessions the command map.
 - Created docs/superpowers/plans/2026-07-17-phase-0-foundations.md, the full phase 0 implementation plan including the complete v1 schema as its reviewed document. Why: phase 0 executes tonight; plan-before-code mandate, and the founder confirmed provisioning answers (reuse accounts, projekt.getbelin.com subdomain, Resend domain already verified) that the plan locks in.
