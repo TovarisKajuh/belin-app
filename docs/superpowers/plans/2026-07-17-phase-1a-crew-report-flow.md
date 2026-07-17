@@ -17,6 +17,8 @@
 - All database access goes through the actor abstraction: resolve the actor from the token server-side, authorize the role, then act. The browser never holds the service role key.
 - Log every change in CHANGELOG.md (date, what, why) in the same commit. Crew-facing screens are verified on a real phone viewport as part of their definition of done.
 - The design builds on the ported AVE-DC token set in `app/globals.css`. New crew utilities are appended below the ported block, each marked `/* BELIN */`. Existing tokens are not redesigned.
+- Every screen is responsive: usable and well laid out on both a phone and a laptop, for both account types (this revises the earlier EPC-desktop / sub-mobile split, per DECISIONS.md 2026-07-17). Build mobile-first, but never leave the laptop layout broken.
+- A development-only party-swap button (DECISIONS.md 2026-07-17) is present during the build and removed before launch. It is rendered unconditionally for now (no env flag, so it works on the live URL and on a phone) and is unmistakably marked DEV. Its removal is tracked as debt in CHANGELOG.md.
 
 ## Existing building blocks this plan reuses
 
@@ -39,7 +41,10 @@ belin-app/
     CrewReportForm.tsx       NEW: client component, the report form, calls server actions
     PhotoCapture.tsx         NEW: client component, camera input + in-browser downscale + preview
     Stepper.tsx              NEW: client component, large plus/minus numeric stepper
+  components/dev/
+    DevSwapBar.tsx           NEW: dev-only pinned button to jump to the other party's view (remove at launch)
   lib/
+    data/tokens.ts           NEW: getSiblingToken (dev swap target lookup)
     supabase/client.ts       NEW: browser publishable-key client (signed-URL uploads only)
     storage.ts               NEW: server signed upload/download URL helpers
     weather.ts               NEW: server Open-Meteo snapshot fetch
@@ -1336,7 +1341,145 @@ git commit -m "Add crew home and role-routed token page"
 
 ---
 
-### Task 10: End-to-end verification on a phone viewport
+### Task 10: Dev-only party swap bar
+
+**Files:**
+- Create: `lib/data/tokens.ts`
+- Create: `components/dev/DevSwapBar.tsx`
+- Modify: `app/globals.css` (append the `.b-devbar` utilities to the BELIN block)
+- Modify: `app/[locale]/p/[token]/page.tsx` (render the bar under whichever view)
+
+**Interfaces:**
+- Consumes: `Actor`, `createAdminClient`, `resolveActorFromToken`.
+- Produces: `getSiblingToken(actor) -> Promise<{ token: string; role: "epc" | "sub" } | null>` and `<DevSwapBar locale, siblingToken, targetRole />`.
+
+- [ ] **Step 1: Implement the sibling-token lookup**
+
+`lib/data/tokens.ts`:
+
+```ts
+import "server-only";
+import { createAdminClient } from "@/lib/supabase/admin";
+import type { Actor } from "@/lib/actor";
+
+// Dev-only: find the other party's active token for the same project so one
+// person can swap between the connected EPC and sub views while building.
+export async function getSiblingToken(
+  actor: Actor
+): Promise<{ token: string; role: "epc" | "sub" } | null> {
+  const otherRole = actor.role === "epc" ? "sub" : "epc";
+  const db = createAdminClient();
+  const { data } = await db
+    .from("project_tokens")
+    .select("token")
+    .eq("project_id", actor.projectId)
+    .eq("role", otherRole)
+    .eq("revoked", false)
+    .limit(1)
+    .maybeSingle();
+  if (!data) return null;
+  return { token: data.token, role: otherRole };
+}
+```
+
+- [ ] **Step 2: Append the dev bar styles to globals.css**
+
+Append to the BELIN block in `app/globals.css`:
+
+```css
+/* BELIN dev-only party swap bar. Remove before launch. */
+.b-devbar { position: fixed; right: 16px; bottom: 16px; z-index: 60; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 100px; background: var(--ink); color: #fff; font-size: 13px; font-weight: 700; text-decoration: none; box-shadow: 0 12px 34px -12px rgba(10,22,40,0.55); }
+.b-devbar-tag { background: var(--warn); color: var(--ink); border-radius: 6px; padding: 1px 6px; font-size: 10px; letter-spacing: 0.06em; }
+```
+
+- [ ] **Step 3: Implement the dev bar component**
+
+`components/dev/DevSwapBar.tsx`:
+
+```tsx
+import Link from "next/link";
+
+// DEV ONLY. Jumps to the other party's view of the same connected project so
+// one person can build and review both intertwined sides. Remove before launch;
+// real magic-link auth will separate the two accounts (DECISIONS.md 2026-07-17).
+export function DevSwapBar({
+  locale,
+  siblingToken,
+  targetRole,
+}: {
+  locale: string;
+  siblingToken: string;
+  targetRole: "epc" | "sub";
+}) {
+  const label = targetRole === "epc" ? "EPC view" : "Crew view";
+  return (
+    <Link href={`/${locale}/p/${siblingToken}`} className="b-devbar" prefetch={false}>
+      <span className="b-devbar-tag">DEV</span>
+      switch to {label}
+    </Link>
+  );
+}
+```
+
+- [ ] **Step 4: Render the bar in the token page**
+
+Modify `app/[locale]/p/[token]/page.tsx` so both role branches build a `view` element, then return it together with the dev bar. Replace the two `return <...>` branch statements with assignment to a `view` variable and a single combined return. The top of the function keeps resolving the actor, then:
+
+```tsx
+import { getSiblingToken } from "@/lib/data/tokens";
+import { DevSwapBar } from "@/components/dev/DevSwapBar";
+// ...
+  let view: React.ReactNode;
+  if (actor.role === "sub") {
+    const data = await getCrewHome(actor);
+    if (!data) notFound();
+    view = <CrewHome token={token} data={data} />;
+  } else {
+    const t = await getTranslations("project");
+    const project = await getProjectSummary(actor);
+    if (!project) notFound();
+    const address = [project.addressStreet, `${project.addressZip ?? ""} ${project.addressCity ?? ""}`.trim()]
+      .filter(Boolean)
+      .join(", ");
+    view = (
+      <main className="container section">
+        {/* unchanged epc summary markup from Task 9 */}
+      </main>
+    );
+  }
+
+  const sibling = await getSiblingToken(actor);
+  return (
+    <>
+      {view}
+      {sibling && <DevSwapBar locale={locale} siblingToken={sibling.token} targetRole={sibling.role} />}
+    </>
+  );
+```
+
+Keep the exact epc summary markup from Task 9 inside the `else` branch's `view`.
+
+- [ ] **Step 5: Type check**
+
+Run: `npm run lint`
+Expected: clean.
+
+- [ ] **Step 6: Commit**
+
+Append to CHANGELOG.md:
+
+```markdown
+- Added a dev-only party swap bar: a pinned DEV button that jumps between the connected EPC and crew views of the same seeded project, for building and review. REMOVAL DEBT: delete components/dev, lib/data/tokens.ts, the .b-devbar styles and the page render before launch, when auth separates accounts. Why: the two views are never shown together in production, so this is the only way to review both sides against one project now.
+```
+
+```bash
+git add lib/data/tokens.ts components/dev/DevSwapBar.tsx app/globals.css "app/[locale]/p/[token]/page.tsx" CHANGELOG.md
+git commit -m "Add dev-only party swap bar for building both views"
+```
+
+---
+
+### Task 11: End-to-end verification on a phone viewport
 
 **Files:** none (verification and one CHANGELOG entry).
 
@@ -1350,9 +1493,13 @@ Expected: the crew screen renders in Slovenian: project name, progress number, t
 Set headcount to 5, set Moduli quantity to some value (for example 100), type a short note, tap submit.
 Expected: button shows the sending then sent state, the screen refreshes, "Napredek projekta" increases from 6.3, and a new row appears under "Danes vnosi" showing the crew size, photo count, and Moduli quantity. Verify the same rise by reading the database (a quick `execute_sql` count of entry_quantities, or reload the epc link and see the higher percentage).
 
-- [ ] **Step 3: Confirm the other two languages and the epc branch**
+- [ ] **Step 3: Confirm the other two languages, the epc branch, and the dev swap**
 
-Navigate to `/de/p/demo-sub-r8p3n6w1` and `/en/p/demo-sub-r8p3n6w1`: the crew screen is fully translated. Navigate to `/de/p/demo-epc-k7m2x9q4`: the epc summary still renders (unchanged), now reflecting the higher progress.
+Navigate to `/de/p/demo-sub-r8p3n6w1` and `/en/p/demo-sub-r8p3n6w1`: the crew screen is fully translated. From the crew screen, tap the pinned DEV "switch to EPC view" button: it lands on the epc summary for the same project, now reflecting the higher progress, with a DEV "switch to Crew view" button to jump back. Confirm the round trip works both ways.
+
+- [ ] **Step 3b: Confirm responsiveness on a laptop viewport**
+
+Resize to desktop (1280x800) and open both the crew link and the epc link. The crew screen stays a readable centered column (not stretched full width), the epc summary uses the wider layout, and neither overflows horizontally. Both are usable at phone and laptop widths.
 
 - [ ] **Step 4: Confirm a photo actually lands in storage**
 
