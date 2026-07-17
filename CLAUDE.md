@@ -15,16 +15,28 @@ Belin: the collaboration app between solar EPCs and their installation subcontra
 - Never use em dashes or en dashes in any produced text (UI, docs, emails, PDFs, chat). Use commas, colons, periods.
 - Log every significant decision in DECISIONS.md with one line of reasoning and a date.
 
+## Working discipline (founder mandate, 2026-07-17)
+
+BE EXTREMELY CAREFUL AND THOUGHTFUL WHEN WRITING CODE AND BUILDING THE SCAFFOLD, TO PREVENT FUTURE BUGS.
+
+- Plan before code: write down data shapes and interfaces before implementing.
+- Small verified steps: run and look at every change, on a phone viewport for crew-facing screens.
+- No quick hacks in foundation code (schema, access layer, i18n, design tokens). Any knowingly taken shortcut is logged as debt in CHANGELOG.md immediately.
+- Log every change in CHANGELOG.md (date, what, why), in the same commit as the change.
+- Log every chat session in docs/sessions/ (one file per session: done, learned, failed, succeeded, next).
+- Session start ritual: read CLAUDE.md, DECISIONS.md, recent CHANGELOG.md entries and the latest session log before touching anything.
+- Session end ritual: update the session log, CHANGELOG.md and DECISIONS.md.
+
 ## Design laws
 
 1. The sub side must never feel like extra work: every crew action under 30 seconds, one-handed, on a phone, on a roof. When in doubt, remove a field.
 2. Stupidly easy for the EPC: zero manual data entry wherever possible, extract from uploaded PDFs, EPC reviews instead of types.
 3. Elite 2026-Q3 visual quality, built on the AVE-DC design system (C:\DevEnv\AVE-DC\dashboard\app\globals.css), pushed further in design, animation, responsiveness.
-4. German UI first, all strings through i18n keys from day one. EU data hosting. Fast on weak rural LTE. Boring reliable tech.
+4. UI in Slovenian, German and English from the first commit, all strings through i18n keys. Generated PDFs render in the project's language. EU data hosting. Fast on weak rural LTE. Boring reliable tech.
 
 ## Stack (decided 2026-07-17)
 
-Next.js (App Router) + Supabase (EU region Frankfurt: Postgres, Storage, Realtime) + Vercel + Resend (post-demo), PWA from day one, German-first i18n. Approved demo design: docs/specs/2026-07-17-monday-demo-design.md. Two deadlines: demo Monday 20.07, real pilot from 22.07 (HANDOFF.md section 4).
+Next.js (App Router) + Supabase (EU region Frankfurt: Postgres, Storage, Realtime) + Vercel + Resend, PWA from day one, trilingual i18n (sl, de, en). Approved demo design: docs/specs/2026-07-17-monday-demo-design.md. Build order and discipline: docs/specs/2026-07-17-v1-build-order.md. Two deadlines: Slovenian demo Monday 20.07 (Slovenian EPC prospect), full v1 with accounts done Sunday 26.07 evening, German EPC tests from Monday 27.07 (HANDOFF.md section 4).
 
 ## Reference repos (read-only, never modify)
 

@@ -56,12 +56,14 @@ Legal mechanics to model as product features (with a visible disclaimer: Belin p
 - Austria: Auftraggeberhaftung up to 25 percent of contract sum if sub not on HFU list (40 percent for labor leasing since 2026), LSD-BG wage documents and A1 on site. The Auftraggeberhaftung scope was expanded in 2026, which strengthens the pitch.
 - Slovenia: state eGraditev push, electronic construction diaries mandatory by 2029.
 
-Quality bar: mobile-first, thumb-reachable, readable in direct sunlight (large buttons, high contrast), German UI first with all strings through i18n keys from day one (Slovenian and English later), EU data hosting, fast on weak rural LTE, boring reliable technology.
+Quality bar: mobile-first, thumb-reachable, readable in direct sunlight (large buttons, high contrast), UI in Slovenian, German and English from the first commit with all strings through i18n keys (decided 2026-07-17 evening; originally German first), EU data hosting, fast on weak rural LTE, boring reliable technology.
 
-## 4. The two deadlines
+## 4. The two deadlines (updated 2026-07-17 evening, replaces the original version)
 
-1. **Demo on Monday 20.07.2026** in front of a potential customer (a German EPC). No auth or invites needed: the two founders demonstrate the whole EPC-sub process live, each on their own device (sub role on an installed PWA phone, EPC role on a laptop), connected through two tokenized links into one seeded demo project. Approved design: docs/specs/2026-07-17-monday-demo-design.md.
-2. **Real pilot project starts 22.07.2026** with a German EPC, in Germany, AVESOL as the subcontractor. After the demo, the seed is swapped for the real project data and the same build is used on site. Everything built for the demo is the real product foundation, not a throwaway.
+1. **Demo on Monday 20.07.2026** at a Slovenian meeting with a local Slovenian EPC, a potential customer. Demo UI language: Slovenian. No auth or invites needed: the two founders demonstrate the whole EPC-sub process live, each on their own device (sub role on an installed PWA phone, EPC role on a laptop), connected through two tokenized links into one seeded demo project (a realistic Slovenian commercial roof). Approved design: docs/specs/2026-07-17-monday-demo-design.md including its update note.
+2. **The German EPC tests the full v1 with real accounts from Monday 27.07.2026** (this replaces the earlier plan of a 22.07 pilot start), with AVESOL as the subcontractor on the real project. Full v1 means magic-link auth, organizations with roles, invite links and all five modules, finished and rehearsed by Sunday 26.07 evening. Everything built for the Slovenian demo is the real product foundation, not a throwaway. Build order: docs/specs/2026-07-17-v1-build-order.md.
+
+Calendar note: 17.07.2026 is a Friday. The pre-demo build window is Friday evening, Saturday 18.07 and Sunday 19.07.
 
 ## 5. Belin 1.0.0 audit summary (what to harvest, what to leave)
 
@@ -119,12 +121,11 @@ The app stores personal data (A1 certificates, ID copies, qualifications, hour s
 
 See DECISIONS.md. Highlights: new sibling repo (this one), Belin 1.0.0 read-only, AVE-DC visual identity upgraded, organizations with internal roles (CEO, Bauleiter, owner, crew, later marketing), zero-manual-entry principle for the EPC, PDF auto-extraction in v1 but no interactive plan viewer, pilot target 22.07.
 
-## 10. Where the conversation left off (updated 2026-07-17, end of founding session)
+## 10. Where the conversation left off (updated 2026-07-17 evening, scope and build-order session)
 
-Brainstorming is complete and the Monday demo design is approved: docs/specs/2026-07-17-monday-demo-design.md. Stack decided: Next.js App Router, Supabase Frankfurt, Vercel, PWA, German-first i18n.
+The second session corrected the timeline and set the build discipline. The Monday 20.07 demo is in Slovenian for a Slovenian EPC prospect. The German EPC tests the full v1 with accounts from 27.07, so all of v1 must be done by Sunday 26.07 evening. UI is trilingual (sl, de, en) from the first commit. The build order was analyzed and decided with full articulation in docs/specs/2026-07-17-v1-build-order.md: foundations and external clocks first (Friday evening), demo spine with risk-first spikes (Saturday), demo surface complete plus 18:00 dry run with pivot rule (Sunday), then accounts, compliance vault, Regiestunden, Nachträge and Abnahme in lifecycle order through the week, PDF extraction as parallel filler, full rehearsal Sunday 26.07. A working discipline and logging system is now mandatory: see CLAUDE.md (Working discipline), CHANGELOG.md and docs/sessions/.
 
-Next steps for the new session in this repo, in order:
-1. Read this file, CLAUDE.md, DECISIONS.md and the approved design doc.
-2. Write the implementation plan for the Monday demo (use the superpowers writing-plans skill), get founder approval.
-3. Build in the order suggested in the design doc (Friday scaffold plus sub flow, Saturday EPC dashboard plus live sync, Sunday seed, PDF, polish, deploy, dry run). Deploy early so there is a live URL from day one. Hard stop after each milestone for founder review.
-4. After the demo: swap seed for the real 22.07 pilot project, then M1 (magic-link auth, organizations, invite links), then the remaining v1 modules.
+Next steps for the next session, in order:
+1. Session start ritual: read CLAUDE.md, DECISIONS.md, recent CHANGELOG.md and the latest log in docs/sessions/.
+2. Write the implementation plan for phases 0 to 2 (use the superpowers writing-plans skill), get founder approval.
+3. Execute phase 0 (provision Supabase Frankfurt, Vercel, Resend DNS; scaffold; full schema; deployed walking skeleton). Hard stop for founder review after each phase.

@@ -2,6 +2,14 @@
 
 Status: approved by founder on 2026-07-17, with additions (material check, requests, maps button) folded in.
 
+## Update 2026-07-17 evening (scope session)
+
+- The Monday 20.07 demo audience changed: a Slovenian EPC, a potential customer, at a local Slovenian meeting. Demo UI language: Slovenian. The seed project becomes a realistic Slovenian commercial roof (address, company names); real hardware names stay.
+- The UI ships in Slovenian, German and English from the first commit, so every string below exists in all three languages.
+- The German EPC engagement changed: they test the full v1 with real accounts from 27.07. Build order and discipline: docs/specs/2026-07-17-v1-build-order.md.
+- Calendar correction: 17.07 is already Friday. The build window is Friday evening, Saturday 18.07, Sunday 19.07, demo Monday 20.07.
+- Everything else in this design stays approved and unchanged. German module names (Tagesbericht, Stückliste, Bautagebuch) remain the domain vocabulary; the UI shows the localized strings.
+
 ## Goal
 
 A live demo on Monday 20.07 in front of a potential customer (a German EPC). The two founders play both roles on their own devices: one acts as the sub crew on a phone (installed PWA), one as the EPC on a laptop or tablet. No auth, no invites: two tokenized links into the same demo project. A real pilot project starts 22.07 with AVESOL as subcontractor; everything built for the demo is the real foundation, not a throwaway.
