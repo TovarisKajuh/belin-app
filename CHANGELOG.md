@@ -4,6 +4,8 @@ Every change to this repository is logged here, newest first, with date, what an
 
 ## 2026-07-17 (night)
 
+- Added a dev-only party swap bar: a pinned DEV button that jumps between the connected EPC and crew views of the same seeded project, for building and review. REMOVAL DEBT: delete components/dev, lib/data/tokens.ts, the .b-devbar styles and the page render before launch, when auth separates accounts. Why: the two views are never shown together in production, so this is the only way to review both sides against one project now.
+- Wired the crew home and made /p/[token] a role router: the sub token opens the mobile Tagesbericht screen, the epc token keeps the phase 0 summary until phase 1b builds the dashboard. Why: the token already carries the role; each side gets its own experience behind one link.
 - Added CrewReportForm: photos, headcount, per-item quantity steppers, note, and a sticky submit that uploads photos to storage then writes the report, refreshing the screen on success. Why: this is the core sub action, built for one-handed use under 30 seconds.
 - Added PhotoCapture: camera input, in-browser downscale to 1600px JPEG (weak-LTE friendly), previews, tap to remove, capped at 12. Why: crews shoot progress photos; downscaling keeps uploads fast and storage small.
 - Added the Stepper client component (large plus/minus touch targets, clamped). Why: headcount and per-item quantities are entered by thumb, not keyboard, on a roof.
