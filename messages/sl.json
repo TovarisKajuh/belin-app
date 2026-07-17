@@ -17,5 +17,32 @@
     "installedOfTarget": "{installed} od {target} {unit}",
     "notFoundTitle": "Povezava ni veljavna",
     "notFoundBody": "Ta povezava do projekta ne obstaja ali je bila preklicana."
+  },
+  "crew": {
+    "todayReport": "Današnje poročilo",
+    "progress": "Napredek projekta",
+    "photos": "Fotografije",
+    "addPhoto": "Dodaj",
+    "headcount": "Število delavcev",
+    "quantitiesToday": "Danes vgrajeno",
+    "note": "Opomba",
+    "notePlaceholder": "Kratka opomba (neobvezno)",
+    "submit": "Pošlji poročilo",
+    "submitting": "Pošiljam...",
+    "submitted": "Poročilo poslano",
+    "todayPosts": "Današnji vnosi",
+    "noPostsYet": "Danes še ni vnosov.",
+    "postSummary": "{headcount} delavcev, {photos} fotografij",
+    "weatherLabel": "Vreme",
+    "installedOfTarget": "{installed} od {target} {unit}"
+  },
+  "weather": {
+    "unknown": "Ni podatka",
+    "clear": "Jasno",
+    "partly": "Delno oblačno",
+    "fog": "Megla",
+    "rain": "Dež",
+    "snow": "Sneg",
+    "storm": "Nevihta"
   }
 }

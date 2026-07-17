@@ -17,5 +17,32 @@
     "installedOfTarget": "{installed} von {target} {unit}",
     "notFoundTitle": "Link ungültig",
     "notFoundBody": "Dieser Projektlink existiert nicht oder wurde widerrufen."
+  },
+  "crew": {
+    "todayReport": "Tagesbericht",
+    "progress": "Projektfortschritt",
+    "photos": "Fotos",
+    "addPhoto": "Hinzufügen",
+    "headcount": "Anzahl Mitarbeiter",
+    "quantitiesToday": "Heute montiert",
+    "note": "Notiz",
+    "notePlaceholder": "Kurze Notiz (optional)",
+    "submit": "Bericht senden",
+    "submitting": "Senden...",
+    "submitted": "Bericht gesendet",
+    "todayPosts": "Heutige Einträge",
+    "noPostsYet": "Heute noch keine Einträge.",
+    "postSummary": "{headcount} Mitarbeiter, {photos} Fotos",
+    "weatherLabel": "Wetter",
+    "installedOfTarget": "{installed} von {target} {unit}"
+  },
+  "weather": {
+    "unknown": "Keine Angabe",
+    "clear": "Klar",
+    "partly": "Teils bewölkt",
+    "fog": "Nebel",
+    "rain": "Regen",
+    "snow": "Schnee",
+    "storm": "Gewitter"
   }
 }
