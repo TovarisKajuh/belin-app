@@ -1,0 +1,39 @@
+import "server-only";
+import { randomUUID } from "node:crypto";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+export interface UploadTarget {
+  path: string;
+  token: string;
+}
+
+// Mint one signed upload URL per photo. The client uploads directly to the
+// private bucket with the returned token, so the service role key stays on
+// the server. Paths are namespaced by project and by the client entry id.
+export async function createPhotoUploadTargets(
+  projectId: string,
+  entryClientId: string,
+  count: number
+): Promise<UploadTarget[]> {
+  const db = createAdminClient();
+  const targets: UploadTarget[] = [];
+  for (let i = 0; i < count; i++) {
+    const path = `${projectId}/${entryClientId}/${i}-${randomUUID()}.jpg`;
+    const { data, error } = await db.storage.from("photos").createSignedUploadUrl(path);
+    if (error || !data) throw new Error("Could not create upload URL");
+    targets.push({ path: data.path, token: data.token });
+  }
+  return targets;
+}
+
+// Short-lived signed download URLs for private photos, for display.
+export async function getSignedPhotoUrls(
+  paths: string[],
+  expiresIn = 3600
+): Promise<string[]> {
+  if (paths.length === 0) return [];
+  const db = createAdminClient();
+  const { data, error } = await db.storage.from("photos").createSignedUrls(paths, expiresIn);
+  if (error || !data) return [];
+  return data.map((d) => d.signedUrl).filter((u): u is string => Boolean(u));
+}
