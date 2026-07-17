@@ -4,6 +4,7 @@ Every change to this repository is logged here, newest first, with date, what an
 
 ## 2026-07-17 (night)
 
+- Added weather snapshot fetch (Open-Meteo, no key, never throws) and the pure WMO-code to label mapping with tests. Why: the crew report auto-fills weather from the site location.
 - Phase 1a foundation: browser supabase client (signed-URL uploads only), BELIN mobile CSS utilities, and crew plus weather i18n keys in all three languages. Why: shared groundwork for the crew daily report screen.
 - Revised the phase 1a plan per founder direction: both account views are built responsive for phone and laptop (dropping the EPC-desktop / sub-mobile split), and added a dev-only party-swap button task (jump between the connected EPC and crew views of one seeded project, removed at launch). Why: EPCs will use phones too, and the two intertwined views are never shown together in production, so a dev swap is needed to build and review both. Logged in DECISIONS.md.
 - Wrote the phase 1a implementation plan (docs/superpowers/plans/2026-07-17-phase-1a-crew-report-flow.md): the crew daily report screen end to end (photos with in-browser downscale and direct-to-storage signed uploads, headcount and per-item quantity steppers, note, auto weather, submit, progress recompute). Why: plan-before-code; phase 1 is split so the crew screen ships and is verifiable on a phone before the EPC dashboard (phase 1b).
