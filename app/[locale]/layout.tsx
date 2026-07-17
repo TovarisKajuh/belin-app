@@ -3,6 +3,7 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { SplashGate } from "@/components/SplashGate";
 import "@fontsource-variable/inter";
 import "@fontsource/jetbrains-mono";
 import "../globals.css";
@@ -40,6 +41,7 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body>
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <SplashGate />
       </body>
     </html>
   );
