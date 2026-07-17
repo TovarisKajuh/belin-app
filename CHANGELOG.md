@@ -2,6 +2,10 @@
 
 Every change to this repository is logged here, newest first, with date, what and why, in the same commit as the change. Knowingly taken shortcuts are logged here as debt the moment they are taken.
 
+## 2026-07-17 (night)
+
+- Created docs/superpowers/plans/2026-07-17-phase-0-foundations.md, the full phase 0 implementation plan including the complete v1 schema as its reviewed document. Why: phase 0 executes tonight; plan-before-code mandate, and the founder confirmed provisioning answers (reuse accounts, projekt.getbelin.com subdomain, Resend domain already verified) that the plan locks in.
+
 ## 2026-07-17 (evening)
 
 - Created docs/specs/2026-07-17-v1-build-order.md. Why: founder delegated the build-order decision with a mandate to analyze it and log the full articulation; this spec is that articulation, plus the approved timeline and working discipline.
