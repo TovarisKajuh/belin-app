@@ -4,6 +4,8 @@ Every change to this repository is logged here, newest first, with date, what an
 
 ## 2026-07-17 (night)
 
+- Added next-intl with sl, de and en catalogs, locale routing, and a parity test that fails the build if any key is missing or empty in any language. Why: trilingual from the first commit is a founding decision; the parity test enforces it mechanically.
+- Replaced the scaffold placeholder with the walking-skeleton home page on the ported design system. Why: visual proof the token port renders correctly in all three languages. Note: the bare root follows the browser language (next-intl default) instead of always /sl; demo links always carry an explicit locale.
 - Ported the AVE-DC design system (globals.css) verbatim as the Belin visual foundation, per DECISIONS.md 2026-07-17. Why: proven token set; Belin-specific utilities will be appended, existing tokens stay locked.
 - Scaffolded Next.js 15 + React 19 + Tailwind 4 + TypeScript, pinned to the AVE-DC dashboard's proven versions, with vitest and the Supabase CLI as dev tools, plus .claude/launch.json so sessions can boot the dev server in the preview browser. Why: phase 0 scaffold; matching AVE-DC versions lets its design system transfer without translation.
 - Added .gitignore, .env.example and README.md. Why: phase 0 starts; secrets must be untrackable before any env file exists, and the README gives future sessions the command map.

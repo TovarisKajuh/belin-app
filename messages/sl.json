@@ -1,0 +1,21 @@
+{
+  "common": {
+    "appName": "Belin",
+    "tagline": "Sodelovanje med EPC in monterskimi ekipami"
+  },
+  "home": {
+    "eyebrow": "Ogrodje deluje",
+    "subtitle": "Temelj je postavljen: oblikovni sistem, trije jeziki, baza v Frankfurtu, PWA.",
+    "languageLabel": "Jezik"
+  },
+  "project": {
+    "roleEpc": "Pogled EPC",
+    "roleSub": "Pogled ekipe",
+    "scope": "Obseg del",
+    "progress": "Napredek",
+    "address": "Naslov",
+    "installedOfTarget": "{installed} od {target} {unit}",
+    "notFoundTitle": "Povezava ni veljavna",
+    "notFoundBody": "Ta povezava do projekta ne obstaja ali je bila preklicana."
+  }
+}

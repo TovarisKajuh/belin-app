@@ -1,0 +1,21 @@
+{
+  "common": {
+    "appName": "Belin",
+    "tagline": "Collaboration between EPCs and installation crews"
+  },
+  "home": {
+    "eyebrow": "Skeleton is live",
+    "subtitle": "The foundation stands: design system, three languages, database in Frankfurt, PWA.",
+    "languageLabel": "Language"
+  },
+  "project": {
+    "roleEpc": "EPC view",
+    "roleSub": "Crew view",
+    "scope": "Scope of work",
+    "progress": "Progress",
+    "address": "Address",
+    "installedOfTarget": "{installed} of {target} {unit}",
+    "notFoundTitle": "Link not valid",
+    "notFoundBody": "This project link does not exist or has been revoked."
+  }
+}

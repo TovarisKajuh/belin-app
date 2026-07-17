@@ -1,0 +1,21 @@
+{
+  "common": {
+    "appName": "Belin",
+    "tagline": "Zusammenarbeit zwischen EPC und Montageteams"
+  },
+  "home": {
+    "eyebrow": "Skelett steht",
+    "subtitle": "Das Fundament steht: Designsystem, drei Sprachen, Datenbank in Frankfurt, PWA.",
+    "languageLabel": "Sprache"
+  },
+  "project": {
+    "roleEpc": "EPC-Ansicht",
+    "roleSub": "Team-Ansicht",
+    "scope": "Leistungsumfang",
+    "progress": "Fortschritt",
+    "address": "Adresse",
+    "installedOfTarget": "{installed} von {target} {unit}",
+    "notFoundTitle": "Link ungültig",
+    "notFoundBody": "Dieser Projektlink existiert nicht oder wurde widerrufen."
+  }
+}
