@@ -4,6 +4,13 @@ Every change to this repository is logged here, newest first, with date, what an
 
 ## 2026-07-17 (night)
 
+- Provisioned the Supabase project "belin" (ref xrwncpngjajosstvkign) in eu-central-1 Frankfurt via the Supabase connector, free tier, 0 EUR per month. Why: EU data residency is a founding decision; the founder enabled connectors so Claude provisions directly. Note: an earlier empty "belin-app" project exists in eu-west-1 (Ireland) from before this session, unused, wrong region; flagged for deletion by the founder.
+- Applied the complete v1 schema (23 tables covering all five modules) as the first migration, with RLS enabled and zero policies (server-only access until M1), updated_at triggers and explicit fk indexes. Why: schema-once before module code is a logged decision; the plan document holds the plain-language version the founder reviewed.
+- Created the five private storage buckets (photos, plans, docs, signatures, reports) with size and mime limits. Why: private-by-default file storage per the legal approach in HANDOFF.md section 8; clients only ever see signed URLs.
+- Generated lib/database.types.ts from the live schema. Why: typed data layer from the first query.
+- Seeded the Slovenian demo project (2 orgs, 1 project, 3 scope items, 1 entry, 2 tokens) and added the rerunnable seed script. Why: the walking skeleton must render real database rows; the full demo seed with history and photos is a phase 2 task.
+- Built the actor access layer: server-only service-role client, token to actor resolution with format guard and tests, and the first actor-scoped data function (project summary with computed progress). Why: the actor abstraction is the logged architectural decision that makes the token demo permanent and the M1 auth swap a one-layer change.
+- Created the Resend sending-access API key restricted to getbelin.com (already verified, so the email DNS clock was already done). Why: emails ship in phase 4, key provisioned now per the external-clocks-first principle.
 - Added the weighted progress computation with full unit tests. Why: computed-never-estimated progress is the founder's differentiator; this is the exact formula the dashboard, PDFs and later Abschlagsrechnung documentation will share.
 - Added the PWA manifest and generated placeholder icons (navy B). Why: PWA from day one is a founding decision; install polish and a per-token start URL are phase 2 tasks per the demo design.
 - Added next-intl with sl, de and en catalogs, locale routing, and a parity test that fails the build if any key is missing or empty in any language. Why: trilingual from the first commit is a founding decision; the parity test enforces it mechanically.
