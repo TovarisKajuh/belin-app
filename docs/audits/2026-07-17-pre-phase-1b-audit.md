@@ -132,10 +132,32 @@ The Stueckliste gate needs "is this project checked," but the table is an append
 
 ---
 
-## Part 2: Remediation
+## Part 2: Remediation (what was fixed and how)
 
-(Written after the fixes land.)
+All HIGH findings and most MEDIUM findings were fixed in one pass. tsc clean, 31 unit tests pass (added project-time tests), production build compiles. The security and reliability fixes were verified directly against the database, because that is where they live and the preview browser was drifting between pages during the check.
 
-## Part 3: Deferred decisions (with reasoning)
+Data-layer and database:
+- H1, H2, M1, M12: submitDailyReport now calls one transactional Postgres function, `submit_daily_report` (migration 20260717240000). It validates that every scope item and every photo path belongs to the acting project before writing, computes the site-local entry date server-side (Europe/Ljubljana, Berlin or Vienna by country, via lib/project-time.ts), and writes the entry, quantities, photos and activity together, idempotent on the client-generated id, replacing quantities and photos so a retry cannot duplicate them. Verified: a valid call wrote 2 quantities, 2 photos and the activity row and the aggregate rose correctly; a foreign scope id and a foreign photo path were each rejected and rolled back with zero orphan rows.
+- H3: updateProjectStatus is now a compare-and-swap (`.eq("status", current)`), and the activity row is written only if the swap changed a row, so two devices racing can no longer corrupt the status or leave a phantom audit entry.
+- H6, M2, M3, M9: progress is computed by a grouped Postgres aggregate, `scope_installed` (returns one row per scope item, not the whole history). A single getProjectCore(actor) is composed by both views, so the EPC page fetches the project once instead of twice, and getCrewHome's today queries run in one parallel batch keyed by project and date.
+- M4: one ScopeItemStatus type replaces the two divergent scope shapes.
+- M5: asProjectStatus() narrows the DB string and throws on an unknown value, so a drift between the SQL CHECK and the union is caught, not silently cast.
+- H5: fetchWeatherSnapshot has a 2.5s AbortController timeout, so a slow Open-Meteo can never hang the crew's submit.
+- L1: the unreliable fire-and-forget last_used_at write was removed.
+- M8: signed photo URLs are cached (unstable_cache, just under expiry), so a refresh no longer re-downloads every photo.
+- M13: added the (project_id, checked_at desc) index for the coming material-check "latest" lookup.
 
-(Written with part 2.)
+Client and UI:
+- H4: the idempotency id is generated once per draft (useRef) and reset only after a confirmed success, so a retry on weak LTE reuses it.
+- H7: photos are decoded one at a time, and each bitmap and canvas is released, so a burst of large phone photos cannot pile up hundreds of MB and crash the tab.
+- M6: a failed submit now shows a visible error and keeps the form populated for retry.
+- M10, M11: the status menu closes on click-away and Escape, and re-syncs when the other party changes the status.
+- M7: ICU plural rules for the crew summary; Slovenian now renders 1 delavec, 2 delavca, 3 delavci, 5 delavcev correctly (verified on screen).
+- L2: the stepper's screen-reader labels are localized.
+- M3, M4 (rendering): the duplicated today's-posts block is one shared TodayPosts component, the EPC view is its own EpcHome component, and the token page is a thin role router.
+
+## Part 3: Deferred decisions and remaining low items (with reasoning)
+
+- H8, token transport (deferred to M1, deliberately). The token is currently passed into client components and back into server actions. The clean fix (a request-scoped identity seam so actions read the actor from context, not a client-passed token) is best done together with the M1 magic-link auth work, when the session actor arrives, rather than twice. Refactoring it now would introduce cookie or middleware identity plumbing right before the demo for no user-visible gain. Locked as the number-one architecture task to do at the start of M1.
+- M13, material-check model (decide in 1b). History log versus one authoritative check per project is a product decision that belongs with the material-check screen in phase 1b. The safe default (history log with a latest-lookup index) is in place, so the decision is not blocked and nothing needs redoing whichever way it goes.
+- Remaining LOW items left as noted, not changed: person-foreign-key indexes (add when person deletion is introduced), the whole-form re-render on keystroke (revisit only if field testing shows lag), the hour-sheet number-assignment race (address when that module is built), the scope_items (project_id, sort_order) micro-index, entryClientId uuid validation (low risk, namespaced), photoCount deriving from photoUrls.length, and the tap-to-remove-photo affordance. Each is recorded in Part 1 so the next session can pick them up.
