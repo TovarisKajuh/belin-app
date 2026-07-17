@@ -4,6 +4,7 @@ Every change to this repository is logged here, newest first, with date, what an
 
 ## 2026-07-17 (night)
 
+- Added the PWA manifest and generated placeholder icons (navy B). Why: PWA from day one is a founding decision; install polish and a per-token start URL are phase 2 tasks per the demo design.
 - Added next-intl with sl, de and en catalogs, locale routing, and a parity test that fails the build if any key is missing or empty in any language. Why: trilingual from the first commit is a founding decision; the parity test enforces it mechanically.
 - Replaced the scaffold placeholder with the walking-skeleton home page on the ported design system. Why: visual proof the token port renders correctly in all three languages. Note: the bare root follows the browser language (next-intl default) instead of always /sl; demo links always carry an explicit locale.
 - Ported the AVE-DC design system (globals.css) verbatim as the Belin visual foundation, per DECISIONS.md 2026-07-17. Why: proven token set; Belin-specific utilities will be appended, existing tokens stay locked.
