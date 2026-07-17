@@ -14,6 +14,13 @@ export const PROJECT_STATUSES = [
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 export type PartyRole = "epc" | "sub";
 
+// Narrow a raw DB string to ProjectStatus, failing loudly on an unknown value
+// so a drift between the SQL CHECK and this union is caught, not silently cast.
+export function asProjectStatus(value: string): ProjectStatus {
+  if ((PROJECT_STATUSES as readonly string[]).includes(value)) return value as ProjectStatus;
+  throw new Error(`Unknown project status: ${value}`);
+}
+
 export function statusTransitions(role: PartyRole, current: ProjectStatus): ProjectStatus[] {
   if (role === "epc") {
     switch (current) {

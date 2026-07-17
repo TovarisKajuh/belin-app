@@ -32,8 +32,11 @@
     "submitted": "Bericht gesendet",
     "todayPosts": "Heutige Einträge",
     "noPostsYet": "Heute noch keine Einträge.",
-    "postSummary": "{headcount} Mitarbeiter, {photos} Fotos",
+    "postSummary": "{headcount, plural, one {# Mitarbeiter} other {# Mitarbeiter}}, {photos, plural, one {# Foto} other {# Fotos}}",
     "photoFailed": "Nicht verarbeitbare Fotos: {count}",
+    "submitFailed": "Bericht konnte nicht gesendet werden. Bitte erneut versuchen.",
+    "decrease": "Verringern",
+    "increase": "Erhöhen",
     "weatherLabel": "Wetter",
     "installedOfTarget": "{installed} von {target} {unit}"
   },

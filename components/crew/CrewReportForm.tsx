@@ -1,22 +1,14 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Stepper } from "./Stepper";
 import { PhotoCapture } from "./PhotoCapture";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { requestPhotoTargets, submitReport } from "@/app/[locale]/p/[token]/actions";
-import type { CrewScopeStatus } from "@/lib/data/reports";
+import type { ScopeItemStatus } from "@/lib/data/reports";
 
-export function CrewReportForm({
-  token,
-  entryDate,
-  scope,
-}: {
-  token: string;
-  entryDate: string;
-  scope: CrewScopeStatus[];
-}) {
+export function CrewReportForm({ token, scope }: { token: string; scope: ScopeItemStatus[] }) {
   const t = useTranslations("crew");
   const router = useRouter();
   const [headcount, setHeadcount] = useState(1);
@@ -25,18 +17,22 @@ export function CrewReportForm({
   const [blobs, setBlobs] = useState<Blob[]>([]);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  // One idempotency id per draft, not per attempt (audit finding H4): a retry
+  // after a lost response reuses it, so the server upsert cannot duplicate the
+  // entry. Reset only after a confirmed success.
+  const draftId = useRef(crypto.randomUUID());
 
   async function onSubmit() {
     if (busy) return;
     setBusy(true);
+    setFailed(false);
     try {
-      const clientGeneratedId = crypto.randomUUID();
       let photoPaths: string[] = [];
       if (blobs.length > 0) {
-        const targets = await requestPhotoTargets(token, clientGeneratedId, blobs.length);
+        const targets = await requestPhotoTargets(token, draftId.current, blobs.length);
         const supabase = createBrowserClient();
-        // Only paths whose upload actually succeeded are attached to the
-        // report; a failed upload must never become a broken photo row.
         const results = await Promise.all(
           targets.map((tg, i) =>
             supabase.storage.from("photos").uploadToSignedUrl(tg.path, tg.token, blobs[i], {
@@ -45,12 +41,9 @@ export function CrewReportForm({
           )
         );
         photoPaths = targets.filter((_, i) => !results[i].error).map((tg) => tg.path);
-        const failed = results.filter((r) => r.error).length;
-        if (failed > 0) console.error(`Photo upload: ${failed} of ${targets.length} failed`);
       }
       await submitReport(token, {
-        clientGeneratedId,
-        entryDate,
+        clientGeneratedId: draftId.current,
         note,
         headcount,
         quantities: scope.map((s) => ({ scopeItemId: s.id, qty: qty[s.id] ?? 0 })),
@@ -61,8 +54,12 @@ export function CrewReportForm({
       setNote("");
       setQty({});
       setHeadcount(1);
+      draftId.current = crypto.randomUUID();
       router.refresh();
       setTimeout(() => setDone(false), 2500);
+    } catch {
+      // Keep the form populated so the crew can retry the same draft.
+      setFailed(true);
     } finally {
       setBusy(false);
     }
@@ -114,6 +111,11 @@ export function CrewReportForm({
       </div>
 
       <div className="b-submit-bar">
+        {failed && (
+          <p className="b-sub" role="alert" style={{ color: "var(--warn)", margin: "0 0 8px" }}>
+            {t("submitFailed")}
+          </p>
+        )}
         <button className="b-btn" onClick={onSubmit} disabled={busy}>
           {done ? t("submitted") : busy ? t("submitting") : t("submit")}
         </button>

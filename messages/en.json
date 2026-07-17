@@ -32,8 +32,11 @@
     "submitted": "Report sent",
     "todayPosts": "Today's entries",
     "noPostsYet": "No entries yet today.",
-    "postSummary": "{headcount} crew, {photos} photos",
+    "postSummary": "{headcount, plural, one {# crew member} other {# crew members}}, {photos, plural, one {# photo} other {# photos}}",
     "photoFailed": "Photos that could not be added: {count}",
+    "submitFailed": "The report could not be sent. Please try again.",
+    "decrease": "Decrease",
+    "increase": "Increase",
     "weatherLabel": "Weather",
     "installedOfTarget": "{installed} of {target} {unit}"
   },

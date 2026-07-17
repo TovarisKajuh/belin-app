@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 
 export function Stepper({
   value,
@@ -16,6 +17,7 @@ export function Stepper({
   step?: number;
   ariaLabel?: string;
 }) {
+  const t = useTranslations("crew");
   // Rapid taps can land before React re-renders, so deriving the next value
   // from the rendered prop would swallow increments. The ref accumulates
   // within a frame and re-syncs whenever the parent-confirmed value changes.
@@ -33,11 +35,11 @@ export function Stepper({
 
   return (
     <div className="b-stepper" role="group" aria-label={ariaLabel}>
-      <button type="button" className="b-step-btn" onClick={() => bump(-step)} aria-label="minus">
+      <button type="button" className="b-step-btn" onClick={() => bump(-step)} aria-label={t("decrease")}>
         &minus;
       </button>
       <span className="b-step-val" aria-live="polite">{value}</span>
-      <button type="button" className="b-step-btn" onClick={() => bump(step)} aria-label="plus">
+      <button type="button" className="b-step-btn" onClick={() => bump(step)} aria-label={t("increase")}>
         +
       </button>
     </div>

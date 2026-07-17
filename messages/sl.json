@@ -32,8 +32,11 @@
     "submitted": "Poročilo poslano",
     "todayPosts": "Današnji vnosi",
     "noPostsYet": "Danes še ni vnosov.",
-    "postSummary": "{headcount} delavcev, {photos} fotografij",
+    "postSummary": "{headcount, plural, one {# delavec} two {# delavca} few {# delavci} other {# delavcev}}, {photos, plural, one {# fotografija} two {# fotografiji} few {# fotografije} other {# fotografij}}",
     "photoFailed": "Fotografij, ki jih ni bilo mogoče dodati: {count}",
+    "submitFailed": "Poročila ni bilo mogoče poslati. Poskusite znova.",
+    "decrease": "Zmanjšaj",
+    "increase": "Povečaj",
     "weatherLabel": "Vreme",
     "installedOfTarget": "{installed} od {target} {unit}"
   },

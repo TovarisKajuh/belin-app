@@ -35,12 +35,20 @@ async function downscale(file: File): Promise<Blob> {
   const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("no canvas context");
-  ctx.drawImage(source, 0, 0, w, h);
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("encode failed"))), "image/jpeg", QUALITY);
-  });
+  try {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("no canvas context");
+    ctx.drawImage(source, 0, 0, w, h);
+    return await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("encode failed"))), "image/jpeg", QUALITY);
+    });
+  } finally {
+    // Release the decoded bitmap and the canvas backing store immediately so a
+    // burst of large phone photos cannot pile up hundreds of MB (audit finding H7).
+    if ("close" in source) source.close();
+    canvas.width = 0;
+    canvas.height = 0;
+  }
 }
 
 export function PhotoCapture({
@@ -67,13 +75,18 @@ export function PhotoCapture({
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
     const room = MAX_PHOTOS - blobs.length;
-    // Each file is processed independently: one undecodable file must never
-    // silently discard the rest (the bug the founder's phone test found).
-    const results = await Promise.allSettled(files.slice(0, room).map(downscale));
-    const good = results
-      .filter((r): r is PromiseFulfilledResult<Blob> => r.status === "fulfilled")
-      .map((r) => r.value);
-    const failed = results.length - good.length;
+    // Sequential, so at most one full-size bitmap is alive at a time (audit
+    // finding H7). Each file is still isolated: one undecodable file must never
+    // discard the rest (the bug the founder's phone test found).
+    const good: Blob[] = [];
+    let failed = 0;
+    for (const file of files.slice(0, room)) {
+      try {
+        good.push(await downscale(file));
+      } catch {
+        failed += 1;
+      }
+    }
     setFailedCount(failed);
     if (failed > 0) console.error(`PhotoCapture: ${failed} photo(s) could not be processed`);
     if (good.length > 0) onChange([...blobs, ...good]);

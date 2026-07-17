@@ -33,11 +33,10 @@ export async function resolveActorFromToken(token: string): Promise<TokenActor |
   const orgId = role === "epc" ? data.projects.epc_org_id : data.projects.sub_org_id;
   if (!orgId) return null;
 
-  void db
-    .from("project_tokens")
-    .update({ last_used_at: new Date().toISOString() })
-    .eq("id", data.id)
-    .then(() => undefined);
+  // Note: last_used_at is intentionally not updated here. A fire-and-forget
+  // write is unreliable in a serverless runtime (the function can freeze before
+  // it lands) and adds a write to every read; when it is actually needed it will
+  // be done reliably (audit finding L1).
 
   return { kind: "token", role, projectId: data.project_id, orgId, tokenId: data.id };
 }

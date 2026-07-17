@@ -1139,7 +1139,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      scope_installed: {
+        Args: { p_project: string }
+        Returns: { scope_item_id: string; installed: number }[]
+      }
+      submit_daily_report: {
+        Args: {
+          p_project: string
+          p_entry_date: string
+          p_note: string | null
+          p_headcount: number | null
+          p_weather: Json | null
+          p_client_id: string
+          p_quantities: Json
+          p_photo_paths: string[] | null
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
