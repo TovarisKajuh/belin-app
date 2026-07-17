@@ -38,6 +38,12 @@ BE EXTREMELY CAREFUL AND THOUGHTFUL WHEN WRITING CODE AND BUILDING THE SCAFFOLD,
 
 Next.js (App Router) + Supabase (EU region Frankfurt: Postgres, Storage, Realtime) + Vercel + Resend, PWA from day one, trilingual i18n (sl, de, en). Approved demo design: docs/specs/2026-07-17-monday-demo-design.md. Build order and discipline: docs/specs/2026-07-17-v1-build-order.md. Two deadlines: Slovenian demo Monday 20.07 (Slovenian EPC prospect), full v1 with accounts done Sunday 26.07 evening, German EPC tests from Monday 27.07 (HANDOFF.md section 4).
 
+## Commands
+
+- `npm run dev` (localhost:3000), `npm test` (vitest), `npm run lint` (tsc --noEmit), `npm run build`
+- `npm run seed` (rerunnable demo seed), `npm run gen:types` (after schema changes), `npm run icons`
+- Schema changes: apply via the Supabase connector (project ref xrwncpngjajosstvkign, Frankfurt) and keep a matching file in supabase/migrations/. Deploy: push to main, Vercel auto-deploys (project belin-app). Secrets live only in .env.local and Vercel env vars, never committed.
+
 ## Reference repos (read-only, never modify)
 
 - C:\DevEnv\Belin 1.0.0: earlier CRM plus marketplace attempt. Harvest list in HANDOFF.md section 5.
