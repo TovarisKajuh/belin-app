@@ -33,6 +33,10 @@
 2. Reset the demo project's daily_entries before the Monday demo (test entry from today is in the data).
 3. Standing items: rotate the service_role key before 27.07, rotate demo tokens before real data, custom domain, dev swap bar removal at launch.
 
+## Founder feedback round (same night, after the real-phone test)
+
+The founder's phone test found the one thing automation could not: some phone photo formats silently crashed the in-browser downscale (createImageBitmap rejects HEIC and friends), so those photos never uploaded, while other photos uploaded fine but had no UI showing them anywhere. Fixed the decode with an img-element fallback, made upload failures loud and non-poisoning, and added signed-URL thumbnails to today's entries; the founder's earlier photos immediately became visible (1200x1600, correctly downscaled on-device). Dev swap became an orange DEV pill top right per founder direction. Scope names staying in the project language was explained as intended (project data, not UI strings). Extra lesson: loading="lazy" images never load in the preview pane's renderer; dropped it for the thumbs. All fixes verified locally and live.
+
 ## Next
 
 Phase 1b: the EPC dashboard rebuilt from the AVE-DC Poljubinj design (hero, computed progress with scope breakdown, cumulative chart, daily log feed, photo gallery with signed URLs, activity feed) plus the live-update moment (crew submit appears on the dashboard within seconds, Supabase Broadcast with polling fallback). Then the Stueckliste gate and requests flow complete the demo surface.
