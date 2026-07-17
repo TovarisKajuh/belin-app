@@ -22,9 +22,9 @@ Belin: the collaboration app between solar EPCs and their installation subcontra
 3. Elite 2026-Q3 visual quality, built on the AVE-DC design system (C:\DevEnv\AVE-DC\dashboard\app\globals.css), pushed further in design, animation, responsiveness.
 4. German UI first, all strings through i18n keys from day one. EU data hosting. Fast on weak rural LTE. Boring reliable tech.
 
-## Stack
+## Stack (decided 2026-07-17)
 
-Not yet finalized. Leading candidate per HANDOFF.md section 10: Next.js (App Router) + Supabase (EU, Frankfurt) + Vercel + Resend, PWA from day one. Confirm with the founder before scaffolding.
+Next.js (App Router) + Supabase (EU region Frankfurt: Postgres, Storage, Realtime) + Vercel + Resend (post-demo), PWA from day one, German-first i18n. Approved demo design: docs/specs/2026-07-17-monday-demo-design.md. Two deadlines: demo Monday 20.07, real pilot from 22.07 (HANDOFF.md section 4).
 
 ## Reference repos (read-only, never modify)
 

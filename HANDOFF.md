@@ -43,6 +43,12 @@ The five modules of v1, in build order:
 
 Notifications: email for approvals, deadlines, expiries. PDFs: clean, Belin-branded, German-language (Bautagebuch, Regiebericht, Nachtrag, Abnahmeprotokoll, completion report). Offline: photo and hour capture queue locally, sync on next open, never lose a crew entry.
 
+Additional sub-side mechanics decided 2026-07-17 (founder additions):
+- Progress by quantities: each project has scope items (name, target quantity, unit, weight). Crew logs installed quantities daily ("100 von 500 Modulen"). Percent complete is the weighted sum, computed, never estimated. This later powers installment-payment documentation (Abschlagsrechnung under § 16 VOB/B and § 632a BGB): photo-backed, quantity-based progress statements. Founder note: nothing like this exists in the market.
+- Stückliste check as a required gate: the EPC provides the material list per project; when the crew first arrives on site they must walk the list and confirm complete or mark missing items. The EPC is automatically notified either way. Crew cannot start daily logging before the check.
+- Requests: the sub can request additional materials, plans, or instructions from the EPC (type, short text, optional photo), which lands in the EPC activity feed.
+- Field conveniences: project address has an "In Google Maps öffnen" button. More small crew conveniences of this kind are an open brainstorming category.
+
 Non-goals for v1: chat, scheduling, interactive plan viewer, invoicing, marketplace features, native app store builds.
 
 Legal mechanics to model as product features (with a visible disclaimer: Belin provides documentation tooling, not legal advice):
@@ -52,9 +58,10 @@ Legal mechanics to model as product features (with a visible disclaimer: Belin p
 
 Quality bar: mobile-first, thumb-reachable, readable in direct sunlight (large buttons, high contrast), German UI first with all strings through i18n keys from day one (Slovenian and English later), EU data hosting, fast on weak rural LTE, boring reliable technology.
 
-## 4. The pilot constraint
+## 4. The two deadlines
 
-A real project starts 22.07.2026 with a German EPC, in Germany. AVESOL acts as the subcontractor. The founder wants to test the app on this project if possible. Plan a brutally minimal slice for the start date while designing the foundation for the full vision. Candidate minimal slice: crew-side daily log input (photos, note, headcount) plus an EPC-facing read-only project dashboard via tokenized link, closely modeled on the AVE-DC Poljubinj dashboard which already implements exactly that pattern.
+1. **Demo on Monday 20.07.2026** in front of a potential customer (a German EPC). No auth or invites needed: the two founders demonstrate the whole EPC-sub process live, each on their own device (sub role on an installed PWA phone, EPC role on a laptop), connected through two tokenized links into one seeded demo project. Approved design: docs/specs/2026-07-17-monday-demo-design.md.
+2. **Real pilot project starts 22.07.2026** with a German EPC, in Germany, AVESOL as the subcontractor. After the demo, the seed is swapped for the real project data and the same build is used on site. Everything built for the demo is the real product foundation, not a throwaway.
 
 ## 5. Belin 1.0.0 audit summary (what to harvest, what to leave)
 
@@ -112,9 +119,12 @@ The app stores personal data (A1 certificates, ID copies, qualifications, hour s
 
 See DECISIONS.md. Highlights: new sibling repo (this one), Belin 1.0.0 read-only, AVE-DC visual identity upgraded, organizations with internal roles (CEO, Bauleiter, owner, crew, later marketing), zero-manual-entry principle for the EPC, PDF auto-extraction in v1 but no interactive plan viewer, pilot target 22.07.
 
-## 10. Where the conversation left off
+## 10. Where the conversation left off (updated 2026-07-17, end of founding session)
 
-Brainstorming phase, not yet at an approved design document. Open items in order:
-1. Confirm the minimal pilot slice for 22.07 (proposal: crew daily-log input plus EPC read-only tokenized dashboard, built on AVE-DC patterns).
-2. Choose the stack for this repo (leading candidate: Next.js like AVE-DC dashboard, since the visual system and PDF rendering already live there, with Supabase EU as backend).
-3. Produce the design doc (docs/superpowers/specs/), get founder approval, then write the implementation plan, then build milestone M1.
+Brainstorming is complete and the Monday demo design is approved: docs/specs/2026-07-17-monday-demo-design.md. Stack decided: Next.js App Router, Supabase Frankfurt, Vercel, PWA, German-first i18n.
+
+Next steps for the new session in this repo, in order:
+1. Read this file, CLAUDE.md, DECISIONS.md and the approved design doc.
+2. Write the implementation plan for the Monday demo (use the superpowers writing-plans skill), get founder approval.
+3. Build in the order suggested in the design doc (Friday scaffold plus sub flow, Saturday EPC dashboard plus live sync, Sunday seed, PDF, polish, deploy, dry run). Deploy early so there is a live URL from day one. Hard stop after each milestone for founder review.
+4. After the demo: swap seed for the real 22.07 pilot project, then M1 (magic-link auth, organizations, invite links), then the remaining v1 modules.
