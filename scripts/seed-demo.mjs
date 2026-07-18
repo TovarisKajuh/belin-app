@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import sharp from "sharp";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -16,12 +17,11 @@ const SCOPE_MODULES = "44444444-4444-4444-8444-444444444402";
 const SCOPE_DC = "44444444-4444-4444-8444-444444444403";
 const PERSON_EPC = "66666666-6666-4666-8666-666666666601";
 const PERSON_SUB = "66666666-6666-4666-8666-666666666602";
-const ENTRY_1 = "55555555-5555-4555-8555-555555555501";
 const TOKEN_EPC = "77777777-7777-4777-8777-777777777701";
 const TOKEN_SUB = "77777777-7777-4777-8777-777777777702";
 
-async function upsert(table, rows) {
-  const { error } = await db.from(table).upsert(rows, { onConflict: "id" });
+async function upsert(table, rows, onConflict = "id") {
+  const { error } = await db.from(table).upsert(rows, { onConflict });
   if (error) {
     console.error(`${table}: ${error.message}`);
     process.exit(1);
@@ -29,6 +29,29 @@ async function upsert(table, rows) {
   console.log(`${table}: ${rows.length} row(s) upserted`);
 }
 
+// ---- date helpers (site-local Slovenia; weekdays only) ----
+function isoDaysAgo(n) {
+  return new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
+}
+function isoPlusDays(iso, n) {
+  return new Date(new Date(iso + "T00:00:00Z").getTime() + n * 86400000).toISOString().slice(0, 10);
+}
+function isWeekday(iso) {
+  const g = new Date(iso + "T00:00:00Z").getUTCDay();
+  return g >= 1 && g <= 5;
+}
+
+// The last 9 working days, oldest first, ending at the most recent weekday.
+const dates = [];
+for (let n = 1; dates.length < 9; n++) {
+  const iso = isoDaysAgo(n);
+  if (isWeekday(iso)) dates.push(iso);
+}
+dates.reverse();
+const plannedStart = dates[0];
+const plannedEnd = isoPlusDays(dates[0], 42); // ~30 working days: gives an "ahead" buffer
+
+// ---- static rows ----
 await upsert("organizations", [
   { id: EPC_ORG, type: "epc", name: "Sonce Energija d.o.o.", country: "si" },
   { id: SUB_ORG, type: "sub", name: "AVESOL d.o.o.", country: "si" },
@@ -59,6 +82,8 @@ await upsert("projects", [
     mounting_system: "K2 Dome 6.10",
     roof_type: "Ravna streha",
     hourly_work_approved: true,
+    planned_start: plannedStart,
+    planned_end: plannedEnd,
   },
 ]);
 
@@ -68,30 +93,85 @@ await upsert("scope_items", [
   { id: SCOPE_DC, project_id: PROJECT, name: "DC kabliranje", unit: "m", target_qty: 1200, weight: 1, sort_order: 3 },
 ]);
 
-const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+// ---- multi-day history (rebuilt each run for a deterministic demo) ----
+const days = [
+  { headcount: 4, note: "Začetek montaže podkonstrukcije, južni del strehe.", weather: { code: 0, tempC: 24 }, adds: [[SCOPE_UK, 120]] },
+  { headcount: 5, note: "Podkonstrukcija, nadaljevanje proti sredini.", weather: { code: 2, tempC: 22 }, adds: [[SCOPE_UK, 130]] },
+  { headcount: 5, note: "Podkonstrukcija, zahodni niz.", weather: { code: 0, tempC: 26 }, adds: [[SCOPE_UK, 150]] },
+  { headcount: 6, note: "Podkonstrukcija zaključena.", weather: { code: 0, tempC: 28 }, adds: [[SCOPE_UK, 146]] },
+  { headcount: 6, note: "Začetek montaže modulov, prvi niz.", weather: { code: 2, tempC: 25 }, adds: [[SCOPE_MODULES, 50]] },
+  { headcount: 6, note: "Moduli, drugi niz.", weather: { code: 0, tempC: 30 }, adds: [[SCOPE_MODULES, 60]] },
+  { headcount: 6, note: "Moduli in začetek DC kabliranja.", weather: { code: 0, tempC: 31 }, adds: [[SCOPE_MODULES, 70], [SCOPE_DC, 100]] },
+  { headcount: 5, note: "Popoldne prekinitev zaradi dežja.", weather: { code: 61, tempC: 20 }, adds: [[SCOPE_MODULES, 40], [SCOPE_DC, 80]] },
+  { headcount: 6, note: "Moduli in DC, dober tempo.", weather: { code: 2, tempC: 23 }, adds: [[SCOPE_MODULES, 30], [SCOPE_DC, 120]] },
+];
 
-await upsert("daily_entries", [
-  {
-    id: ENTRY_1,
-    project_id: PROJECT,
-    entry_date: yesterday,
-    note: "Začetek montaže podkonstrukcije, južni del strehe.",
-    headcount: 4,
-    created_by_person: PERSON_SUB,
-  },
-]);
-
-const { error: qErr } = await db
-  .from("entry_quantities")
-  .upsert(
-    [{ entry_id: ENTRY_1, scope_item_id: SCOPE_UK, qty: 120 }],
-    { onConflict: "entry_id,scope_item_id" }
-  );
-if (qErr) {
-  console.error(`entry_quantities: ${qErr.message}`);
-  process.exit(1);
+// Clean the project's prior entries (and their children) so re-runs are deterministic.
+const { data: existing } = await db.from("daily_entries").select("id").eq("project_id", PROJECT);
+const oldIds = (existing ?? []).map((r) => r.id);
+if (oldIds.length) {
+  await db.from("entry_photos").delete().in("entry_id", oldIds);
+  await db.from("entry_quantities").delete().in("entry_id", oldIds);
+  await db.from("daily_entries").delete().in("id", oldIds);
 }
-console.log("entry_quantities: 1 row upserted");
+
+const entryRows = [];
+const quantityRows = [];
+days.forEach((d, i) => {
+  const entryId = `55555555-5555-4555-8555-5555555555${String(i).padStart(2, "0")}`;
+  entryRows.push({
+    id: entryId,
+    project_id: PROJECT,
+    entry_date: dates[i],
+    note: d.note,
+    headcount: d.headcount,
+    created_by_person: PERSON_SUB,
+    weather: { code: d.weather.code, tempC: d.weather.tempC, capturedAt: dates[i] + "T15:00:00Z" },
+  });
+  for (const [scope, qty] of d.adds) {
+    quantityRows.push({ entry_id: entryId, scope_item_id: scope, qty });
+  }
+});
+await upsert("daily_entries", entryRows);
+await upsert("entry_quantities", quantityRows, "entry_id,scope_item_id");
+
+// ---- placeholder photos (generated, uploaded, referenced) ----
+// A photo failure must not break the core seed, so this is best-effort.
+try {
+  const photoPlan = [
+    { entry: 3, shade: 18 },
+    { entry: 6, shade: 26 },
+    { entry: 6, shade: 22 },
+    { entry: 8, shade: 30 },
+    { entry: 8, shade: 20 },
+    { entry: 8, shade: 24 },
+  ];
+  const photoRows = [];
+  for (let i = 0; i < photoPlan.length; i++) {
+    const { entry, shade } = photoPlan[i];
+    const buf = await sharp({
+      create: { width: 800, height: 600, channels: 3, background: { r: shade, g: shade + 12, b: shade + 26 } },
+    })
+      .jpeg({ quality: 68 })
+      .toBuffer();
+    const path = `${PROJECT}/seed/photo-${i}.jpg`;
+    const { error: upErr } = await db.storage
+      .from("photos")
+      .upload(path, buf, { contentType: "image/jpeg", upsert: true });
+    if (upErr) throw new Error(upErr.message);
+    photoRows.push({
+      id: `88888888-8888-4888-8888-8888888888${String(i).padStart(2, "0")}`,
+      entry_id: `55555555-5555-4555-8555-5555555555${String(entry).padStart(2, "0")}`,
+      storage_path: path,
+      sort_order: i,
+      width: 800,
+      height: 600,
+    });
+  }
+  await upsert("entry_photos", photoRows);
+} catch (e) {
+  console.warn(`photos: skipped (${e.message})`);
+}
 
 await upsert("project_tokens", [
   { id: TOKEN_EPC, project_id: PROJECT, role: "epc", token: "demo-epc-k7m2x9q4", label: "Founder laptop" },
@@ -99,5 +179,6 @@ await upsert("project_tokens", [
 ]);
 
 console.log("Seed complete.");
+console.log(`Project window: ${plannedStart} .. ${plannedEnd}, ${dates.length} working days logged.`);
 console.log("EPC link:  /sl/p/demo-epc-k7m2x9q4");
 console.log("Crew link: /sl/p/demo-sub-r8p3n6w1");
