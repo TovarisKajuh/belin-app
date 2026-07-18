@@ -7,9 +7,9 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Collaboration between solar EPCs and their installation subcontractors.",
     start_url: "/",
     display: "standalone",
-    // Matches the launch animation background (BelinSplash) so the native PWA
-    // splash flows seamlessly into the animated one on mobile cold start.
-    background_color: "#f0eee9",
+    // Matches the dark launch animation background (BelinSplash) so the native
+    // PWA splash flows seamlessly into the animated one on mobile cold start.
+    background_color: "#0b1524",
     theme_color: "#f5f6f8",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },

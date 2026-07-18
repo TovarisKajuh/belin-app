@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 // prefers-reduced-motion: skips the long build and shows the finished mark briefly
 // before fading, so the launch stays accessible without a long moving animation.
 export function BelinSplash({
-  background = "#f0eee9",
+  background = "#0b1524",
   onFinish,
   once = false,
 }: {
@@ -66,7 +66,7 @@ export function BelinSplash({
   const cols = 16,
     rows = 24,
     step = 9;
-  const dark: [number, number, number] = [26, 26, 26];
+  const dark: [number, number, number] = [42, 50, 66];
   const gold: [number, number, number] = [255, 215, 0];
   const clamp = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
   const hex = (n: number) => n.toString(16).padStart(2, "0");
@@ -109,13 +109,28 @@ export function BelinSplash({
         WebkitFontSmoothing: "antialiased",
       }}
     >
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "min(72vw, 54vh)",
+          aspectRatio: "1",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(255,215,0,0.16) 0%, transparent 62%)",
+          filter: "blur(34px)",
+          pointerEvents: "none",
+        }}
+      />
       <svg
         viewBox="64 34 172 322"
         style={{ width: "min(92vw, 46vh)", height: "auto", overflow: "visible", display: "block" }}
       >
         <g transform="translate(78, 44)">
           {black.map((cell, i) => (
-            <rect key={"b" + i} x={cell.x} y={cell.y} width="8" height="8" fill="#1a1a1a" />
+            <rect key={"b" + i} x={cell.x} y={cell.y} width="8" height="8" fill="#2a3242" />
           ))}
           {yellowRects}
         </g>
@@ -126,7 +141,7 @@ export function BelinSplash({
             fontFamily="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif"
             fontSize="44"
             fontWeight="600"
-            fill="#111111"
+            fill="#f2efe9"
             textAnchor="middle"
             letterSpacing="1"
           >
@@ -138,7 +153,7 @@ export function BelinSplash({
             fontFamily="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif"
             fontSize="10.5"
             fontWeight="500"
-            fill="#555555"
+            fill="#8f8a7e"
             textAnchor="middle"
             letterSpacing="5"
           >
