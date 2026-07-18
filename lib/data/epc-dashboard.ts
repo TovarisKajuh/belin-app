@@ -37,6 +37,7 @@ export interface DashboardActivity {
 
 export interface EpcDashboardData {
   core: ProjectCore;
+  subName: string | null;
   progressPercent: number;
   scope: ScopeItemStatus[];
   days: DashboardDay[];
@@ -60,7 +61,7 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
 
   const db = createAdminClient();
 
-  const [entriesRes, qtyRes, photoRes, activityRes] = await Promise.all([
+  const [entriesRes, qtyRes, photoRes, activityRes, subRes] = await Promise.all([
     db
       .from("daily_entries")
       .select("id, entry_date, headcount, note, weather, created_at")
@@ -82,6 +83,11 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
       .eq("project_id", actor.projectId)
       .order("created_at", { ascending: false })
       .limit(12),
+    db
+      .from("projects")
+      .select("sub_org:organizations!projects_sub_org_id_fkey (name)")
+      .eq("id", actor.projectId)
+      .maybeSingle(),
   ]);
 
   if (entriesRes.error || qtyRes.error || photoRes.error || activityRes.error) return null;
@@ -163,8 +169,16 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
     payload: (a.payload ?? {}) as Record<string, unknown>,
   }));
 
+  // The sub-org embed is to-one; supabase may type it as an object or a
+  // single-element array, so narrow defensively.
+  const subEmbed: unknown = subRes.data?.sub_org ?? null;
+  const subName = Array.isArray(subEmbed)
+    ? ((subEmbed[0] as { name?: string })?.name ?? null)
+    : ((subEmbed as { name?: string } | null)?.name ?? null);
+
   return {
     core,
+    subName,
     progressPercent: core.progressPercent,
     scope: core.scope,
     days,
