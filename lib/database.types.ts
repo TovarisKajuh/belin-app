@@ -965,6 +965,8 @@ export type Database = {
           mounting_system: string | null
           name: string
           plan_pdf_path: string | null
+          planned_end: string | null
+          planned_start: string | null
           roof_type: string | null
           status: string
           sub_org_id: string | null
@@ -988,6 +990,8 @@ export type Database = {
           mounting_system?: string | null
           name: string
           plan_pdf_path?: string | null
+          planned_end?: string | null
+          planned_start?: string | null
           roof_type?: string | null
           status?: string
           sub_org_id?: string | null
@@ -1011,6 +1015,8 @@ export type Database = {
           mounting_system?: string | null
           name?: string
           plan_pdf_path?: string | null
+          planned_end?: string | null
+          planned_start?: string | null
           roof_type?: string | null
           status?: string
           sub_org_id?: string | null

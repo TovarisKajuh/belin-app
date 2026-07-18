@@ -32,6 +32,8 @@ export interface ProjectCore {
   lng: number | null;
   kwp: number | null;
   moduleCount: number | null;
+  plannedStart: string | null;
+  plannedEnd: string | null;
   progressPercent: number;
   scope: ScopeItemStatus[];
   today: string;
@@ -44,7 +46,7 @@ export async function getProjectCore(actor: Actor): Promise<ProjectCore | null> 
     db
       .from("projects")
       .select(
-        "id, name, status, country, language, address_street, address_zip, address_city, lat, lng, kwp, module_count"
+        "id, name, status, country, language, address_street, address_zip, address_city, lat, lng, kwp, module_count, planned_start, planned_end"
       )
       .eq("id", actor.projectId)
       .maybeSingle(),
@@ -88,6 +90,8 @@ export async function getProjectCore(actor: Actor): Promise<ProjectCore | null> 
     lng: p.lng,
     kwp: p.kwp === null ? null : Number(p.kwp),
     moduleCount: p.module_count,
+    plannedStart: p.planned_start,
+    plannedEnd: p.planned_end,
     progressPercent: projectProgress(scope),
     scope,
     today: projectToday(p.country),
