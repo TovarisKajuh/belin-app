@@ -136,6 +136,80 @@ found no gallery. Re-tested atomically in a single probe with waits between
 steps and the lightbox behaved correctly. Worth remembering: in this preview,
 verify interaction sequences inside one probe rather than across several.
 
+## Part three: founder found a shipped bug, and the chart was rebuilt
+
+The founder opened it on their phone and reported two things. Both were real.
+
+### 1. The scope progress bars never rendered (my bug)
+
+Track and fill are both `<span>`. The track is a direct child of the
+`display:grid` row, so it was blockified and its grey background showed. The
+fill sits one level deeper, so it stayed `display:inline`, and inline elements
+silently ignore `width` and `height`. Every fill rendered 0 by 0, including the
+100 percent one. Ported straight from the mockup, which carries the same latent
+flaw.
+
+**Why I missed it.** I "verified" that screen by reading the page text, checking
+`gridTemplateColumns`, and confirming no console errors. All passed. I never
+measured the one element whose entire job is to have a width. Saved as an
+auto-memory: measure the rendered geometry of the element that carries the
+value, not the container or the text.
+
+Fixed with `display:block` plus an amber to gold gradient and a soft glow.
+Verified by measurement: 100/46/25 percent render 714/329/179 px against a
+714 px track on desktop, and 286/131/71 against 286 on a phone.
+
+### 2. The projection chart was clunky and did not reflect current progress
+
+Three separate causes, only one of them cosmetic.
+
+- **It was being squashed.** Drawn into a fixed 800 wide viewBox and then
+  stretched to fit, so on a phone it compressed about 3x horizontally while the
+  vertical stayed 1:1. Gentle slopes became steep steps, and the chart looked
+  different on every screen size. It now measures its container and draws at
+  true pixel size. Verified 1:1 at both 375 px and 1265 px.
+- **Wrong smoothing algorithm.** The first version clamped control point
+  positions to stop the curve overstating progress. That worked, but it
+  flattened the curve at every data point into a staircase, which is exactly
+  what read as rigid. Replaced with monotone cubic interpolation
+  (Fritsch-Carlson, what d3 calls `curveMonotoneX`), which constrains the
+  tangents instead. Genuinely fluid, and still provably unable to overshoot, so
+  it remains impossible to draw progress that was never reported. Fluid and
+  honest turned out not to be a tradeoff: the better algorithm gives both.
+- **The line really did stop short of today.** Last report Friday, viewed
+  Sunday. Cumulative progress is a step function, so the value today is still
+  the current percent. The line now carries flat to today and the forecast
+  starts from there instead of from a stale point.
+
+Visual craft added per the founder's reference screenshots: gradient stroke, a
+blurred copy of the stroke underneath for glow, a vertical gradient area fill, a
+fading dashed forecast, and a pulsing halo on the current-value dot.
+
+### A regression I caught in my own fix
+
+I had animated the bar fill with a grow-from-zero keyframe and `fill-mode:
+both`. That renders the bar at zero width until the animation actually runs, so
+any throttled or blocked animation makes it invisible: precisely the bug being
+fixed. Removed. Rule taken from it: anything that carries a number must be
+correct with no motion at all.
+
+### A wrong conclusion I nearly recorded
+
+A browser probe reported the curve was not monotone. It was invalid: it compared
+raw numbers parsed out of the path string, which include Bezier control points,
+not points on the curve. Re-checked properly by sampling 301 points along the
+rendered path with `getPointAtLength`: zero backward steps in x or y on real
+data. Parse the geometry, not the markup.
+
+### Known limitation, stated plainly
+
+The chart re-measures on resize via ResizeObserver plus a window resize
+listener, but this preview changes the viewport without dispatching resize
+events and starves ResizeObserver. So only the mount path is verified here
+(correct at phone and desktop widths on fresh loads). Live resize and device
+rotation use two standard mechanisms and should work on real hardware, but I
+have not proven them.
+
 ## Next
 
 1. Founder reviews the full dashboard live on a phone. The ring count-up and the
