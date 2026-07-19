@@ -312,6 +312,71 @@ actually produced, not another iteration on my own output. The scrub's timeout
 backstop also proved its worth immediately: the whole interaction verified in a
 throttled preview tab where rAF alone would have been silent.
 
+## Part six: the chart became a tempo chart
+
+The founder proposed removing the projection line and the buffer band and
+turning the graph into a tempo view (percent done per day, working day 1 to N),
+then asked whether that was right or whether something better existed. Three
+research agents ran: construction reporting standards, pace-chart patterns and
+failure modes, and bar-and-threshold visual craft.
+
+**The instinct was right, with hard evidence.** MeasuringU ran two controlled
+studies (n=50, n=51) asking people to judge rate of change from cumulative
+versus per-period charts of identical data. Cumulative was misread 82 to 88
+percent of the time, and the direction of the read flipped entirely: shown
+cumulative, most read "increase"; shown the same data daily, most read "rapid
+decrease". Respondents were equally confident in both and not equally accurate.
+Combined with the fact that the curve duplicated the hero percentage directly
+above it, the cumulative chart was both redundant and actively misleading for
+the one question it was there to answer.
+
+**It is also the construction standard.** Incremental quantity as bars is the
+canonical project-controls pairing, and a solar-specific source describes crews
+reporting daily module, post and row counts feeding exactly these charts. The
+founder reinvented the industry convention from first principles.
+
+**The rule that shaped the implementation most:** plot per WORKING day and never
+draw a non-working day. A zero bar accuses the crew of idling, so a weekend must
+never be drawn as one. That forced three genuinely distinct states into the data
+layer, all tested: reported zero (crew present, nothing installed) gets a
+deliberate flat 3px stub, missing report gets no bar at all, non-working day is
+absent from the axis. The trailing mean skips missing reports rather than
+averaging them as zero, which would manufacture a slowdown that never happened.
+
+**Chosen against the research's own top pick.** Both pace agents ranked a
+days-ahead/behind delta chart first, and it is genuinely elegant: one line, zero
+baseline, position answers "fast enough" and slope answers "improving or
+degrading". The founder was shown it as a real option with their own numbers
+(+0.9 to +9.1 days) and chose tempo bars. That is the right call for this
+product: Belin exists to document what a subcontractor did on a given day, and a
+bar keeps a weak Tuesday visible and inspectable where a delta line abstracts it
+into a curve.
+
+**The payoff, visible immediately.** With no prompting, the live readout says
+"tempo pada" (pace falling). The last three reported days are 8.5, 5.1, 4.6
+against a required 3.2. Every bar still clears the line, so the project is
+comfortably ahead, and the pace is degrading. Both facts are true, both matter,
+and the old cumulative curve showed neither.
+
+**Craft notes worth keeping:** bar at 72 percent of slot, 3px top-only radius
+clamped to half the bar, y anchored at zero because bar length is the encoding,
+threshold dashed and thinner than the bars at about half their contrast so bars
+read as figure and the line as reference, and always numerically labelled since
+a colour-only threshold fails WCAG 1.4.1. Colouring bars above/below the line
+with a second hue was rejected: position already encodes it, and red/green is
+the worst possible pair for colour vision deficiency.
+
+**Verification lesson, third time this session.** Hovering the per-bar hit rects
+appeared to do nothing. It was the same synthetic-event artifact as before:
+React synthesises pointerenter from pointerover. Rather than test around it, the
+interaction was refactored to a single surface with pointermove that divides x
+by the slot width, which is both verifiable here and better on a phone, since a
+finger can drag across days instead of needing to land on a 3px bar.
+
+Dead code from the old chart was removed rather than left behind:
+buildProjectionChart, areaPath, nearestIndex, isoFromDays, daysSinceEpoch and
+their tests.
+
 ## Next
 
 1. Founder reviews the full dashboard live on a phone. The ring count-up and the
