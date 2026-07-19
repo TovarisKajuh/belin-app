@@ -428,16 +428,91 @@ right now (today's dashboard keys were translated properly before the rule
 existed), and any future placeholders must be cleared before the German EPC
 pilot on 27.07.
 
-## Next
+## Closing report
 
-1. Founder reviews the full dashboard live on a phone. The ring count-up and the
-   arc draw still need a real device to confirm (see the quirk above).
-2. Then: plan the sub (crew) side and restyle it, which the founder wants next.
-   The dark theme is deliberately scoped to `.epc-dark`, so the crew view can be
-   redesigned without touching the EPC side.
-3. Deferred and still open: realtime crew to EPC sync, the material-check gate,
-   rotating the exposed Supabase service_role key before the 27.07 German pilot,
-   and resetting the demo seed before a live showing.
+### Shipped, live and public on belin-app.vercel.app
+
+The dark EPC dashboard, complete: command bar, review alert, hero progress ring,
+daily tempo chart, scope by phase, stat row, latest-on-site panel, day-by-day
+log, and photo gallery with lightbox. All on real data, all three languages,
+scroll-revealed. Yesterday's deploy failure (work gated behind a protected
+preview) was corrected in the first ten minutes and everything since has gone
+straight to public production: eleven deploys today, each verified live and
+unauthenticated.
+
+### Failures, honestly
+
+1. **Invisible progress bars, shipped to the founder.** The scope bar fills
+   rendered 0 by 0 because the fill span stayed `display:inline`, and inline
+   elements silently ignore width and height. Every bar, including the 100
+   percent one. My verification had checked grid columns, text content and
+   console errors, all of which passed. The founder caught it on their phone.
+2. **Reintroduced the same class of bug inside my own fix**, by animating the
+   bar fill from zero width with `fill-mode: both`, which leaves it invisible
+   until the animation runs. Caught before shipping only because I measured
+   again.
+3. **Answered the engineering question and ignored the design one.** Given three
+   reference screenshots and asked how modern apps build fluid charts, I tweaked
+   my own thin line and defended the maths. Founder: "you didn't take my prompt
+   seriously at all, you just edited your own graph."
+4. **Skipped the dataviz skill for two consecutive chart versions**, despite its
+   own text saying to load it before writing any chart code. Loading it changed
+   the design materially and killed a bad idea (daily-gain bars behind a
+   cumulative line, a dual-axis chart) before it was built.
+5. **Rebuilt an approved aesthetic while changing the data.** The founder had
+   said "looks cool now, thanks", then asked for tempo instead of cumulative. I
+   swapped the data and the visual language at the same time and shipped blocky
+   bars. Verdict: "it looks terrible." A full build-verify-deploy cycle wasted.
+6. **Three false alarms from naive browser probes**: a synthetic `pointerleave`
+   React never sees, a monotonicity check that parsed Bezier control points as if
+   they were points on the curve, and per-bar `pointerenter` which React
+   synthesises from `pointerover`. Each looked like a real bug and was not.
+
+### Successes
+
+- Every founder-reported defect was reproduced by measurement before being fixed
+  and proven fixed by measurement afterwards, never by eye.
+- The research turns worked. Seven agents on chart craft, then three on chart
+  choice, produced externally grounded decisions instead of my preferences:
+  layered-stroke glow instead of blur filters, userSpaceOnUse gradients, monotone
+  cubic interpolation, the Robinhood scrub, the working-day axis rule, and the
+  MeasuringU finding that cumulative charts are misread 82 to 88 percent of the
+  time on rate questions.
+- The tempo chart concept came from the founder and survived scrutiny against
+  the construction literature. It immediately surfaced something the old chart
+  concealed: pace is falling (8.5, 5.1, 4.6 over the last three reported days)
+  while the project is still comfortably ahead of the required 3.2 percent/day.
+- Dead code was removed along with the features that stopped using it rather
+  than left to rot: buildProjectionChart, areaPath, nearestIndex, isoFromDays,
+  daysSinceEpoch and their tests.
+- Final state: 53 tests, tsc clean, production build clean, six live URLs
+  returning 200 unauthenticated, a bad token returning 404, the crew view still
+  light and untouched, git clean and fully pushed.
+
+### Learned, saved to memory
+
+- Measure the element that carries the value (bar fill width, chart scale), not
+  its container, its text, or the absence of console errors.
+- When references are given and work is rejected, research how the referenced
+  result is actually produced. Do not iterate on my own last diff.
+- A change request has two axes, what is shown and how it looks. Change only the
+  one that was criticised.
+- Anything carrying a number must be correct with every animation frozen.
+- Drive events the way the framework listens for them; parse geometry, not markup.
+- Build in Slovenian only while iterating (new founder mandate).
+
+### Next session
+
+1. Founder reviews the tempo chart on a phone. If the shape of the idea is wrong
+   rather than the drawing, stop iterating on the curve and reconsider the form.
+2. Plan and restyle the sub (crew) side, the founder's stated next goal. The dark
+   theme is scoped to `.epc-dark`, so the crew view can be redesigned without
+   touching the EPC side. Worth deciding up front: the same dark treatment, or
+   something deliberately different for one-handed use on a roof in daylight.
+3. Still open and unchanged: realtime crew-to-EPC sync, the material-check gate,
+   removing the dev swap pill at launch, resetting the demo seed before a live
+   showing, and rotating the exposed Supabase service_role key before the German
+   EPC pilot on 27.07.
 
 ## Live links
 
