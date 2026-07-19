@@ -2,8 +2,10 @@ import { getTranslations } from "next-intl/server";
 import type { Projection, DailyProgressPoint } from "@/lib/projection-shared";
 import { ProjectionChart } from "@/components/epc/dashboard/ProjectionChart";
 
-// The panel is the frame (title, buffer badge, disclaimer). The chart measures
-// its own width, so the drawing itself is a client component.
+// Borderless by design: research verdict was that the hero chart sits directly
+// on the navy with no card box, so the glowing line is the brightest thing in
+// its area. The header, buffer badge and disclaimer frame it; the readout and
+// the plot live in the client chart component.
 export async function ProjectionPanel({
   history,
   projection,
@@ -25,7 +27,7 @@ export async function ProjectionPanel({
 
   return (
     <section className="e-sec e-reveal">
-      <div className="e-panel">
+      <div className="e-projx">
         <div className="e-panel-h">
           <div>
             <div className="t">{t("pathToCompletion")}</div>

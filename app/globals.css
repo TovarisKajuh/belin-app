@@ -935,46 +935,37 @@ button.gal-item {
 .epc-dark .e-panel-h .t { font-size: 15px; font-weight: 700; }
 .epc-dark .e-panel-h .s { font-size: 12.5px; color: var(--e-muted); margin-top: 4px; }
 .epc-dark .e-proj-badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--e-ok); background: rgba(74,208,122,.1); border: 1px solid rgba(74,208,122,.25); padding: 6px 12px; border-radius: 100px; white-space: nowrap; }
-/* The chart measures its own width and draws at true pixel size, so the curve
-   is never squashed and looks the same on a phone as on a laptop. Height comes
-   from the component, so no height is set here. */
-.epc-dark .e-proj-svg { display: block; width: 100%; margin-top: 14px; overflow: visible; }
-.epc-dark .e-chart { position: relative; margin-top: 16px; }
-.epc-dark .e-chart-svg { display: block; width: 100%; height: auto; overflow: visible; }
-.epc-dark .e-chart-svg rect[tabindex]:focus-visible { outline: 2px solid var(--e-gold); outline-offset: -2px; }
-.epc-dark .e-chart-axis text { fill: rgba(255,255,255,.34); font-size: 10.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
-/* Scrub readout. Values lead, the date follows: the reader already knows which
-   series they are on and wants the number. */
-.epc-dark .e-chart-tip {
-  position: absolute; transform: translate(14px, -50%); pointer-events: none;
-  background: rgba(8,16,26,.94); border: 1px solid var(--e-line); border-radius: 12px;
-  padding: 9px 12px; min-width: 82px; box-shadow: 0 10px 30px rgba(0,0,0,.45);
-}
-.epc-dark .e-chart-tip.flip { transform: translate(calc(-100% - 14px), -50%); }
-.epc-dark .e-chart-tip .v { font-size: 17px; font-weight: 800; color: var(--e-ink); letter-spacing: -.02em; }
-.epc-dark .e-chart-tip .d { font-size: 11.5px; color: var(--e-muted); margin-top: 2px; }
-.epc-dark .e-chart-tip .g { font-size: 11.5px; color: var(--e-gold); font-weight: 700; margin-top: 3px; }
-.epc-dark .e-chart-line { animation: epc-draw-line 1.6s cubic-bezier(.22,.75,.2,1) .15s both; }
-@keyframes epc-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-.epc-dark .e-chart-soft { animation: epc-soft-in 1.1s ease-out .5s both; }
-@keyframes epc-soft-in { from { opacity: 0; } }
-.epc-dark .e-chart-dot { animation: epc-soft-in .6s ease-out 1.4s both; }
-.epc-dark .e-chart-halo { transform-origin: center; animation: epc-halo 3.2s ease-in-out 1.6s infinite; }
-@keyframes epc-halo { 0%, 100% { opacity: .22; r: 10; } 50% { opacity: .40; r: 13; } }
+.epc-dark .e-proj-badge.late { color: #ff9f6b; background: rgba(255,159,107,.10); border-color: rgba(255,159,107,.28); }
 .epc-dark .e-proj-foot { font-size: 11.5px; color: var(--e-muted); font-style: italic; margin-top: 10px; }
-/* The plot stretches to the panel width (preserveAspectRatio none), which would
-   distort any text or circle drawn inside the SVG. Geometry stays in the SVG;
-   labels and the current-value dot are HTML positioned in percent of the same
-   0..800 domain, so they stay crisp and translatable at every width. */
-.epc-dark .e-proj-plot { position: relative; }
+.epc-dark .e-proj-empty { height: 210px; display: flex; align-items: center; justify-content: center; color: var(--e-muted); font-size: 13px; }
+
+/* Hero projection chart. Borderless: the chart sits directly on the navy with a
+   faint static gold wash, so the glowing line is the brightest thing in its
+   area (the Robinhood full-bleed idiom). No filter elements anywhere in the
+   chart: the glow is layered strokes, because blur filters are the classic
+   mobile frame-killer. Every info-carrying element is correct with animations
+   frozen; only the halo breathes. */
+.epc-dark .e-projx { position: relative; background: radial-gradient(560px 240px at 76% 12%, rgba(255,210,26,.05) 0%, transparent 62%); }
+.epc-dark .e-chartx { position: relative; }
+.epc-dark .e-chartx-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.epc-dark .e-chartx-surface { touch-action: pan-y pinch-zoom; cursor: crosshair; outline: none; }
+.epc-dark .e-chartx-surface:focus-visible { outline: 2px solid var(--e-gold); outline-offset: -2px; }
+.epc-dark .e-chartx-axis text { fill: rgba(255,255,255,.30); font-size: 10.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+/* The scrub readout lives in a fixed slot above the plot, never in a floating
+   tooltip that flips mid-drag. Tabular lining figures and a fixed decimal keep
+   the number from changing width while the finger moves. */
+.epc-dark .e-chartx-readout { display: flex; align-items: baseline; gap: 12px; margin: 12px 0 4px; min-height: 44px; }
+.epc-dark .e-chartx-readout .v { font-size: clamp(28px, 6vw, 40px); font-weight: 800; letter-spacing: -.02em; line-height: 1; font-variant-numeric: lining-nums tabular-nums; font-feature-settings: "lnum" 1, "tnum" 1; text-shadow: 0 2px 30px var(--e-glow-2); }
+.epc-dark .e-chartx-readout .d { font-size: 12.5px; color: var(--e-muted); font-weight: 600; }
+.epc-dark .e-chartx-readout .g { font-size: 12.5px; color: var(--e-gold); font-weight: 700; }
 .epc-dark .e-proj-lab { position: absolute; bottom: 1px; transform: translateX(-50%); font-size: 11px; font-weight: 700; white-space: nowrap; color: var(--e-muted); }
 .epc-dark .e-proj-lab.today { color: var(--e-gold); }
 .epc-dark .e-proj-lab.end { transform: translateX(-100%); }
-.epc-dark .e-proj-lab.start { transform: none; left: 0; }
-.epc-dark .e-proj-dot { position: absolute; width: 11px; height: 11px; border-radius: 50%; background: var(--e-gold); border: 2px solid #0c1826; transform: translate(-50%, -50%); box-shadow: 0 0 14px var(--e-glow); }
-.epc-dark .e-proj-val { position: absolute; transform: translate(-50%, -150%); font-size: 12.5px; font-weight: 700; color: var(--e-gold-2); white-space: nowrap; }
-.epc-dark .e-proj-badge.late { color: #ff9f6b; background: rgba(255,159,107,.10); border-color: rgba(255,159,107,.28); }
-.epc-dark .e-proj-empty { height: 210px; display: flex; align-items: center; justify-content: center; color: var(--e-muted); font-size: 13px; }
+.epc-dark .e-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .epc-dark .e-chartx-halo { transform-box: fill-box; transform-origin: center; animation: epc-halo-breathe 2.6s ease-in-out infinite; }
+  @keyframes epc-halo-breathe { 0%, 100% { transform: scale(1); opacity: .55; } 50% { transform: scale(1.3); opacity: .95; } }
+}
 
 /* scope */
 .epc-dark .e-scope-grid { display: grid; gap: 14px; }

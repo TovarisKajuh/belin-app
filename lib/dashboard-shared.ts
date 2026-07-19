@@ -26,6 +26,25 @@ export function weekdayShort(iso: string, locale: string): string {
   );
 }
 
+// Index of the value in a sorted ascending array closest to x. Used by the
+// scrub to snap the readout to the nearest reported day, and to look up the
+// glide position in the path sample table. Binary search: the scrub calls this
+// once per animation frame.
+export function nearestIndex(xs: ArrayLike<number>, x: number): number {
+  const n = xs.length;
+  if (n === 0) return -1;
+  if (x <= xs[0]) return 0;
+  if (x >= xs[n - 1]) return n - 1;
+  let lo = 0;
+  let hi = n - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (xs[mid] <= x) lo = mid;
+    else hi = mid;
+  }
+  return x - xs[lo] <= xs[hi] - x ? lo : hi;
+}
+
 // "+95 Moduli · +40 Podkonstrukcija". Scope item names are project data, so
 // they stay in the project's own language rather than the reader's.
 export function quantitySummary(

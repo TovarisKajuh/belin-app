@@ -5,6 +5,7 @@ import {
   monotonePath,
   areaPath,
   buildProjectionChart,
+  nearestIndex,
   type Pt,
 } from "@/lib/dashboard-shared";
 
@@ -113,6 +114,29 @@ describe("monotonePath", () => {
     ];
     const tail = sampleCurve(monotonePath(pts)).filter((p) => p.x >= 30);
     for (const p of tail) expect(Math.abs(p.y - 50)).toBeLessThan(1e-6);
+  });
+});
+
+describe("nearestIndex", () => {
+  const xs = [0, 10, 25, 60, 100];
+  it("handles empty and single-element arrays", () => {
+    expect(nearestIndex([], 5)).toBe(-1);
+    expect(nearestIndex([7], 100)).toBe(0);
+  });
+  it("clamps below and above the range", () => {
+    expect(nearestIndex(xs, -50)).toBe(0);
+    expect(nearestIndex(xs, 500)).toBe(4);
+  });
+  it("finds exact hits and nearest neighbours", () => {
+    expect(nearestIndex(xs, 25)).toBe(2);
+    expect(nearestIndex(xs, 16)).toBe(1); // 6 from 10, 9 from 25
+    expect(nearestIndex(xs, 18)).toBe(2); // 8 from 10, 7 from 25
+    expect(nearestIndex(xs, 17.5)).toBe(1); // tie goes to the left
+  });
+  it("works on typed arrays, which is how the scrub calls it", () => {
+    const t = new Float32Array([0, 50, 100]);
+    expect(nearestIndex(t, 70)).toBe(1);
+    expect(nearestIndex(t, 80)).toBe(2);
   });
 });
 
