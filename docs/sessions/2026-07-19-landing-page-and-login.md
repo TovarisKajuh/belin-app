@@ -99,6 +99,75 @@ forces per-request rendering. Worth the two minutes.
   keys are real Slovenian, de and en hold the Slovenian strings.
 - Removed the dead `home` i18n section along with the skeleton page it served.
 
+## Part two: the mark, the white bar, and the crew side
+
+The founder sent a phone screenshot with four items.
+
+### 1. One mark instead of three
+
+The launch animation built a 16x24 grid, the command bar drew a 3x4 mark, and
+the icon was a placeholder letter B in Arial. Three different logos. Now all
+one: 3 wide, 4 tall, columns rising 1, 2, 3 gold cells from the bottom, used by
+the splash, the header, the landing page and the home screen icon (icon without
+the wordmark). Timing was re-tuned rather than reused, because with 3 columns
+the old 0.06s stagger reads as a single flash. The gold was unified on the
+`--e-gold` token; the splash had been ending on a slightly different gold from
+every other surface, which nobody would name but everybody would feel.
+
+Extracted `components/BelinMark.tsx` so the mark stops being a magic array
+duplicated per surface.
+
+### 2. The white bar
+
+`themeColor: "#f5f6f8"`, a near-white, which is exactly what iOS paints behind
+the clock on an installed app. Now #0b1524 plus `viewport-fit=cover` and a
+translucent status bar, so the app's own background runs edge to edge, with
+safe-area insets on every fixed and sticky edge.
+
+Told the founder the part they will not like: the clock and battery cannot be
+hidden by any web app, and most native apps do not hide them either. What was
+actually broken was the white strip, and that is fixed. Also flagged that iOS
+caches both the icon and the status bar style at install time, so the app has to
+be removed from the home screen and re-added before either change appears.
+
+### 3. The crew side, and a question I should never have asked
+
+The founder had already written "then we fix visuals for the sub so it fits the
+epc visuals" in their own ordered plan. I then asked them dark or light. They
+were right to be annoyed. **Rule: before asking a question, check whether the
+user already answered it earlier in the conversation.**
+
+Renamed `.epc-dark` to `.belin-dark` across 144 rules and three components,
+because the class now wraps the crew screen too and a lying name in foundation
+code is the kind of shortcut CLAUDE.md forbids. Rebound every `.b-*` surface to
+the `--e-*` tokens and gave the crew the shared command bar and grain. Layout
+stays crew-specific and one-handed; only the skin changed.
+
+### 4. A defect in their screenshot they did not mention
+
+The orange DEV pill was sitting on top of the status control, covering
+"Aktivno". Moved it to the bottom right. Both it and the logout pill now lift
+96px on the crew screen to clear its 86px fixed submit bar.
+
+## Two dev-environment traps, both self-inflicted
+
+1. **`npm run build` while the dev server was running.** Both write to `.next`,
+   so the dev server's chunks were clobbered and every page 500'd with
+   `Cannot find module './vendor-chunks/@supabase.js'`. It looks exactly like a
+   broken import. Fix: stop the server, delete `.next`, restart. Production was
+   never affected. Do not run a production build against a live dev server.
+2. **The CSS specificity trap, twice.** Safe-area and raised-pill rules override
+   properties set in base rules and media queries at equal specificity, so they
+   must come last in the file. I caught it the first time before it shipped and
+   nearly repeated it with the raised pills.
+
+## Verified live
+
+Crew screen renders the dark shell and the shared command bar on production,
+theme colour #0b1524 in both the page and the manifest, and the EPC dashboard is
+unchanged after the rename, with the scope bar fills still measuring
+286/131/71px so yesterday's invisible-bar fix has not regressed.
+
 ## Next
 
 Founder reviews the login on a phone. Then step 2 of their order: the sub side
