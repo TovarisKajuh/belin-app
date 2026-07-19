@@ -135,6 +135,9 @@
     "submit": "Vstopi",
     "submitting": "Prijavljanje",
     "invalid": "Napačno uporabniško ime ali geslo.",
-    "logout": "Odjava"
+    "logout": "Odjava",
+    "scenarioCurrent": "Trenutno",
+    "scenarioStart": "Dan 1",
+    "scenarioSwitch": "Preklopi stanje projekta"
   }
 }

@@ -20,6 +20,18 @@ const PERSON_SUB = "66666666-6666-4666-8666-666666666602";
 const TOKEN_EPC = "77777777-7777-4777-8777-777777777701";
 const TOKEN_SUB = "77777777-7777-4777-8777-777777777702";
 
+// Second demo project: the same job at day zero, nothing logged yet. It exists
+// so the founder can show, and test, what the app looks like at the start of a
+// project (empty log, no progress, material check still to do) and switch back
+// to the half-built state without destroying either. Same name on purpose: it
+// reads as one project at two points in time, not two different jobs.
+const PROJECT_START = "33333333-3333-4333-8333-333333333334";
+const SCOPE_START_UK = "44444444-4444-4444-8444-444444444411";
+const SCOPE_START_MODULES = "44444444-4444-4444-8444-444444444412";
+const SCOPE_START_DC = "44444444-4444-4444-8444-444444444413";
+const TOKEN_START_EPC = "77777777-7777-4777-8777-777777777703";
+const TOKEN_START_SUB = "77777777-7777-4777-8777-777777777704";
+
 async function upsert(table, rows, onConflict = "id") {
   const { error } = await db.from(table).upsert(rows, { onConflict });
   if (error) {
@@ -173,12 +185,69 @@ try {
   console.warn(`photos: skipped (${e.message})`);
 }
 
+// ---- ground zero project: same job, nothing logged yet ----
+function nextWeekday(iso) {
+  let d = iso;
+  while (!isWeekday(d)) d = isoPlusDays(d, 1);
+  return d;
+}
+const startPlannedStart = nextWeekday(new Date().toISOString().slice(0, 10));
+const startPlannedEnd = isoPlusDays(startPlannedStart, 42);
+
+await upsert("projects", [
+  {
+    id: PROJECT_START,
+    epc_org_id: EPC_ORG,
+    sub_org_id: SUB_ORG,
+    name: "PSE Trgovski center Kranj",
+    status: "active",
+    language: "sl",
+    country: "si",
+    address_street: "Cesta Staneta Žagarja 69",
+    address_zip: "4000",
+    address_city: "Kranj",
+    lat: 46.2455,
+    lng: 14.3555,
+    kwp: 245.7,
+    module_count: 546,
+    module_type: "Trina Vertex S+ 450 W",
+    mounting_system: "K2 Dome 6.10",
+    roof_type: "Ravna streha",
+    hourly_work_approved: true,
+    planned_start: startPlannedStart,
+    planned_end: startPlannedEnd,
+  },
+]);
+
+await upsert("scope_items", [
+  { id: SCOPE_START_UK, project_id: PROJECT_START, name: "Podkonstrukcija", unit: "kos", target_qty: 546, weight: 2, sort_order: 1 },
+  { id: SCOPE_START_MODULES, project_id: PROJECT_START, name: "Moduli", unit: "kos", target_qty: 546, weight: 4, sort_order: 2 },
+  { id: SCOPE_START_DC, project_id: PROJECT_START, name: "DC kabliranje", unit: "m", target_qty: 1200, weight: 1, sort_order: 3 },
+]);
+
+// Ground zero means zero: clear anything the founder logged while testing, so
+// re-running the seed always returns this project to a true day one.
+const { data: startExisting } = await db
+  .from("daily_entries")
+  .select("id")
+  .eq("project_id", PROJECT_START);
+const startOldIds = (startExisting ?? []).map((r) => r.id);
+if (startOldIds.length) {
+  await db.from("entry_photos").delete().in("entry_id", startOldIds);
+  await db.from("entry_quantities").delete().in("entry_id", startOldIds);
+  await db.from("daily_entries").delete().in("id", startOldIds);
+  console.log(`daily_entries: ${startOldIds.length} ground-zero row(s) cleared`);
+}
+
 await upsert("project_tokens", [
   { id: TOKEN_EPC, project_id: PROJECT, role: "epc", token: "demo-epc-k7m2x9q4", label: "Founder laptop" },
   { id: TOKEN_SUB, project_id: PROJECT, role: "sub", token: "demo-sub-r8p3n6w1", label: "Founder phone" },
+  { id: TOKEN_START_EPC, project_id: PROJECT_START, role: "epc", token: "demo-epc-start-h3k9m2", label: "EPC, day one" },
+  { id: TOKEN_START_SUB, project_id: PROJECT_START, role: "sub", token: "demo-sub-start-q7w4z8", label: "Crew, day one" },
 ]);
 
 console.log("Seed complete.");
-console.log(`Project window: ${plannedStart} .. ${plannedEnd}, ${dates.length} working days logged.`);
-console.log("EPC link:  /sl/p/demo-epc-k7m2x9q4");
-console.log("Crew link: /sl/p/demo-sub-r8p3n6w1");
+console.log(`Current project: ${plannedStart} .. ${plannedEnd}, ${dates.length} working days logged.`);
+console.log(`Day one project: ${startPlannedStart} .. ${startPlannedEnd}, nothing logged.`);
+console.log("EPC link:  /sl/p/demo-epc-k7m2x9q4   (day one: /sl/p/demo-epc-start-h3k9m2)");
+console.log("Crew link: /sl/p/demo-sub-r8p3n6w1   (day one: /sl/p/demo-sub-start-q7w4z8)");

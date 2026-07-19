@@ -14,6 +14,14 @@ export const metadata: Metadata = {
   icons: {
     apple: "/icons/apple-touch-icon.png",
   },
+  // iOS ignores apple-mobile-web-app-status-bar-style unless
+  // apple-mobile-web-app-capable is also present. Next.js only emits the
+  // standardised "mobile-web-app-capable" for appleWebApp.capable, so the
+  // status bar style was being dropped and iOS fell back to its default, which
+  // is the white bar. Set the Apple tag explicitly alongside it.
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+  },
   appleWebApp: {
     capable: true,
     title: "Belin",

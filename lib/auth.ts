@@ -1,9 +1,17 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { resolveActorFromToken, type Actor } from "@/lib/actor";
-import { tokenForCredentials } from "@/lib/auth-shared";
+import { tokenForCredentials, describeDemoToken, otherScenarioToken } from "@/lib/auth-shared";
+import type { Scenario } from "@/lib/auth-shared";
 
-export { tokenForCredentials };
+export { tokenForCredentials, otherScenarioToken };
+
+/** Which demo state the session is currently in, or null outside the demo set. */
+export async function sessionScenario(): Promise<Scenario | null> {
+  const token = await sessionToken();
+  if (!token) return null;
+  return describeDemoToken(token)?.scenario ?? null;
+}
 
 // DEMO LOGIN, TEMPORARY. Logged as debt in CHANGELOG.md on 2026-07-19.
 //

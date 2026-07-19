@@ -2,7 +2,13 @@
 
 import { redirect } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import { tokenForCredentials, startSession, endSession } from "@/lib/auth";
+import {
+  tokenForCredentials,
+  startSession,
+  endSession,
+  sessionToken,
+  otherScenarioToken,
+} from "@/lib/auth";
 
 export type LoginState = { error: "invalid" | null };
 
@@ -21,6 +27,19 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
 
   await startSession(token);
   // redirect throws, so it must stay outside any try/catch.
+  redirect(`/${locale}/app`);
+}
+
+/**
+ * Flips the session between the two seeded demo states, keeping the same role.
+ * A token outside the demo set is left alone, so this can never move a real
+ * project session.
+ */
+export async function switchScenarioAction(formData: FormData): Promise<void> {
+  const locale = safeLocale(formData.get("locale"));
+  const current = await sessionToken();
+  const next = current ? otherScenarioToken(current) : null;
+  if (next) await startSession(next);
   redirect(`/${locale}/app`);
 }
 

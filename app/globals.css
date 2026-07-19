@@ -1264,6 +1264,20 @@ button.gal-item {
   bottom: calc(12px + env(safe-area-inset-bottom));
 }
 
+/* demo state switch: half-built project versus the same job at day one */
+.lp-scenario { position: fixed; left: 12px; z-index: 60; }
+.lp-scenario button {
+  display: flex; padding: 3px; gap: 2px; border-radius: 999px; cursor: pointer;
+  background: rgba(8,14,22,.82); border: 1px solid rgba(255,255,255,.16);
+  font: inherit; backdrop-filter: blur(8px);
+}
+.lp-scenario span {
+  padding: 4px 11px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  color: #8f8a7e; transition: background .18s, color .18s;
+}
+.lp-scenario span.on { background: var(--e-gold); color: #14100a; }
+
 /* ==========================================================================
    Installed-app safe areas. MUST stay last in this file: these override the
    padding set in the base rules and in the mobile media queries above, and
@@ -1293,3 +1307,7 @@ button.gal-item {
 .lp-logout--raised {
   bottom: calc(96px + env(safe-area-inset-bottom));
 }
+
+/* The scenario switch stacks above the logout pill in the same corner. */
+.lp-scenario { bottom: calc(54px + env(safe-area-inset-bottom)); }
+.lp-scenario--raised { bottom: calc(138px + env(safe-area-inset-bottom)); }
