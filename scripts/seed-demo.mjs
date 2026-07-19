@@ -185,6 +185,31 @@ try {
   console.warn(`photos: skipped (${e.message})`);
 }
 
+// ---- Stückliste: the material list the EPC sends, per project ----
+// Real hardware for a 245.7 kWp flat-roof job, so the check screen reads like
+// a real delivery rather than lorem ipsum.
+const MATERIAL = [
+  { name: "Modul Trina Vertex S+ 450 W", qty: 546, unit: "kos" },
+  { name: "Nosilna konstrukcija K2 Dome 6.10", qty: 546, unit: "kpl" },
+  { name: "Razsmernik Huawei SUN2000-100KTL", qty: 2, unit: "kos" },
+  { name: "DC kabel 6 mm2", qty: 1200, unit: "m" },
+  { name: "Konektorji MC4", qty: 120, unit: "par" },
+  { name: "AC kabel 4x120 mm2", qty: 250, unit: "m" },
+  { name: "Prenapetostna zaščita tip 2", qty: 4, unit: "kos" },
+];
+
+function materialRows(projectId, idPrefix) {
+  return MATERIAL.map((m, i) => ({
+    // Last UUID group is exactly 12 hex chars: an 8 char prefix plus 4 digits.
+    id: `99999999-9999-4999-8999-${idPrefix}${String(i).padStart(4, "0")}`,
+    project_id: projectId,
+    name: m.name,
+    qty: m.qty,
+    unit: m.unit,
+    sort_order: i + 1,
+  }));
+}
+
 // ---- ground zero project: same job, nothing logged yet ----
 function nextWeekday(iso) {
   let d = iso;
@@ -238,6 +263,46 @@ if (startOldIds.length) {
   await db.from("daily_entries").delete().in("id", startOldIds);
   console.log(`daily_entries: ${startOldIds.length} ground-zero row(s) cleared`);
 }
+
+await upsert("material_items", [
+  ...materialRows(PROJECT, "aaaaaaaa"),
+  ...materialRows(PROJECT_START, "bbbbbbbb"),
+]);
+
+// The current project is mid-build, so its material was checked long ago: seed
+// one completed check so that side shows the settled state. Ground zero keeps
+// no check at all, which is the whole point of it.
+const { data: priorChecks } = await db
+  .from("material_checks")
+  .select("id")
+  .in("project_id", [PROJECT, PROJECT_START]);
+const priorIds = (priorChecks ?? []).map((r) => r.id);
+if (priorIds.length) {
+  await db.from("material_check_docs").delete().in("check_id", priorIds);
+  await db.from("material_check_items").delete().in("check_id", priorIds);
+  await db.from("material_checks").delete().in("id", priorIds);
+}
+
+const CHECK_CURRENT = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01";
+await upsert("material_checks", [
+  {
+    id: CHECK_CURRENT,
+    project_id: PROJECT,
+    is_complete: true,
+    note: "Vse prevzeto, dobavnica priložena.",
+    checked_by_person: PERSON_SUB,
+    checked_at: dates[0] + "T06:40:00Z",
+  },
+]);
+await upsert(
+  "material_check_items",
+  materialRows(PROJECT, "aaaaaaaa").map((m) => ({
+    check_id: CHECK_CURRENT,
+    material_item_id: m.id,
+    status: "present",
+  })),
+  "check_id,material_item_id"
+);
 
 await upsert("project_tokens", [
   { id: TOKEN_EPC, project_id: PROJECT, role: "epc", token: "demo-epc-k7m2x9q4", label: "Founder laptop" },

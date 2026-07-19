@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed": "node --env-file=.env.local scripts/seed-demo.mjs",
-    "gen:types": "supabase gen types typescript --linked > lib/database.types.ts",
+    "gen:types": "node scripts/gen-types.mjs",
     "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {

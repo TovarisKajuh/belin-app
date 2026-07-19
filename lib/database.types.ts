@@ -703,6 +703,41 @@ export type Database = {
           },
         ]
       }
+      material_check_docs: {
+        Row: {
+          check_id: string
+          created_at: string
+          id: string
+          kind: string
+          sort_order: number
+          storage_path: string
+        }
+        Insert: {
+          check_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          sort_order?: number
+          storage_path: string
+        }
+        Update: {
+          check_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          sort_order?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_check_docs_check_id_fkey"
+            columns: ["check_id"]
+            isOneToOne: false
+            referencedRelation: "material_checks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       material_check_items: {
         Row: {
           check_id: string
@@ -1159,6 +1194,17 @@ export type Database = {
           p_client_id: string
           p_quantities: Json
           p_photo_paths: string[] | null
+        }
+        Returns: string
+      }
+      submit_material_check: {
+        Args: {
+          p_project: string
+          p_is_complete: boolean
+          p_note: string | null
+          p_items: Json
+          p_material_photos: string[] | null
+          p_delivery_notes: string[] | null
         }
         Returns: string
       }
