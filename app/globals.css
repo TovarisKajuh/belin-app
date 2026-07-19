@@ -1423,6 +1423,26 @@ button.gal-item {
   .belin-dark .mp-add-btn { grid-column: 1 / -1; }
 }
 
+/* Pending state for the demo pills: dim while the form action is in flight. */
+.lp-logout button:disabled,
+.lp-scenario button:disabled { opacity: .55; cursor: default; }
+
+/* Keyboard focus. Buttons and links have no focus style otherwise; inputs and
+   textareas already carry their own gold box-shadow ring on :focus, so the
+   outline is scoped away from them to avoid a double ring. */
+.belin-dark button:focus-visible,
+.belin-dark a:focus-visible,
+.belin-dark [role="radio"]:focus-visible {
+  outline: 2px solid var(--e-gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .belin-dark .mc-seg-opt,
+  .belin-dark .mc-quick,
+  .belin-dark .mc-recheck-btn { transition: none; }
+}
+
 /* ==========================================================================
    Installed-app safe areas. MUST stay last in this file: these override the
    padding set in the base rules and in the mobile media queries above, and

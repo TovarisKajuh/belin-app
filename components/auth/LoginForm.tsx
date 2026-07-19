@@ -21,6 +21,7 @@ export function LoginForm({ locale }: { locale: string }) {
           name="username"
           type="text"
           inputMode="numeric"
+          enterKeyHint="next"
           autoComplete="username"
           autoCapitalize="off"
           autoCorrect="off"
@@ -35,6 +36,7 @@ export function LoginForm({ locale }: { locale: string }) {
           className="lp-input"
           name="password"
           type="password"
+          enterKeyHint="go"
           autoComplete="current-password"
           required
         />

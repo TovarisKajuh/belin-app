@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { switchScenarioAction } from "@/app/actions/auth";
 import type { Scenario } from "@/lib/auth-shared";
+import { PendingButton } from "./PendingButton";
 
 // Demo control: flips between the half-built project and the same job at day
 // one, so the founder can show and test both the "project in flight" screens
@@ -22,10 +23,10 @@ export async function ScenarioPill({
   return (
     <form className={raised ? "lp-scenario lp-scenario--raised" : "lp-scenario"} action={switchScenarioAction}>
       <input type="hidden" name="locale" value={locale} />
-      <button type="submit" title={t("scenarioSwitch")}>
+      <PendingButton title={t("scenarioSwitch")}>
         <span className={isStart ? "on" : undefined}>{t("scenarioStart")}</span>
         <span className={isStart ? undefined : "on"}>{t("scenarioCurrent")}</span>
-      </button>
+      </PendingButton>
     </form>
   );
 }

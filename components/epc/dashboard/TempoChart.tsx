@@ -112,7 +112,7 @@ export function TempoChart({
           : t("paceSteady")
       : null;
 
-  const defaultVal = avg != null ? `${nf.format(avg)} %${t("perDay")}` : "—";
+  const defaultVal = avg != null ? `${nf.format(avg)} %${t("perDay")}` : "-";
   const defaultSub = [
     required != null ? `${t("requiredPace")} ${nf.format(required)}` : null,
     trendWord,
