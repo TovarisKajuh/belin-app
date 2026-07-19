@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { CrewReportForm } from "./CrewReportForm";
-import { ProjectStatusControl } from "@/components/project/ProjectStatusControl";
+import { CommandBar } from "@/components/project/CommandBar";
 import { TodayPosts } from "@/components/project/TodayPosts";
 import type { CrewHomeData } from "@/lib/data/reports";
 
@@ -10,30 +10,38 @@ export async function CrewHome({ token, data }: { token: string; data: CrewHomeD
     .filter(Boolean)
     .join(", ");
 
+  // Same dark shell, same command bar and the same --e-* surfaces as the EPC
+  // dashboard: the two sides are one product, not two apps. What stays
+  // crew-specific is the layout, which is built for one hand on a roof.
   return (
-    <main className="b-screen">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-        <div>
-          <h1 className="b-h" style={{ fontSize: 24 }}>{data.projectName}</h1>
-          {address && <p className="b-sub" style={{ marginTop: 4 }}>{address}</p>}
+    <main className="belin-dark">
+      <div className="e-grain" aria-hidden />
+      <CommandBar
+        token={token}
+        projectName={data.projectName}
+        meta={null}
+        status={data.status}
+        role="sub"
+      />
+
+      <div className="b-screen">
+        {address && <p className="b-sub b-addr">{address}</p>}
+
+        <div className="b-card b-hero">
+          <span className="b-label">{t("progress")}</span>
+          <div className="b-progress-num">
+            {data.progressPercent}
+            <span className="b-progress-unit"> %</span>
+          </div>
         </div>
-        <ProjectStatusControl token={token} role="sub" status={data.status} />
-      </div>
 
-      <div className="b-card" style={{ marginTop: 16 }}>
-        <span className="b-label">{t("progress")}</span>
-        <div className="b-progress-num">
-          {data.progressPercent}
-          <span style={{ fontSize: 22, color: "var(--muted)" }}> %</span>
+        <h2 className="b-h b-sec">{t("todayReport")}</h2>
+        <CrewReportForm token={token} scope={data.scope} />
+
+        <div className="b-card">
+          <span className="b-label">{t("todayPosts")}</span>
+          <TodayPosts posts={data.todayPosts} />
         </div>
-      </div>
-
-      <h2 className="b-h" style={{ fontSize: 18, marginTop: 8, marginBottom: 8 }}>{t("todayReport")}</h2>
-      <CrewReportForm token={token} scope={data.scope} />
-
-      <div className="b-card">
-        <span className="b-label">{t("todayPosts")}</span>
-        <TodayPosts posts={data.todayPosts} />
       </div>
     </main>
   );

@@ -35,12 +35,22 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
     view = <EpcDashboard token={token} data={data} />;
   }
 
+  // The crew screen has a fixed submit bar along the bottom, so both pills lift
+  // clear of it there.
+  const raised = actor.role === "sub";
   const sibling = await getSiblingToken(actor);
   return (
     <>
       {view}
-      <LogoutPill locale={locale} />
-      {sibling && <DevSwapBar locale={locale} siblingToken={sibling.token} targetRole={sibling.role} />}
+      <LogoutPill locale={locale} raised={raised} />
+      {sibling && (
+        <DevSwapBar
+          locale={locale}
+          siblingToken={sibling.token}
+          targetRole={sibling.role}
+          raised={raised}
+        />
+      )}
     </>
   );
 }

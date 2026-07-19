@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { EpcDashboardData } from "@/lib/data/epc-dashboard";
-import { CommandBar } from "@/components/epc/dashboard/CommandBar";
+import { CommandBar } from "@/components/project/CommandBar";
 import { AlertStrip } from "@/components/epc/dashboard/AlertStrip";
 import { ProgressRing } from "@/components/epc/dashboard/ProgressRing";
 import { ProjectionPanel } from "@/components/epc/dashboard/ProjectionPanel";
@@ -24,9 +24,9 @@ export async function EpcDashboard({ token, data }: { token: string; data: EpcDa
   const facts = [core.kwp != null ? `${core.kwp} kWp` : null, sub].filter(Boolean).join(" · ");
 
   return (
-    <div className="epc-dark">
+    <div className="belin-dark">
       <div className="e-grain" />
-      <CommandBar token={token} projectName={core.name} subName={sub} status={core.status} />
+      <CommandBar token={token} projectName={core.name} meta={sub} status={core.status} role="epc" />
       <div className="e-wrap">
         {data.needsReview && sub && <AlertStrip subName={sub} />}
 

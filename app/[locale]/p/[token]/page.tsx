@@ -37,7 +37,14 @@ export default async function ProjectTokenPage({
   return (
     <>
       {view}
-      {sibling && <DevSwapBar locale={locale} siblingToken={sibling.token} targetRole={sibling.role} />}
+      {sibling && (
+        <DevSwapBar
+          locale={locale}
+          siblingToken={sibling.token}
+          targetRole={sibling.role}
+          raised={actor.role === "sub"}
+        />
+      )}
     </>
   );
 }

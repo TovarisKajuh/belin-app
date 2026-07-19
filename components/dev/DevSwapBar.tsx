@@ -7,16 +7,19 @@ export function DevSwapBar({
   locale,
   siblingToken,
   targetRole,
+  raised = false,
 }: {
   locale: string;
   siblingToken: string;
   targetRole: "epc" | "sub";
+  /** Lift clear of the crew screen's fixed submit bar. */
+  raised?: boolean;
 }) {
   const label = targetRole === "epc" ? "switch to EPC view" : "switch to Crew view";
   return (
     <Link
       href={`/${locale}/p/${siblingToken}`}
-      className="b-devbar"
+      className={raised ? "b-devbar b-devbar--raised" : "b-devbar"}
       prefetch={false}
       title={label}
       aria-label={label}

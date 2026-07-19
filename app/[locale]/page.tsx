@@ -22,7 +22,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const t = await getTranslations("landing");
 
   return (
-    <main className="epc-dark lp">
+    <main className="belin-dark lp">
       <div className="e-grain" aria-hidden />
 
       <div className="lp-wrap">

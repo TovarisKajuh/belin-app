@@ -10,7 +10,7 @@ import { useEffect } from "react";
 // A dashboard that hides the founder's data is worse than one without motion.
 export function RevealController() {
   useEffect(() => {
-    const root = document.querySelector<HTMLElement>(".epc-dark");
+    const root = document.querySelector<HTMLElement>(".belin-dark");
     if (!root) return;
 
     // Adding `js` and revealing what is already on screen happen in the same
