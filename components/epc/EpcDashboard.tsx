@@ -76,8 +76,8 @@ export async function EpcDashboard({ token, data }: { token: string; data: EpcDa
           history={data.history}
           projection={proj}
           today={core.today}
+          plannedStart={core.plannedStart}
           plannedEnd={core.plannedEnd}
-          currentPercent={data.progressPercent}
         />
 
         <ScopeByPhase scope={data.scope} />

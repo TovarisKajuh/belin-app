@@ -1,11 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
   ddmm,
-  daysSinceEpoch,
   monotonePath,
-  areaPath,
-  buildProjectionChart,
-  nearestIndex,
+  buildTempoSeries,
+  requiredRate,
+  trailingMean,
   type Pt,
 } from "@/lib/dashboard-shared";
 
@@ -39,14 +38,6 @@ describe("ddmm", () => {
   it("returns null for missing or short input", () => {
     expect(ddmm(null)).toBeNull();
     expect(ddmm("2026-07")).toBeNull();
-  });
-});
-
-describe("daysSinceEpoch", () => {
-  it("counts whole days and is timezone stable", () => {
-    expect(daysSinceEpoch("1970-01-01")).toBe(0);
-    expect(daysSinceEpoch("1970-01-02")).toBe(1);
-    expect(daysSinceEpoch("2026-07-20") - daysSinceEpoch("2026-07-19")).toBe(1);
   });
 });
 
@@ -117,144 +108,96 @@ describe("monotonePath", () => {
   });
 });
 
-describe("nearestIndex", () => {
-  const xs = [0, 10, 25, 60, 100];
-  it("handles empty and single-element arrays", () => {
-    expect(nearestIndex([], 5)).toBe(-1);
-    expect(nearestIndex([7], 100)).toBe(0);
+describe("buildTempoSeries", () => {
+  it("returns nothing without history", () => {
+    expect(buildTempoSeries({ history: [], start: "2026-07-06", today: "2026-07-10" })).toEqual([]);
   });
-  it("clamps below and above the range", () => {
-    expect(nearestIndex(xs, -50)).toBe(0);
-    expect(nearestIndex(xs, 500)).toBe(4);
+
+  it("converts cumulative history into per-day gains", () => {
+    // Mon 06.07 to Wed 08.07
+    const bars = buildTempoSeries({
+      history: [
+        { date: "2026-07-06", cumulativePercent: 6 },
+        { date: "2026-07-07", cumulativePercent: 13 },
+        { date: "2026-07-08", cumulativePercent: 21 },
+      ],
+      start: "2026-07-06",
+      today: "2026-07-08",
+    });
+    expect(bars.map((b) => b.gain)).toEqual([6, 7, 8]);
+    expect(bars.map((b) => b.day)).toEqual([1, 2, 3]);
   });
-  it("finds exact hits and nearest neighbours", () => {
-    expect(nearestIndex(xs, 25)).toBe(2);
-    expect(nearestIndex(xs, 16)).toBe(1); // 6 from 10, 9 from 25
-    expect(nearestIndex(xs, 18)).toBe(2); // 8 from 10, 7 from 25
-    expect(nearestIndex(xs, 17.5)).toBe(1); // tie goes to the left
+
+  it("omits weekends entirely rather than drawing them as zero", () => {
+    // Fri 10.07, Sat 11, Sun 12, Mon 13. Only the two weekdays may appear.
+    const bars = buildTempoSeries({
+      history: [
+        { date: "2026-07-10", cumulativePercent: 10 },
+        { date: "2026-07-13", cumulativePercent: 18 },
+      ],
+      start: "2026-07-10",
+      today: "2026-07-13",
+    });
+    expect(bars).toHaveLength(2);
+    expect(bars.map((b) => b.date)).toEqual(["2026-07-10", "2026-07-13"]);
+    expect(bars[1].gain).toBe(8);
   });
-  it("works on typed arrays, which is how the scrub calls it", () => {
-    const t = new Float32Array([0, 50, 100]);
-    expect(nearestIndex(t, 70)).toBe(1);
-    expect(nearestIndex(t, 80)).toBe(2);
+
+  it("distinguishes a reported zero from a missing report", () => {
+    const bars = buildTempoSeries({
+      history: [
+        { date: "2026-07-06", cumulativePercent: 10 },
+        // 07.07 reported, but nothing installed: cumulative unchanged.
+        { date: "2026-07-07", cumulativePercent: 10 },
+        // 08.07 absent entirely: no report arrived.
+        { date: "2026-07-09", cumulativePercent: 17 },
+      ],
+      start: "2026-07-06",
+      today: "2026-07-09",
+    });
+    expect(bars.map((b) => b.gain)).toEqual([10, 0, null, 7]);
+  });
+
+  it("never produces a negative bar if history is not monotonic", () => {
+    const bars = buildTempoSeries({
+      history: [
+        { date: "2026-07-06", cumulativePercent: 20 },
+        { date: "2026-07-07", cumulativePercent: 18 },
+      ],
+      start: "2026-07-06",
+      today: "2026-07-07",
+    });
+    expect(bars[1].gain).toBe(0);
   });
 });
 
-describe("areaPath", () => {
-  it("closes the line down to the baseline", () => {
-    const pts: Pt[] = [
-      { x: 0, y: 50 },
-      { x: 10, y: 20 },
-    ];
-    const a = areaPath(monotonePath(pts), pts, 188);
-    expect(a).toContain("L 10,188");
-    expect(a).toContain("L 0,188");
-    expect(a.endsWith("Z")).toBe(true);
+describe("requiredRate", () => {
+  it("spreads the job evenly over the planned working days", () => {
+    // Mon 06.07 to Fri 10.07 inclusive is 5 working days.
+    expect(requiredRate("2026-07-06", "2026-07-10")).toBeCloseTo(20, 5);
+  });
+  it("returns null when either planned date is missing", () => {
+    expect(requiredRate(null, "2026-08-18")).toBeNull();
+    expect(requiredRate("2026-07-07", null)).toBeNull();
   });
 });
 
-describe("buildProjectionChart", () => {
-  const base = {
-    today: "2026-07-10",
-    currentPercent: 54,
-    projectedFinish: "2026-07-30",
-    plannedEnd: "2026-08-08",
-    width: 800,
-    yTop: 12,
-    yBottom: 188,
-  };
-
-  it("carries the line flat to today when the last report is older", () => {
-    // Reported Friday, viewed on Sunday: progress today is still 54 percent.
-    const c = buildProjectionChart({
-      ...base,
-      today: "2026-07-12",
-      history: [
-        { date: "2026-07-08", cumulativePercent: 42 },
-        { date: "2026-07-10", cumulativePercent: 54 },
-      ],
-    });
-    expect(c.actual).toHaveLength(3);
-    const last = c.actual[c.actual.length - 1];
-    const prev = c.actual[c.actual.length - 2];
-    // The added point sits at today's x, at exactly the same height.
-    expect(last.x).toBe(c.todayX);
-    expect(last.y).toBe(prev.y);
-    // And the forecast starts from today, not from the stale last report.
-    expect(c.projection![0]).toEqual(last);
+describe("trailingMean", () => {
+  const bars = [
+    { date: "a", day: 1, gain: 6, cumulative: 6 },
+    { date: "b", day: 2, gain: 8, cumulative: 14 },
+    { date: "c", day: 3, gain: null, cumulative: null },
+    { date: "d", day: 4, gain: 4, cumulative: 18 },
+  ];
+  it("averages the last N reported days", () => {
+    expect(trailingMean(bars, 3, 3)).toBeCloseTo((4 + 8 + 6) / 3, 5);
   });
-
-  it("returns an empty chart when there is no history", () => {
-    const c = buildProjectionChart({ ...base, history: [] });
-    expect(c.actual).toEqual([]);
-    expect(c.projection).toBeNull();
-    expect(c.buffer).toBeNull();
+  it("skips missing reports instead of treating them as zero", () => {
+    // Without the skip this would be (4+0+8)/3 = 4 and read as a slowdown.
+    expect(trailingMean(bars, 3, 2)).toBeCloseTo((4 + 8) / 2, 5);
   });
-
-  it("maps history to a left-to-right, rising curve inside the canvas", () => {
-    const c = buildProjectionChart({
-      ...base,
-      history: [
-        { date: "2026-07-06", cumulativePercent: 30 },
-        { date: "2026-07-08", cumulativePercent: 42 },
-        { date: "2026-07-10", cumulativePercent: 54 },
-      ],
-    });
-    expect(c.actual).toHaveLength(3);
-    // x increases with time.
-    expect(c.actual[0].x).toBeLessThan(c.actual[1].x);
-    expect(c.actual[1].x).toBeLessThan(c.actual[2].x);
-    // y decreases as progress rises (SVG y grows downward).
-    expect(c.actual[0].y).toBeGreaterThan(c.actual[2].y);
-    // Everything stays inside the drawable band.
-    for (const p of c.actual) {
-      expect(p.x).toBeGreaterThanOrEqual(0);
-      expect(p.x).toBeLessThanOrEqual(base.width);
-      expect(p.y).toBeLessThanOrEqual(base.yBottom);
-      expect(p.y).toBeGreaterThanOrEqual(base.yTop);
-    }
-  });
-
-  it("draws the forecast from the last real point up to 100 percent", () => {
-    const c = buildProjectionChart({
-      ...base,
-      history: [
-        { date: "2026-07-06", cumulativePercent: 30 },
-        { date: "2026-07-10", cumulativePercent: 54 },
-      ],
-    });
-    expect(c.projection).not.toBeNull();
-    expect(c.projection![0]).toEqual(c.actual[c.actual.length - 1]);
-    expect(c.projection![1].y).toBe(base.yTop); // 100 percent sits at the top
-    expect(c.projection![1].x).toBe(c.finishX);
-  });
-
-  it("shows a buffer band only when the forecast lands before the deadline", () => {
-    const history = [
-      { date: "2026-07-06", cumulativePercent: 30 },
-      { date: "2026-07-10", cumulativePercent: 54 },
-    ];
-    const ahead = buildProjectionChart({ ...base, history });
-    expect(ahead.buffer).not.toBeNull();
-    expect(ahead.buffer!.width).toBeGreaterThan(0);
-
-    const late = buildProjectionChart({
-      ...base,
-      history,
-      projectedFinish: "2026-08-20", // past the 08.08 deadline
-    });
-    expect(late.buffer).toBeNull();
-  });
-
-  it("does not divide by zero when everything happens on one day", () => {
-    const c = buildProjectionChart({
-      ...base,
-      today: "2026-07-06",
-      projectedFinish: null,
-      plannedEnd: null,
-      history: [{ date: "2026-07-06", cumulativePercent: 10 }],
-    });
-    expect(Number.isFinite(c.actual[0].x)).toBe(true);
-    expect(Number.isFinite(c.todayX!)).toBe(true);
+  it("returns null when nothing has been reported yet", () => {
+    expect(trailingMean([{ date: "a", day: 1, gain: null, cumulative: null }], 0, 5)).toBeNull();
   });
 });
+

@@ -2,21 +2,11 @@
 // imports, so vitest can exercise it directly. Dates are ISO "YYYY-MM-DD" and
 // handled at UTC midnight, so a rendered day never drifts with the timezone.
 
-import type { DailyProgressPoint } from "@/lib/projection-shared";
-
-const DAY_MS = 86_400_000;
+import { businessDaysBetween, type DailyProgressPoint } from "@/lib/projection-shared";
 
 export function ddmm(iso: string | null): string | null {
   if (!iso || iso.length < 10) return null;
   return `${iso.slice(8, 10)}.${iso.slice(5, 7)}`;
-}
-
-export function daysSinceEpoch(iso: string): number {
-  return Math.round(new Date(iso + "T00:00:00Z").getTime() / DAY_MS);
-}
-
-export function isoFromDays(n: number): string {
-  return new Date(n * DAY_MS).toISOString().slice(0, 10);
 }
 
 // Short weekday for the log feed, in the reader's language.
@@ -26,24 +16,91 @@ export function weekdayShort(iso: string, locale: string): string {
   );
 }
 
-// Index of the value in a sorted ascending array closest to x. Used by the
-// scrub to snap the readout to the nearest reported day, and to look up the
-// glide position in the path sample table. Binary search: the scrub calls this
-// once per animation frame.
-export function nearestIndex(xs: ArrayLike<number>, x: number): number {
-  const n = xs.length;
-  if (n === 0) return -1;
-  if (x <= xs[0]) return 0;
-  if (x >= xs[n - 1]) return n - 1;
-  let lo = 0;
-  let hi = n - 1;
-  while (hi - lo > 1) {
-    const mid = (lo + hi) >> 1;
-    if (xs[mid] <= x) lo = mid;
-    else hi = mid;
-  }
-  return x - xs[lo] <= xs[hi] - x ? lo : hi;
+// One bar of the tempo chart: what a single working day produced.
+//
+// The three states are deliberately distinct and must never be conflated. A
+// reported zero means the crew was on site and installed nothing, which is a
+// real observation and evidence in a dispute. A missing day means no report
+// arrived at all. Non-working days are not observations and never appear.
+export interface TempoBar {
+  date: string;
+  /** 1-based working-day index since the project start. */
+  day: number;
+  /** Percentage points gained that day. null when no report exists. */
+  gain: number | null;
+  cumulative: number | null;
 }
+
+// Enumerate every working day from start to today and attach what each one
+// produced. Weekends and holidays are simply absent from the axis rather than
+// drawn as zeros, which is the construction reporting convention: a zero bar
+// accuses the crew, and a weekend must never do that.
+export function buildTempoSeries(input: {
+  history: DailyProgressPoint[];
+  start: string;
+  today: string;
+}): TempoBar[] {
+  const { history, start, today } = input;
+  const sorted = [...history].sort((a, b) => a.date.localeCompare(b.date));
+  if (sorted.length === 0) return [];
+
+  const byDate = new Map(sorted.map((p) => [p.date, p.cumulativePercent]));
+  const from = start < sorted[0].date ? start : sorted[0].date;
+
+  const bars: TempoBar[] = [];
+  let previousCumulative = 0;
+  let day = 0;
+
+  const cursor = new Date(from + "T00:00:00Z");
+  const end = new Date(today + "T00:00:00Z");
+  while (cursor <= end) {
+    const weekday = cursor.getUTCDay();
+    if (weekday >= 1 && weekday <= 5) {
+      const iso = cursor.toISOString().slice(0, 10);
+      day += 1;
+      const cumulative = byDate.get(iso);
+      if (cumulative === undefined) {
+        bars.push({ date: iso, day, gain: null, cumulative: null });
+      } else {
+        // Guard against a non-monotonic history producing a negative bar.
+        const gain = Math.max(0, cumulative - previousCumulative);
+        bars.push({ date: iso, day, gain, cumulative });
+        previousCumulative = cumulative;
+      }
+    }
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return bars;
+}
+
+// The pace the original plan demands: the whole job spread evenly across the
+// planned working days. Known as takt time in lean construction. Deliberately
+// flat rather than recomputed daily: a line that drops as the crew gets ahead
+// makes the target look like it is getting easier, and "every bar above the
+// line" has to mean one thing forever.
+export function requiredRate(plannedStart: string | null, plannedEnd: string | null): number | null {
+  if (!plannedStart || !plannedEnd) return null;
+  const days = businessDaysBetween(plannedStart, plannedEnd);
+  if (days <= 0) return null;
+  return 100 / days;
+}
+
+// Trailing mean over the last `window` reported days, ignoring days with no
+// report so a missing report never reads as a slowdown. Trailing, not centred:
+// the last point must be today, since the whole question is "how are we doing
+// right now".
+export function trailingMean(bars: TempoBar[], index: number, window: number): number | null {
+  let sum = 0;
+  let n = 0;
+  for (let i = index; i >= 0 && n < window; i--) {
+    const g = bars[i].gain;
+    if (g == null) continue;
+    sum += g;
+    n++;
+  }
+  return n === 0 ? null : sum / n;
+}
+
 
 // "+95 Moduli · +40 Podkonstrukcija". Scope item names are project data, so
 // they stay in the project's own language rather than the reader's.
@@ -128,123 +185,6 @@ export function monotonePath(points: Pt[]): string {
   return d;
 }
 
-// Close a line path into a filled area down to the baseline.
-export function areaPath(line: string, points: Pt[], baselineY: number): string {
-  if (points.length === 0) return "";
-  const first = points[0];
-  const last = points[points.length - 1];
-  return `${line} L ${r(last.x)},${r(baselineY)} L ${r(first.x)},${r(baselineY)} Z`;
-}
 
-export interface ProjectionChartInput {
-  history: DailyProgressPoint[];
-  today: string;
-  currentPercent: number;
-  projectedFinish: string | null;
-  plannedEnd: string | null;
-  width: number;
-  yTop: number;
-  yBottom: number;
-}
 
-export interface ProjectionChart {
-  actual: Pt[];
-  /** The dated value behind each point in `actual`, same order, for the readout. */
-  points: DailyProgressPoint[];
-  projection: Pt[] | null;
-  todayX: number | null;
-  deadlineX: number | null;
-  finishX: number | null;
-  buffer: { x: number; width: number } | null;
-  yTop: number;
-  yBottom: number;
-  /** Day numbers bounding the x scale, so the caller can place axis ticks. */
-  domainStartDay: number;
-  domainEndDay: number;
-  xOfDay: (day: number) => number;
-}
 
-// Map the progress history and the forecast onto the SVG canvas. The x domain
-// spans the first reported day to whichever comes last: the projected finish,
-// the deadline, or today. Returns empty actual points when there is no history,
-// which the panel renders as its "gathering data" state.
-export function buildProjectionChart(input: ProjectionChartInput): ProjectionChart {
-  const { history, today, currentPercent, projectedFinish, plannedEnd, width, yTop, yBottom } =
-    input;
-
-  const sorted = [...history].sort((a, b) => a.date.localeCompare(b.date));
-  // Cumulative progress is a step function: if the last report predates today,
-  // the value today is still the current percent. Carrying the line flat to
-  // today keeps it truthful and stops it stopping short of the today marker.
-  if (sorted.length > 0 && sorted[sorted.length - 1].date < today) {
-    sorted.push({ date: today, cumulativePercent: currentPercent });
-  }
-  if (sorted.length === 0) {
-    const day = daysSinceEpoch(today);
-    return {
-      actual: [],
-      points: [],
-      projection: null,
-      todayX: null,
-      deadlineX: null,
-      finishX: null,
-      buffer: null,
-      yTop,
-      yBottom,
-      domainStartDay: day,
-      domainEndDay: day,
-      xOfDay: () => 0,
-    };
-  }
-
-  const todayN = daysSinceEpoch(today);
-  const startN = Math.min(daysSinceEpoch(sorted[0].date), todayN);
-  const candidates = [
-    daysSinceEpoch(sorted[sorted.length - 1].date),
-    todayN,
-    projectedFinish ? daysSinceEpoch(projectedFinish) : startN,
-    plannedEnd ? daysSinceEpoch(plannedEnd) : startN,
-  ];
-  let endN = Math.max(...candidates);
-  // A single-day domain would divide by zero; give it one day of width.
-  if (endN <= startN) endN = startN + 1;
-
-  const span = endN - startN;
-  const xOf = (n: number): number => ((n - startN) / span) * width;
-  const yOf = (pct: number): number => {
-    const c = Math.min(100, Math.max(0, pct));
-    return yBottom - (c / 100) * (yBottom - yTop);
-  };
-
-  const actual: Pt[] = sorted.map((p) => ({
-    x: xOf(daysSinceEpoch(p.date)),
-    y: yOf(p.cumulativePercent),
-  }));
-
-  const finishX = projectedFinish ? xOf(daysSinceEpoch(projectedFinish)) : null;
-  const projection =
-    finishX != null && actual.length > 0
-      ? [actual[actual.length - 1], { x: finishX, y: yOf(100) }]
-      : null;
-
-  const deadlineX = plannedEnd ? xOf(daysSinceEpoch(plannedEnd)) : null;
-  const buffer =
-    finishX != null && deadlineX != null && deadlineX > finishX
-      ? { x: finishX, width: deadlineX - finishX }
-      : null;
-
-  return {
-    actual,
-    points: sorted,
-    projection,
-    todayX: xOf(todayN),
-    deadlineX,
-    finishX,
-    buffer,
-    yTop,
-    yBottom,
-    domainStartDay: startN,
-    domainEndDay: endN,
-    xOfDay: xOf,
-  };
-}

@@ -947,6 +947,10 @@ button.gal-item {
    frozen; only the halo breathes. */
 .epc-dark .e-projx { position: relative; background: radial-gradient(560px 240px at 76% 12%, rgba(255,210,26,.05) 0%, transparent 62%); }
 .epc-dark .e-chartx { position: relative; }
+.epc-dark .e-tempo { position: relative; touch-action: pan-y; }
+.epc-dark .e-tempo-hit { cursor: crosshair; touch-action: pan-y; outline: none; }
+.epc-dark .e-tempo-hit:focus-visible { outline: 2px solid var(--e-gold); outline-offset: -2px; }
+.epc-dark .e-tempo-thresh { fill: #99a3b0; font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .epc-dark .e-chartx-svg { display: block; width: 100%; height: auto; overflow: visible; }
 .epc-dark .e-chartx-surface { touch-action: pan-y pinch-zoom; cursor: crosshair; outline: none; }
 .epc-dark .e-chartx-surface:focus-visible { outline: 2px solid var(--e-gold); outline-offset: -2px; }

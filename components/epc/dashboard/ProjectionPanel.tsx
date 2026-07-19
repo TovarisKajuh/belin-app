@@ -1,23 +1,28 @@
 import { getTranslations } from "next-intl/server";
-import type { Projection, DailyProgressPoint } from "@/lib/projection-shared";
-import { ProjectionChart } from "@/components/epc/dashboard/ProjectionChart";
+import type { DailyProgressPoint, Projection } from "@/lib/projection-shared";
+import { TempoChart } from "@/components/epc/dashboard/TempoChart";
 
-// Borderless by design: research verdict was that the hero chart sits directly
-// on the navy with no card box, so the glowing line is the brightest thing in
-// its area. The header, buffer badge and disclaimer frame it; the readout and
-// the plot live in the client chart component.
+// Daily pace, not cumulative progress.
+//
+// The cumulative curve that used to live here duplicated the hero percentage
+// directly above it, and controlled studies show cumulative charts are misread
+// 82 to 88 percent of the time when the question is whether the rate is rising
+// or falling. This panel therefore shows the derivative: what each working day
+// produced, against the pace the plan requires. The projection line and the
+// deadline buffer band were removed on the founder's instruction; the buffer
+// still appears as the badge, which is where a single number belongs.
 export async function ProjectionPanel({
   history,
   projection,
   today,
+  plannedStart,
   plannedEnd,
-  currentPercent,
 }: {
   history: DailyProgressPoint[];
   projection: Projection;
   today: string;
+  plannedStart: string | null;
   plannedEnd: string | null;
-  currentPercent: number;
 }) {
   const t = await getTranslations("dashboard");
 
@@ -30,8 +35,8 @@ export async function ProjectionPanel({
       <div className="e-projx">
         <div className="e-panel-h">
           <div>
-            <div className="t">{t("pathToCompletion")}</div>
-            <div className="s">{t("pathSub")}</div>
+            <div className="t">{t("dailyTempo")}</div>
+            <div className="s">{t("tempoSubtitle")}</div>
           </div>
           {badge && (
             <span className={days != null && days < 0 ? "e-proj-badge late" : "e-proj-badge"}>
@@ -40,15 +45,12 @@ export async function ProjectionPanel({
           )}
         </div>
 
-        <ProjectionChart
+        <TempoChart
           history={history}
-          projection={projection}
           today={today}
+          plannedStart={plannedStart}
           plannedEnd={plannedEnd}
-          currentPercent={currentPercent}
         />
-
-        <div className="e-proj-foot">{t("forYourPlanning")}</div>
       </div>
     </section>
   );
