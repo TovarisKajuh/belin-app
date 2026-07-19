@@ -49,10 +49,23 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+/* The page canvas is dark navy, not --bg.
+   With apple-mobile-web-app-status-bar-style: black-translucent, iOS extends
+   the web view under the clock and paints that strip with the canvas
+   background propagated from html/body, NOT with whatever element happens to
+   sit at the top of the document. While this was var(--bg) (#f5f6f8) the strip
+   stayed near-white no matter what the meta tags said. Every screen is dark
+   now, so the light canvas served nothing anyway. This also fixes the
+   overscroll rubber-band colour. --bg itself is left alone; it is still used
+   by a few light-system surfaces. */
+html {
+  scroll-behavior: smooth;
+  background: #0b1524;
+  color-scheme: dark;
+}
 body {
   font-family: "Inter Variable", -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
+  background: #0b1524;
   color: var(--ink);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
