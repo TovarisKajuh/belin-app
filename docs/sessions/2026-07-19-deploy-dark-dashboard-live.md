@@ -270,6 +270,48 @@ clear. It was an artifact: React synthesises leave from `pointerout`. Dispatchin
 session that a naive probe produced a false alarm, so: drive the event the way
 the framework actually listens for it.
 
+## Part five: research first, then rebuild (the founder's correction of my method)
+
+The founder's diagnosis was sharper than mine: I was iterating on my own
+artifact instead of questioning whether the artifact was the right starting
+point. Their instruction: study the reference designs, search the web for how
+modern apps actually build these graphs, find code to learn from, plan, then
+execute.
+
+Ran a 7-angle research workflow (app teardowns, curve mathematics, SVG effect
+recipes, library landscape, scrub interaction, animation, visual design) plus a
+synthesis pass, ~490k tokens of agent work, all sources cited in
+docs/superpowers/plans/2026-07-19-hero-projection-chart.md.
+
+**The humbling and useful result**: the industry does NOT use some exotic
+renderer. Coinbase documents its charts as SVG + D3 in its public design
+system. Robinhood hand-rolls tiny custom views (their Spark library brags about
+being 15KB). The Canvas threshold is ~1k points; we have ~30. recharts costs
+145KB gzip; hand-rolled costs zero. So my renderer choice was right all along,
+and the founder's dissatisfaction was fully explained by four wrong details:
+the glow technique (blur filter, a documented mobile frame-killer), the
+gradient plumbing (objectBoundingBox collapses on flat segments), the
+interaction (a flipping tooltip and per-move React state instead of the
+Robinhood glide with direct DOM writes), and the composition (card box, y-axis
+labels, cramped height, instead of full-bleed, no y labels, big fixed readout).
+
+All four rebuilt per research. Two researched techniques rejected with reasons
+logged in the CHANGELOG (the Coinbase entrance wipe, and Catmull-Rom on the
+actual line).
+
+**Verified by driving it**: scrub at three positions and keyboard stepping at
+375px and 1265px in sl, de and en. The dot glides with interpolated y between
+samples; the readout snaps to real reported days with locale decimal commas;
+past-the-end clamps to today; release and Escape restore; aria-live announces
+keyboard steps; zero filter elements in the DOM; both gradients userSpaceOnUse;
+no overflow anywhere; no console errors; 55 tests, tsc and build clean.
+
+**Method lesson saved to memory**: when the founder rejects work and provides
+references, the first move is research into how the referenced results are
+actually produced, not another iteration on my own output. The scrub's timeout
+backstop also proved its worth immediately: the whole interaction verified in a
+throttled preview tab where rAF alone would have been silent.
+
 ## Next
 
 1. Founder reviews the full dashboard live on a phone. The ring count-up and the
