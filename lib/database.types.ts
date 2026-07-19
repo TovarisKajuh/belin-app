@@ -781,6 +781,7 @@ export type Database = {
         Row: {
           checked_at: string
           checked_by_person: string | null
+          client_generated_id: string | null
           id: string
           is_complete: boolean
           note: string | null
@@ -789,6 +790,7 @@ export type Database = {
         Insert: {
           checked_at?: string
           checked_by_person?: string | null
+          client_generated_id?: string | null
           id?: string
           is_complete: boolean
           note?: string | null
@@ -797,6 +799,7 @@ export type Database = {
         Update: {
           checked_at?: string
           checked_by_person?: string | null
+          client_generated_id?: string | null
           id?: string
           is_complete?: boolean
           note?: string | null
@@ -1200,7 +1203,7 @@ export type Database = {
       submit_material_check: {
         Args: {
           p_project: string
-          p_is_complete: boolean
+          p_client_id: string
           p_note: string | null
           p_items: Json
           p_material_photos: string[] | null

@@ -269,9 +269,16 @@ await upsert("material_items", [
   ...materialRows(PROJECT_START, "bbbbbbbb"),
 ]);
 
-// The current project is mid-build, so its material was checked long ago: seed
-// one completed check so that side shows the settled state. Ground zero keeps
-// no check at all, which is the whole point of it.
+// The current project is mid-build: seed one completed check so that side shows
+// the settled state. Ground zero keeps no check at all, which is the point of
+// it. The check is created AFTER the material_items upsert above and its
+// checked_at is left to the DB default (now()), NOT a client timestamp: the
+// items' updated_at comes from the DB clock via the moddatetime trigger, and
+// the client clock can lag it by seconds, which would make checked_at predate
+// the items and boot the settled demo with a false re-check banner. Both
+// timestamps on the DB clock, check inserted after the items, guarantees
+// checked_at postdates every item's updated_at. The prior checks are deleted
+// just above, so this is always a fresh insert and the default applies.
 const { data: priorChecks } = await db
   .from("material_checks")
   .select("id")
@@ -291,7 +298,7 @@ await upsert("material_checks", [
     is_complete: true,
     note: "Vse prevzeto, dobavnica priložena.",
     checked_by_person: PERSON_SUB,
-    checked_at: dates[0] + "T06:40:00Z",
+    // checked_at intentionally omitted: DB default now() on this fresh insert.
   },
 ]);
 await upsert(
