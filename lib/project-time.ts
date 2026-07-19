@@ -18,3 +18,15 @@ export function projectToday(country: string | null | undefined, now: Date = new
   // en-CA formats as yyyy-mm-dd; the timeZone option gives the local calendar day.
   return new Intl.DateTimeFormat("en-CA", { timeZone: projectZone(country) }).format(now);
 }
+
+// Returns the site-local clock time of an ISO timestamp as HH:MM, 24 hour.
+// Used to show when a material check happened (checked_at is a full timestamptz;
+// the crew and EPC read it in the project's own zone).
+export function hhmm(iso: string, country: string | null | undefined): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: projectZone(country),
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(iso));
+}
