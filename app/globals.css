@@ -1057,3 +1057,135 @@ button.gal-item {
 .epc-dark .e-fadein { opacity: 0; transform: translateY(16px); animation: epc-fu .8s cubic-bezier(.2,.8,.2,1) forwards; }
 .epc-dark .e-d1 { animation-delay: .1s; } .epc-dark .e-d2 { animation-delay: .22s; } .epc-dark .e-d3 { animation-delay: .34s; }
 @keyframes epc-fu { to { opacity: 1; transform: none; } }
+
+/* ==========================================================================
+   Landing page with the demo login. Rides on .epc-dark so the palette, the
+   background and the grain are literally the same ones the dashboard uses:
+   the page a prospect sees first must not look like a different product from
+   the page they see after signing in.
+   ========================================================================== */
+
+.lp { display: flex; flex-direction: column; }
+.lp-wrap {
+  position: relative; z-index: 1; width: 100%; max-width: 1120px;
+  margin: 0 auto; padding: 26px 26px 40px;
+  flex: 1; display: flex; flex-direction: column;
+}
+
+/* header */
+.lp-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.lp-brand { display: flex; align-items: center; gap: 13px; }
+.lp-mark { display: grid; grid-template-columns: repeat(3, 7px); grid-auto-rows: 7px; gap: 2.5px; flex: none; }
+.lp-mark i { background: #2c2a25; display: block; border-radius: 1px; }
+.lp-mark i.g { background: var(--e-gold); box-shadow: 0 0 12px var(--e-glow-2); }
+.lp-wm { font-size: 19px; font-weight: 800; letter-spacing: .07em; }
+.lp-locales { display: flex; gap: 4px; }
+.lp-locales a {
+  display: block; padding: 6px 11px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--e-muted); text-decoration: none; transition: color .18s, background .18s;
+}
+.lp-locales a:hover { color: var(--e-ink2); background: var(--e-surface); }
+.lp-locales a[aria-current="page"] { color: #0b1524; background: var(--e-gold); }
+
+/* two-column body */
+.lp-grid {
+  flex: 1; display: grid; grid-template-columns: 1.15fr .85fr;
+  gap: 60px; align-items: center; padding: 56px 0;
+}
+
+.lp-eyebrow {
+  font-size: 11.5px; font-weight: 700; letter-spacing: .19em; text-transform: uppercase;
+  color: var(--e-gold); margin: 0 0 20px;
+}
+.lp-title {
+  margin: 0; font-size: clamp(34px, 5.2vw, 58px); line-height: 1.06;
+  font-weight: 800; letter-spacing: -.026em; text-wrap: balance;
+}
+.lp-sub {
+  margin: 22px 0 0; max-width: 47ch; font-size: 16px; line-height: 1.6; color: var(--e-ink2);
+}
+.lp-points { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 13px; }
+.lp-points li {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: 14.5px; line-height: 1.5; color: var(--e-ink2);
+}
+.lp-tick {
+  flex: none; width: 7px; height: 7px; margin-top: 7px; border-radius: 2px;
+  background: var(--e-gold); box-shadow: 0 0 10px var(--e-glow);
+}
+
+/* login card */
+.lp-card {
+  position: relative; isolation: isolate;
+  background: linear-gradient(168deg, rgba(255,255,255,.062), rgba(255,255,255,.022));
+  border: 1px solid var(--e-line); border-radius: 20px; padding: 34px 32px 32px;
+  box-shadow: 0 26px 60px -24px rgba(0,0,0,.75);
+  backdrop-filter: blur(10px);
+}
+.lp-card-glow {
+  position: absolute; inset: -1px; z-index: -1; border-radius: 20px; pointer-events: none;
+  background: radial-gradient(420px 180px at 84% -14%, rgba(255,210,26,.20), transparent 66%);
+}
+.lp-card-title { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -.012em; }
+.lp-card-sub { margin: 7px 0 26px; font-size: 13.5px; color: var(--e-muted); }
+
+.lp-form { display: grid; gap: 16px; }
+.lp-field { display: grid; gap: 7px; }
+.lp-label {
+  font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--e-muted);
+}
+.lp-input {
+  width: 100%; padding: 13px 15px; border-radius: 11px;
+  background: rgba(4,9,16,.55); border: 1px solid var(--e-line);
+  color: var(--e-ink); font: inherit; font-size: 16px; /* 16px keeps iOS from zooming on focus */
+  transition: border-color .18s, box-shadow .18s, background .18s;
+}
+.lp-input::placeholder { color: #5f5b53; }
+.lp-input:focus {
+  outline: none; background: rgba(4,9,16,.75);
+  border-color: rgba(255,210,26,.55); box-shadow: 0 0 0 3px rgba(255,210,26,.13);
+}
+.lp-error {
+  margin: 0; padding: 10px 13px; border-radius: 10px;
+  background: rgba(255,92,92,.10); border: 1px solid rgba(255,92,92,.32);
+  color: #ffb9b9; font-size: 13px;
+}
+.lp-submit {
+  margin-top: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 14px 20px; border: none; border-radius: 11px; cursor: pointer;
+  background: linear-gradient(180deg, var(--e-gold-2), var(--e-gold));
+  color: #14100a; font: inherit; font-size: 15px; font-weight: 700; letter-spacing: .01em;
+  box-shadow: 0 10px 26px -10px var(--e-glow);
+  transition: transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .16s, filter .16s;
+}
+.lp-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 15px 32px -10px var(--e-glow); }
+.lp-submit:active:not(:disabled) { transform: translateY(0); }
+.lp-submit:disabled { cursor: default; filter: saturate(.45) brightness(.86); }
+
+.lp-foot { color: var(--e-muted); font-size: 12px; text-align: center; padding-top: 8px; }
+
+/* logout control, paired with the DEV swap pill; goes with the demo login */
+.lp-logout { position: fixed; left: 12px; bottom: 12px; z-index: 60; }
+.lp-logout button {
+  padding: 7px 13px; border-radius: 999px; cursor: pointer;
+  background: rgba(8,14,22,.82); border: 1px solid rgba(255,255,255,.16);
+  color: #cfcabf; font: inherit; font-size: 11.5px; font-weight: 600;
+  letter-spacing: .05em; text-transform: uppercase; backdrop-filter: blur(8px);
+}
+.lp-logout button:hover { color: #fff; border-color: rgba(255,255,255,.3); }
+
+@media (max-width: 900px) {
+  .lp-wrap { padding: 20px 20px 32px; }
+  .lp-grid { grid-template-columns: 1fr; gap: 38px; padding: 34px 0; align-items: stretch; }
+  /* On a phone the point of this page is signing in, so the card leads. */
+  .lp-card { order: -1; padding: 26px 22px 24px; }
+  .lp-sub { max-width: none; }
+  .lp-points { margin-top: 26px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-submit { transition: none; }
+  .lp-submit:hover:not(:disabled) { transform: none; }
+}

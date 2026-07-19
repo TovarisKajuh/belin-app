@@ -3,11 +3,6 @@
     "appName": "Belin",
     "tagline": "Sodelovanje med EPC in monterskimi ekipami"
   },
-  "home": {
-    "eyebrow": "Ogrodje deluje",
-    "subtitle": "Temelj je postavljen: oblikovni sistem, trije jeziki, baza v Frankfurtu, PWA.",
-    "languageLabel": "Jezik"
-  },
   "project": {
     "roleEpc": "Pogled EPC",
     "roleSub": "Pogled ekipe",
@@ -121,5 +116,25 @@
       "acceptReview": "Potrdi in zaključi",
       "sendBack": "Vrni v delo"
     }
+  },
+  "landing": {
+    "eyebrow": "SOLARNA GRADBIŠČA",
+    "title": "Vsak dan na strehi, dokumentiran.",
+    "subtitle": "Belin povezuje EPC izvajalce in njihove podizvajalce. Dnevna poročila s fotografijami, izračunan napredek, režijske ure in nadgradnje, vse na enem mestu.",
+    "point1": "Ekipa poroča v manj kot 30 sekundah, z eno roko, na strehi.",
+    "point2": "EPC vidi napredek v živo, brez klicev in preglednic.",
+    "point3": "Dokumentacija za obračun in prevzem nastane sama.",
+    "signIn": "Prijava",
+    "signInSub": "Vpišite dostopne podatke.",
+    "footer": "Podatki v EU, Frankfurt. Slovensko, nemško, angleško.",
+    "languageLabel": "Jezik"
+  },
+  "auth": {
+    "username": "Uporabniško ime",
+    "password": "Geslo",
+    "submit": "Vstopi",
+    "submitting": "Prijavljanje",
+    "invalid": "Napačno uporabniško ime ali geslo.",
+    "logout": "Odjava"
   }
 }
