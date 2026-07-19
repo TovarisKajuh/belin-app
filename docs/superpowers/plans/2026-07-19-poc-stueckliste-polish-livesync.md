@@ -1,5 +1,7 @@
 # PoC Master Plan: Stückliste screens, optimization and polish, live sync
 
+STATUS: EXECUTED 2026-07-19 (all 12 tasks) by Opus. Shipped to production. Session log: docs/sessions/2026-07-19-poc-execution.md. One deviation from plan worth noting: Task 11 exposed and fixed a pre-existing empty-photo bug in submit_daily_report (migration 20260719180000); the live REST broadcast endpoint worked (202) so the fallback was not needed.
+
 Status: authored 2026-07-19 evening by the planning session, for execution by Opus in a fresh session. Revised the same evening after four adversarial review passes (data integrity, security, UX and design laws, cold start executability); three blockers and some twenty findings were folded in. Founder order: "do it, then optimize and polish everything, then implement live sync. i want proof of concept done after this task." Defaults chosen on the founder's behalf are listed at the end and can be vetoed before or during execution.
 
 Execution kickoff: run the session start ritual (CLAUDE.md, DECISIONS.md, recent CHANGELOG.md, latest session log), then execute tasks in order. Every task ends with its verification and a commit. Pushes deploy to production automatically; every push in this plan is safe to deploy because the feature is additive and the migration has no existing callers.
