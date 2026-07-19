@@ -950,7 +950,7 @@ button.gal-item {
 .epc-dark .e-tempo { position: relative; touch-action: pan-y; }
 .epc-dark .e-tempo-hit { cursor: crosshair; touch-action: pan-y; outline: none; }
 .epc-dark .e-tempo-hit:focus-visible { outline: 2px solid var(--e-gold); outline-offset: -2px; }
-.epc-dark .e-tempo-thresh { fill: #99a3b0; font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.epc-dark .e-tempo-thresh { fill: rgba(255,255,255,.42); font-size: 10.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .epc-dark .e-chartx-svg { display: block; width: 100%; height: auto; overflow: visible; }
 .epc-dark .e-chartx-surface { touch-action: pan-y pinch-zoom; cursor: crosshair; outline: none; }
 .epc-dark .e-chartx-surface:focus-visible { outline: 2px solid var(--e-gold); outline-offset: -2px; }

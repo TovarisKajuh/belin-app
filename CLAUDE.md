@@ -19,6 +19,7 @@ Belin: the collaboration app between solar EPCs and their installation subcontra
 
 BE EXTREMELY CAREFUL AND THOUGHTFUL WHEN WRITING CODE AND BUILDING THE SCAFFOLD, TO PREVENT FUTURE BUGS.
 
+- BUILD IN SLOVENIAN ONLY (founder mandate, 2026-07-19). While a feature is still being designed and iterated, write and review it in Slovenian only. Do not craft German and English wording for anything that is still changing: it makes every iteration slower and burns tokens on text that gets thrown away. New i18n keys are still added to all three catalogs so the parity test keeps guarding the structure, but de and en carry the Slovenian string as a placeholder until the feature is settled. Translate deliberately in one pass when the founder says a feature is done. Pending translations are tracked as debt in CHANGELOG.md.
 - Plan before code: write down data shapes and interfaces before implementing.
 - Small verified steps: run and look at every change, on a phone viewport for crew-facing screens.
 - No quick hacks in foundation code (schema, access layer, i18n, design tokens). Any knowingly taken shortcut is logged as debt in CHANGELOG.md immediately.
