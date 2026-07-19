@@ -123,7 +123,28 @@
     "behindPace": "pod potrebnim tempom",
     "closePhoto": "Zapri fotografijo",
     "previousPhoto": "Prejšnja fotografija",
-    "nextPhoto": "Naslednja fotografija"
+    "nextPhoto": "Naslednja fotografija",
+    "material": {
+      "title": "Material",
+      "complete": "Material popoln",
+      "short": "{count, plural, one {# postavka manjka} two {# postavki manjkata} few {# postavke manjkajo} other {# postavk manjka}}",
+      "waiting": "Ekipa še ni potrdila prevzema materiala.",
+      "notArrived": "Ekipa je sporočila, da material še ni prispel.",
+      "checkedOn": "Preverjeno {date} ob {time}",
+      "missingOf": "manjka {missing} od {qty} {unit}",
+      "docPhoto": "Fotografija materiala",
+      "docNote": "Dobavnica",
+      "noDocs": "Brez priloženih dokumentov",
+      "recheckPending": "{count, plural, one {# postavka dodana ali spremenjena po zadnjem preverjanju} two {# postavki dodani ali spremenjeni po zadnjem preverjanju} few {# postavke dodane ali spremenjene po zadnjem preverjanju} other {# postavk dodanih ali spremenjenih po zadnjem preverjanju}}. Ekipa bo pozvana k ponovnemu preverjanju.",
+      "addItem": "Dodaj postavko",
+      "itemName": "Naziv",
+      "itemQty": "Količina",
+      "itemUnit": "Enota",
+      "addSubmit": "Dodaj",
+      "addPending": "Dodajam...",
+      "addFailed": "Postavke ni bilo mogoče dodati.",
+      "crewNote": "Opomba ekipe"
+    }
   },
   "status": {
     "draft": "Osnutek",
