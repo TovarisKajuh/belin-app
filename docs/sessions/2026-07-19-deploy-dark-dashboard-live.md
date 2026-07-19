@@ -377,6 +377,57 @@ Dead code from the old chart was removed rather than left behind:
 buildProjectionChart, areaPath, nearestIndex, isoFromDays, daysSinceEpoch and
 their tests.
 
+## Part seven: bars rejected, and the mistake behind it
+
+The founder's verdict on the bar chart was two words: "it looks terrible", plus
+"try an entirely new thing, start over".
+
+**The diagnosis is worth more than the fix.** Reading the session back, the
+founder had already said of the previous chart: "looks cool now, thanks". The
+visual language was approved. What they then asked to change was WHAT IS
+PLOTTED: tempo instead of cumulative, no projection line, no buffer band. I
+changed the data and simultaneously threw away the approved aesthetic, replacing
+a soft glowing gradient curve with blocky rectangles, a grey dashed threshold,
+a y-axis number column and a row of date ticks. That is precisely the admin
+widget look the entire redesign had been fighting, and I reintroduced it while
+believing I was following instructions.
+
+**The rule taken from it:** a change request has two axes, what is plotted and
+how it looks. Change only the axis that was criticised. If the founder approved
+the look and asked for different data, keep the look exactly and put the new
+data in it.
+
+The fix was therefore not a new invention: the tempo data model was already
+right and stayed untouched (per working day, non-working days absent, reported
+zero distinct from missing report, flat takt reference, trailing mean that skips
+missing reports, all unit tested). Only the drawing changed, back to the
+approved language: monotone cubic curve through the daily rates, gradient area
+fading to transparent, four layered strokes for the glow with zero filter
+elements, a quiet labelled takt line, one dot with a breathing halo, two date
+labels, no gridlines, no axis column.
+
+One property worth noting: monotone cubic was chosen originally for cumulative
+data because it cannot overshoot. On tempo data, which rises and falls, the same
+algorithm flattens its tangents at every local extremum, so the wave still
+passes through each reported day without bulging past it. The honesty guarantee
+survives the change of series.
+
+## Process change: Slovenian only during development
+
+Founder mandate, recorded in CLAUDE.md, DECISIONS.md and memory: while a feature
+is still being iterated, build and review it in Slovenian only, and translate to
+German and English in one deliberate pass once the feature is called done.
+Producing three polished languages for UI that gets redesigned on the next turn
+makes every iteration slower and spends tokens on wording that is discarded.
+
+Implementation detail that keeps the safety net: new keys still go into all
+three catalogs, because the parity test fails the build on a missing key and
+that structural guard is worth keeping. German and English hold the Slovenian
+string as a placeholder, tracked as debt in CHANGELOG.md. Nothing is outstanding
+right now (today's dashboard keys were translated properly before the rule
+existed), and any future placeholders must be cleared before the German EPC
+pilot on 27.07.
+
 ## Next
 
 1. Founder reviews the full dashboard live on a phone. The ring count-up and the
