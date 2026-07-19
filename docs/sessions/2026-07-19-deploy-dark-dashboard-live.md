@@ -74,14 +74,78 @@ is the reliable path here.
 Yesterday's failure is corrected. The dashboard is live and public at
 belin-app.vercel.app with no login, and the founder can open it on a phone.
 
+## Part two: completed the whole dashboard
+
+The founder saw the deploy, said it was only the first part, and asked for all of
+it. Built plan tasks 8 to 13 in one pass.
+
+- `lib/dashboard-shared.ts` (new, pure, 12 unit tests): date formatting, the
+  quantity summary, Catmull-Rom path smoothing, and the projection chart
+  geometry. The chart math is the piece most likely to hide an off-by-one or a
+  divide-by-zero, so it is tested rather than eyeballed. Tests cover the empty
+  history, the single-point case, the one-day domain (divide by zero), x
+  monotonicity, and the buffer band only appearing when the forecast beats the
+  deadline.
+- Exposed `history` on `EpcDashboardData`. The data layer already computed the
+  cumulative progress curve for the projection but never returned it, so the
+  chart had nothing real to draw.
+- Six new components: `ProjectionPanel`, `ScopeByPhase`, `StatRow`,
+  `LatestOnSite`, `DailyLogFeed`, `PhotoGallery` (client, lightbox), plus
+  `RevealController`.
+- 8 new i18n keys in all three languages (stat sub-labels, empty states,
+  lightbox aria labels, footer).
+
+### Two judgement calls worth recording
+
+1. **The mockup had a real rendering defect.** Its chart SVG stretches
+   non-uniformly to the panel width (`preserveAspectRatio="none"`), which
+   distorts any text drawn inside it and turns the round marker dot into an
+   ellipse. Rather than port that faithfully, geometry stays in the SVG and the
+   labels and dot became HTML positioned in percent of the same 0 to 800 domain,
+   with `non-scaling-stroke` for even stroke weight. Same approved design, crisp
+   and translatable at every width.
+2. **The forecast line is straight, not curved.** The mockup drew a graceful
+   curve. The rate model is a linear extrapolation, so a curve would imply
+   precision the data does not support. The actual-progress curve is smoothed,
+   but its control points are clamped inside each segment so the smoothing can
+   never bulge above a reported value and imply progress that was never logged.
+   That clamp has its own test. This dashboard is evidence an EPC may lean on in
+   a dispute, so the drawing should not overstate the data.
+
+### Verified in the dev preview
+
+- All three locales render every segment. German and English checked key by key
+  (panel title, badge, today and deadline labels, stat labels and sub-labels,
+  live panel, feed, footer).
+- 375px: zero horizontal overflow, no offending elements, 6 of 6 reveal sections
+  shown, all 15 signed photo URLs loaded.
+- 1265px: hero two columns (616 / 456), scope rows four columns, stats four
+  columns, gallery six columns, dot inside the plot, no overflow.
+- Lightbox: opens, "next" advances to a different photo and stays open, Escape
+  closes and restores page scroll, aria labels localized.
+- Crew view unchanged: light background, zero dark classes, no console errors.
+- tsc clean, 48 tests pass, production build succeeds.
+- Scope item names and crew notes stay Slovenian in the German and English views.
+  That is intended: they are project data, not UI strings.
+
+### One thing that briefly looked like a bug
+
+A lightbox probe returned nothing and looked like "next closes the lightbox". It
+was not: the preview tab had drifted to `/sl` between probes, so the selectors
+found no gallery. Re-tested atomically in a single probe with waits between
+steps and the lightbox behaved correctly. Worth remembering: in this preview,
+verify interaction sequences inside one probe rather than across several.
+
 ## Next
 
-1. Founder opens the live URL on a phone and confirms the ring animates to 58
-   percent and the dark hero reads well outdoors.
-2. Continue phase 1b on main, deploying each segment live as it lands: projection
-   line, scope, stats, live panel, daily log, gallery.
-3. Still open from earlier sessions: rotate the exposed Supabase service_role key
-   before the 27.07 German pilot, and reset the demo seed before showing it.
+1. Founder reviews the full dashboard live on a phone. The ring count-up and the
+   arc draw still need a real device to confirm (see the quirk above).
+2. Then: plan the sub (crew) side and restyle it, which the founder wants next.
+   The dark theme is deliberately scoped to `.epc-dark`, so the crew view can be
+   redesigned without touching the EPC side.
+3. Deferred and still open: realtime crew to EPC sync, the material-check gate,
+   rotating the exposed Supabase service_role key before the 27.07 German pilot,
+   and resetting the demo seed before a live showing.
 
 ## Live links
 
