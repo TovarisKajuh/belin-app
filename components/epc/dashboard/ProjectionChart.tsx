@@ -1,22 +1,40 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { DailyProgressPoint, Projection } from "@/lib/projection-shared";
-import { buildProjectionChart, monotonePath, areaPath, ddmm } from "@/lib/dashboard-shared";
+import {
+  buildProjectionChart,
+  monotonePath,
+  areaPath,
+  ddmm,
+  isoFromDays,
+} from "@/lib/dashboard-shared";
 
 // Measuring before paint avoids a visible reflow of the curve on load. On the
 // server there is nothing to measure, so it falls back to a plain effect.
 const useMeasureEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-const PAD_TOP = 20;
-const PAD_BOTTOM = 34; // room for the date labels under the plot
+const PAD_TOP = 26;
+const PAD_BOTTOM = 34; // the x-axis band lives inside the height, never clipped
+const PAD_LEFT = 38; // room for the y-axis percentages
+const PAD_RIGHT = 14;
 
-const pc = (x: number, total: number): string => `${total > 0 ? (x / total) * 100 : 0}%`;
+const Y_TICKS = [0, 25, 50, 75, 100];
 
-// The chart draws at the container's true pixel width rather than into a fixed
-// viewBox that gets stretched. A stretched viewBox compresses the curve
-// horizontally on a phone (making gentle slopes look like steep steps) and
-// distorts stroke weights, text and circles. At 1:1 none of that happens.
+// The path animation is decoration. Anyone who asks for less motion gets the
+// finished curve immediately instead.
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  return reduced;
+}
+
 export function ProjectionChart({
   history,
   projection,
@@ -33,6 +51,8 @@ export function ProjectionChart({
   const t = useTranslations("dashboard");
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(760);
+  const [active, setActive] = useState<number | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
 
   useMeasureEffect(() => {
     const el = box.current;
@@ -42,8 +62,7 @@ export function ProjectionChart({
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     // ResizeObserver delivery rides the rendering pipeline and can be starved
-    // in a throttled tab, which leaves the chart at a stale width. The window
-    // listener is a cheap belt and braces so the size always catches up.
+    // in a throttled tab, so a window listener backs it up.
     window.addEventListener("resize", measure);
     return () => {
       observer.disconnect();
@@ -51,194 +70,289 @@ export function ProjectionChart({
     };
   }, []);
 
-  const height = Math.max(180, Math.min(300, Math.round(width * 0.46)));
+  const height = Math.max(230, Math.min(400, Math.round(width * 0.52)));
+  const plotW = Math.max(10, width - PAD_LEFT - PAD_RIGHT);
 
-  const chart = buildProjectionChart({
-    history,
-    today,
-    currentPercent,
-    projectedFinish: projection.projectedFinish,
-    plannedEnd,
-    width,
-    yTop: PAD_TOP,
-    yBottom: height - PAD_BOTTOM,
-  });
+  const chart = useMemo(
+    () =>
+      buildProjectionChart({
+        history,
+        today,
+        currentPercent,
+        projectedFinish: projection.projectedFinish,
+        plannedEnd,
+        width: plotW,
+        yTop: PAD_TOP,
+        yBottom: height - PAD_BOTTOM,
+      }),
+    [history, today, currentPercent, projection.projectedFinish, plannedEnd, plotW, height]
+  );
+
+  // Evenly spaced date ticks across the whole span, like a month axis.
+  const xTicks = useMemo(() => {
+    const span = chart.domainEndDay - chart.domainStartDay;
+    if (span <= 0) return [];
+    const count = width < 420 ? 4 : width < 700 ? 6 : 8;
+    return Array.from({ length: count }, (_, i) => {
+      const day = Math.round(chart.domainStartDay + (span * i) / (count - 1));
+      return { x: chart.xOfDay(day), label: ddmm(isoFromDays(day)) ?? "" };
+    });
+  }, [chart, width]);
 
   if (chart.actual.length === 0) {
     return <div className="e-proj-empty">{t("gathering")}</div>;
   }
 
+  const yOf = (p: number) =>
+    chart.yBottom - (Math.min(100, Math.max(0, p)) / 100) * (chart.yBottom - chart.yTop);
+
   const line = monotonePath(chart.actual);
   const area = areaPath(line, chart.actual, chart.yBottom);
   const forecast = chart.projection ? monotonePath(chart.projection) : null;
   const last = chart.actual[chart.actual.length - 1];
-  const showAxis = width >= 460;
 
-  const gridYs = [chart.yTop, (chart.yTop + chart.yBottom) / 2, chart.yBottom];
-  const startLabel = ddmm(history[0]?.date ?? today);
-  const deadlineLabel = ddmm(plannedEnd);
+  const activePoint = active != null ? chart.actual[active] : null;
+  const activeData = active != null ? chart.points[active] : null;
+  const activeGain =
+    active != null && active > 0
+      ? chart.points[active].cumulativePercent - chart.points[active - 1].cumulativePercent
+      : null;
+
+  // The crosshair snaps to the nearest reported day, so the reader aims at a
+  // date rather than at a 2px line.
+  const pickNearest = (clientX: number) => {
+    const el = box.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = clientX - rect.left - PAD_LEFT;
+    let best = 0;
+    let bestDist = Infinity;
+    chart.actual.forEach((p, i) => {
+      const d = Math.abs(p.x - x);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    });
+    setActive(best);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      e.preventDefault();
+      const step = e.key === "ArrowRight" ? 1 : -1;
+      setActive((i) => {
+        const next = (i == null ? chart.actual.length - 1 : i) + step;
+        return Math.max(0, Math.min(chart.actual.length - 1, next));
+      });
+    } else if (e.key === "Escape") {
+      setActive(null);
+    }
+  };
+
+  const tooltipLeft = activePoint ? PAD_LEFT + activePoint.x : 0;
+  const tooltipFlip = tooltipLeft > width * 0.6;
 
   return (
     <div className="e-chart" ref={box} style={{ height }}>
       <svg
-        className="e-proj-svg"
+        className="e-chart-svg"
         width={width}
         height={height}
         viewBox={`0 0 ${width} ${height}`}
-        role="presentation"
-        style={{ marginTop: 0 }}
+        role="img"
+        aria-label={`${t("pathToCompletion")}: ${Math.round(currentPercent)}%`}
       >
         <defs>
           <linearGradient id="e-line-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#ff9d0f" />
-            <stop offset="0.55" stopColor="#ffd21a" />
-            <stop offset="1" stopColor="#ffe488" />
+            <stop offset="0" stopColor="#ff8f0a" />
+            <stop offset="0.5" stopColor="#ffd21a" />
+            <stop offset="1" stopColor="#ffe9a3" />
           </linearGradient>
           <linearGradient id="e-area-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#ffd21a" stopOpacity="0.30" />
-            <stop offset="0.55" stopColor="#ffd21a" stopOpacity="0.07" />
-            <stop offset="1" stopColor="#ffd21a" stopOpacity="0" />
+            <stop offset="0" stopColor="#ffd21a" stopOpacity="0.34" />
+            <stop offset="0.45" stopColor="#ffb020" stopOpacity="0.12" />
+            <stop offset="1" stopColor="#ff8f0a" stopOpacity="0" />
           </linearGradient>
           <linearGradient id="e-forecast-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#ffd21a" stopOpacity="0.9" />
-            <stop offset="1" stopColor="#ffe488" stopOpacity="0.22" />
+            <stop offset="0" stopColor="#ffd21a" stopOpacity="0.95" />
+            <stop offset="1" stopColor="#ffe9a3" stopOpacity="0.18" />
           </linearGradient>
-          <filter id="e-line-blur" x="-25%" y="-60%" width="150%" height="220%">
-            <feGaussianBlur stdDeviation="7" />
+          <filter id="e-line-blur" x="-30%" y="-80%" width="160%" height="260%">
+            <feGaussianBlur stdDeviation="9" />
           </filter>
         </defs>
 
-        <g stroke="rgba(255,255,255,.055)" strokeWidth="1">
-          {gridYs.map((y) => (
-            <line key={y} x1="0" y1={y} x2={width} y2={y} />
+        <g transform={`translate(${PAD_LEFT},0)`}>
+          {/* Solid hairline grid: dashed gridlines read as thresholds. */}
+          {Y_TICKS.map((p) => (
+            <line
+              key={p}
+              x1={0}
+              y1={yOf(p)}
+              x2={plotW}
+              y2={yOf(p)}
+              stroke="rgba(255,255,255,.055)"
+              strokeWidth="1"
+            />
+          ))}
+
+          {chart.buffer && (
+            <rect
+              x={chart.buffer.x}
+              y={chart.yTop - 10}
+              width={chart.buffer.width}
+              height={chart.yBottom - chart.yTop + 10}
+              fill="rgba(74,208,122,.07)"
+            />
+          )}
+
+          {chart.deadlineX != null && (
+            <line
+              x1={chart.deadlineX}
+              y1={chart.yTop - 10}
+              x2={chart.deadlineX}
+              y2={chart.yBottom}
+              stroke="rgba(255,255,255,.3)"
+              strokeWidth="1.5"
+              strokeDasharray="2 5"
+            />
+          )}
+          {chart.todayX != null && (
+            <line
+              x1={chart.todayX}
+              y1={chart.yTop - 10}
+              x2={chart.todayX}
+              y2={chart.yBottom}
+              stroke="var(--e-gold)"
+              strokeWidth="1.5"
+              strokeDasharray="2 5"
+              opacity=".45"
+            />
+          )}
+
+          {chart.actual.length > 1 && <path d={area} fill="url(#e-area-grad)" />}
+
+          {/* A blurred copy beneath the stroke is what makes the line glow. */}
+          {chart.actual.length > 1 && (
+            <path
+              d={line}
+              fill="none"
+              stroke="#ffc400"
+              strokeWidth="10"
+              strokeLinecap="round"
+              opacity=".33"
+              filter="url(#e-line-blur)"
+            />
+          )}
+
+          {chart.actual.length > 1 && (
+            <path
+              className={reducedMotion ? undefined : "e-chart-line"}
+              d={line}
+              fill="none"
+              stroke="url(#e-line-grad)"
+              strokeWidth="4.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              pathLength={1}
+              strokeDasharray={reducedMotion ? undefined : 1}
+            />
+          )}
+
+          {forecast && (
+            <path
+              d={forecast}
+              fill="none"
+              stroke="url(#e-forecast-grad)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray="0.5 8"
+            />
+          )}
+
+          {/* Resting marker, hidden while scrubbing so there is only ever one dot. */}
+          {!activePoint && (
+            <>
+              <circle className="e-chart-halo" cx={last.x} cy={last.y} r="10" fill="var(--e-gold)" />
+              <circle
+                cx={last.x}
+                cy={last.y}
+                r="5.5"
+                fill="var(--e-gold)"
+                stroke="#0b1524"
+                strokeWidth="2.5"
+              />
+            </>
+          )}
+
+          {activePoint && (
+            <>
+              <line
+                x1={activePoint.x}
+                y1={chart.yTop - 10}
+                x2={activePoint.x}
+                y2={chart.yBottom}
+                stroke="rgba(255,255,255,.42)"
+                strokeWidth="1"
+              />
+              <circle
+                cx={activePoint.x}
+                cy={activePoint.y}
+                r="6.5"
+                fill="var(--e-gold)"
+                stroke="#0b1524"
+                strokeWidth="3"
+              />
+            </>
+          )}
+
+          <g className="e-chart-axis">
+            {xTicks.map((tick, i) => (
+              <text key={i} x={tick.x} y={chart.yBottom + 20} textAnchor="middle">
+                {tick.label}
+              </text>
+            ))}
+          </g>
+        </g>
+
+        <g className="e-chart-axis">
+          {Y_TICKS.map((p) => (
+            <text key={p} x={PAD_LEFT - 9} y={yOf(p) + 3.5} textAnchor="end">
+              {p}
+            </text>
           ))}
         </g>
 
-        {chart.buffer && (
-          <rect
-            className="e-chart-soft"
-            x={chart.buffer.x}
-            y={chart.yTop - 8}
-            width={chart.buffer.width}
-            height={chart.yBottom - chart.yTop + 8}
-            fill="rgba(74,208,122,.06)"
-          />
-        )}
-
-        {chart.deadlineX != null && (
-          <line
-            className="e-chart-soft"
-            x1={chart.deadlineX}
-            y1={chart.yTop - 8}
-            x2={chart.deadlineX}
-            y2={chart.yBottom}
-            stroke="rgba(255,255,255,.26)"
-            strokeWidth="1.5"
-            strokeDasharray="2 5"
-          />
-        )}
-
-        {chart.todayX != null && (
-          <line
-            className="e-chart-soft"
-            x1={chart.todayX}
-            y1={chart.yTop - 8}
-            x2={chart.todayX}
-            y2={chart.yBottom}
-            stroke="var(--e-gold)"
-            strokeWidth="1.5"
-            strokeDasharray="2 5"
-            opacity=".5"
-          />
-        )}
-
-        {chart.actual.length > 1 && (
-          <path className="e-chart-soft" d={area} fill="url(#e-area-grad)" />
-        )}
-
-        {/* A blurred copy under the stroke is what gives the line its glow. */}
-        {chart.actual.length > 1 && (
-          <path
-            className="e-chart-soft"
-            d={line}
-            fill="none"
-            stroke="var(--e-gold)"
-            strokeWidth="7"
-            strokeLinecap="round"
-            opacity=".45"
-            filter="url(#e-line-blur)"
-          />
-        )}
-
-        {chart.actual.length > 1 && (
-          <path
-            className="e-chart-line"
-            d={line}
-            fill="none"
-            stroke="url(#e-line-grad)"
-            strokeWidth="3.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            pathLength={1}
-            strokeDasharray={1}
-          />
-        )}
-
-        {forecast && (
-          <path
-            className="e-chart-soft"
-            d={forecast}
-            fill="none"
-            stroke="url(#e-forecast-grad)"
-            strokeWidth="2.6"
-            strokeLinecap="round"
-            strokeDasharray="0.5 7"
-          />
-        )}
-
-        <circle className="e-chart-halo" cx={last.x} cy={last.y} r="10" fill="var(--e-gold)" />
-        <circle
-          className="e-chart-dot"
-          cx={last.x}
-          cy={last.y}
-          r="5"
-          fill="var(--e-gold)"
-          stroke="#0b1524"
-          strokeWidth="2.5"
+        {/* One transparent surface takes every pointer, so the reader never has
+            to hit the line itself. */}
+        <rect
+          x={PAD_LEFT}
+          y={0}
+          width={plotW}
+          height={height}
+          fill="transparent"
+          style={{ touchAction: "pan-y" }}
+          onPointerMove={(e) => pickNearest(e.clientX)}
+          onPointerDown={(e) => pickNearest(e.clientX)}
+          onPointerLeave={() => setActive(null)}
+tabIndex={0}
+          onKeyDown={onKeyDown}
+          onBlur={() => setActive(null)}
         />
-
-        {showAxis && (
-          <g fill="rgba(255,255,255,.28)" fontSize="10.5" fontWeight="600">
-            <text x="2" y={chart.yTop - 6}>
-              100 %
-            </text>
-          </g>
-        )}
       </svg>
 
-      {/* Labels are placed as a percentage of the measured width rather than in
-          pixels. If a measurement is ever stale, they stay proportionally
-          inside the box instead of shooting off screen and forcing the page
-          to scroll sideways. */}
-      <span
-        className="e-proj-val e-mono"
-        style={{ left: pc(last.x, width), top: `${(last.y / height) * 100}%` }}
-      >
-        {Math.round(currentPercent)}%
-      </span>
-
-      {chart.todayX != null && (
-        <span className="e-proj-lab today" style={{ left: pc(chart.todayX, width) }}>
-          {t("today")}
-        </span>
-      )}
-      {startLabel && chart.actual.length > 1 && (
-        <span className="e-proj-lab start">{startLabel}</span>
-      )}
-      {chart.deadlineX != null && deadlineLabel && (
-        <span className="e-proj-lab end" style={{ left: pc(chart.deadlineX, width) }}>
-          {t("deadline", { date: deadlineLabel })}
-        </span>
+      {activeData && activePoint && (
+        <div
+          className={tooltipFlip ? "e-chart-tip flip" : "e-chart-tip"}
+          style={{ left: tooltipLeft, top: activePoint.y }}
+        >
+          <div className="v e-mono">{activeData.cumulativePercent.toFixed(1)}%</div>
+          <div className="d e-mono">{ddmm(activeData.date)}</div>
+          {activeGain != null && activeGain > 0 && (
+            <div className="g e-mono">+{activeGain.toFixed(1)}</div>
+          )}
+        </div>
       )}
     </div>
   );

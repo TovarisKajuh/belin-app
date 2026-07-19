@@ -15,6 +15,10 @@ export function daysSinceEpoch(iso: string): number {
   return Math.round(new Date(iso + "T00:00:00Z").getTime() / DAY_MS);
 }
 
+export function isoFromDays(n: number): string {
+  return new Date(n * DAY_MS).toISOString().slice(0, 10);
+}
+
 // Short weekday for the log feed, in the reader's language.
 export function weekdayShort(iso: string, locale: string): string {
   return new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" }).format(
@@ -126,6 +130,8 @@ export interface ProjectionChartInput {
 
 export interface ProjectionChart {
   actual: Pt[];
+  /** The dated value behind each point in `actual`, same order, for the readout. */
+  points: DailyProgressPoint[];
   projection: Pt[] | null;
   todayX: number | null;
   deadlineX: number | null;
@@ -133,6 +139,10 @@ export interface ProjectionChart {
   buffer: { x: number; width: number } | null;
   yTop: number;
   yBottom: number;
+  /** Day numbers bounding the x scale, so the caller can place axis ticks. */
+  domainStartDay: number;
+  domainEndDay: number;
+  xOfDay: (day: number) => number;
 }
 
 // Map the progress history and the forecast onto the SVG canvas. The x domain
@@ -151,8 +161,10 @@ export function buildProjectionChart(input: ProjectionChartInput): ProjectionCha
     sorted.push({ date: today, cumulativePercent: currentPercent });
   }
   if (sorted.length === 0) {
+    const day = daysSinceEpoch(today);
     return {
       actual: [],
+      points: [],
       projection: null,
       todayX: null,
       deadlineX: null,
@@ -160,6 +172,9 @@ export function buildProjectionChart(input: ProjectionChartInput): ProjectionCha
       buffer: null,
       yTop,
       yBottom,
+      domainStartDay: day,
+      domainEndDay: day,
+      xOfDay: () => 0,
     };
   }
 
@@ -201,6 +216,7 @@ export function buildProjectionChart(input: ProjectionChartInput): ProjectionCha
 
   return {
     actual,
+    points: sorted,
     projection,
     todayX: xOf(todayN),
     deadlineX,
@@ -208,5 +224,8 @@ export function buildProjectionChart(input: ProjectionChartInput): ProjectionCha
     buffer,
     yTop,
     yBottom,
+    domainStartDay: startN,
+    domainEndDay: endN,
+    xOfDay: xOf,
   };
 }
