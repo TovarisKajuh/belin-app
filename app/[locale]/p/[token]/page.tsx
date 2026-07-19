@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { resolveActorFromToken } from "@/lib/actor";
 import { getCrewHome } from "@/lib/data/reports";
+import { getMaterialState } from "@/lib/data/materials";
 import { getEpcDashboard } from "@/lib/data/epc-dashboard";
 import { getSiblingToken } from "@/lib/data/tokens";
 import { CrewHome } from "@/components/crew/CrewHome";
@@ -24,9 +25,9 @@ export default async function ProjectTokenPage({
 
   let view;
   if (actor.role === "sub") {
-    const data = await getCrewHome(actor);
-    if (!data) notFound();
-    view = <CrewHome token={token} data={data} />;
+    const [data, material] = await Promise.all([getCrewHome(actor), getMaterialState(actor)]);
+    if (!data || !material) notFound();
+    view = <CrewHome token={token} data={data} material={material} />;
   } else {
     const data = await getEpcDashboard(actor);
     if (!data) notFound();

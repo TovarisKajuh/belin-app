@@ -16,6 +16,7 @@ export interface CrewHomeData {
   projectId: string;
   projectName: string;
   status: ProjectStatus;
+  country: string;
   addressStreet: string | null;
   addressZip: string | null;
   addressCity: string | null;
@@ -96,6 +97,7 @@ export async function getCrewHome(actor: Actor): Promise<CrewHomeData | null> {
     projectId: core.id,
     projectName: core.name,
     status: core.status,
+    country: core.country,
     addressStreet: core.addressStreet,
     addressZip: core.addressZip,
     addressCity: core.addressCity,
