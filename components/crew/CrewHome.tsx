@@ -3,6 +3,8 @@ import { CrewReportForm } from "./CrewReportForm";
 import { MaterialCheck } from "./MaterialCheck";
 import { CommandBar } from "@/components/project/CommandBar";
 import { TodayPosts } from "@/components/project/TodayPosts";
+import { LiveRefresh } from "@/components/LiveRefresh";
+import { projectTopic } from "@/lib/realtime-shared";
 import type { CrewHomeData } from "@/lib/data/reports";
 import type { MaterialState } from "@/lib/materials-shared";
 
@@ -63,6 +65,7 @@ export async function CrewHome({
           </>
         )}
       </div>
+      <LiveRefresh topic={projectTopic(data.projectId)} />
     </main>
   );
 }

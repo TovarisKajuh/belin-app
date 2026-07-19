@@ -13,6 +13,7 @@ import {
   type SubmitMaterialCheckPayload,
 } from "@/lib/data/materials";
 import { updateProjectStatus } from "@/lib/data/projects";
+import { notifyProject } from "@/lib/realtime-server";
 import type { ProjectStatus } from "@/lib/project-status";
 
 async function requireSubActor(token: string) {
@@ -55,6 +56,7 @@ export async function submitMaterialCheckAction(
 ): Promise<{ ok: true; checkId: string }> {
   const actor = await requireSubActor(token);
   const checkId = await submitMaterialCheck(actor, payload);
+  await notifyProject(actor.projectId);
   return { ok: true, checkId };
 }
 
@@ -64,6 +66,7 @@ export async function addMaterialItemAction(
 ): Promise<{ ok: true }> {
   const actor = await requireEpcActor(token);
   await addMaterialItem(actor, item);
+  await notifyProject(actor.projectId);
   return { ok: true };
 }
 
@@ -73,6 +76,7 @@ export async function submitReport(
 ): Promise<{ ok: true; entryId: string }> {
   const actor = await requireSubActor(token);
   const entryId = await submitDailyReport(actor, payload);
+  await notifyProject(actor.projectId);
   return { ok: true, entryId };
 }
 
@@ -84,5 +88,7 @@ export async function setProjectStatus(
 ): Promise<{ ok: boolean; status: ProjectStatus }> {
   const actor = await resolveActorFromToken(token);
   if (!actor) throw new Error("Not authorized for this project.");
-  return updateProjectStatus(actor, newStatus);
+  const result = await updateProjectStatus(actor, newStatus);
+  if (result.ok) await notifyProject(actor.projectId);
+  return result;
 }

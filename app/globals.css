@@ -1443,6 +1443,13 @@ button.gal-item {
   .belin-dark .mc-recheck-btn { transition: none; }
 }
 
+/* live-sync badge: sits just under the command bar while the channel is up */
+.belin-dark .e-live-fixed {
+  position: fixed; right: 16px; top: calc(58px + env(safe-area-inset-top)); z-index: 30;
+  background: rgba(8,14,22,.7); border: 1px solid var(--e-line); border-radius: 999px;
+  padding: 5px 11px; backdrop-filter: blur(8px); pointer-events: none;
+}
+
 /* ==========================================================================
    Installed-app safe areas. MUST stay last in this file: these override the
    padding set in the base rules and in the mobile media queries above, and

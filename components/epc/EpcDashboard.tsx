@@ -11,6 +11,8 @@ import { LatestOnSite } from "@/components/epc/dashboard/LatestOnSite";
 import { DailyLogFeed } from "@/components/epc/dashboard/DailyLogFeed";
 import { PhotoGallery } from "@/components/epc/dashboard/PhotoGallery";
 import { RevealController } from "@/components/epc/dashboard/RevealController";
+import { LiveRefresh } from "@/components/LiveRefresh";
+import { projectTopic } from "@/lib/realtime-shared";
 import { ddmm } from "@/lib/dashboard-shared";
 
 // The dark EPC dashboard: the shell and hero, then the path to completion,
@@ -96,6 +98,7 @@ export async function EpcDashboard({ token, data }: { token: string; data: EpcDa
         <div className="e-foot">Belin · {t("endOfOverview")}</div>
       </div>
       <RevealController />
+      <LiveRefresh topic={projectTopic(core.id)} showBadge />
     </div>
   );
 }
