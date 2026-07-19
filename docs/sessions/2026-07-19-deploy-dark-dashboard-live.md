@@ -210,6 +210,66 @@ events and starves ResizeObserver. So only the mount path is verified here
 rotation use two standard mechanisms and should work on real hardware, but I
 have not proven them.
 
+## Part four: the chart rebuild I should have done the first time
+
+The founder sent three reference screenshots of high quality charts and asked how
+those are made. I answered the engineering question (interpolation, distortion)
+and ignored the design one, shipping a tweaked version of my own thin line. They
+called it out, correctly and bluntly.
+
+**The honest gap**, measured against the references rather than argued about:
+thick luminous strokes vs my 3.2px hairline; full axes (JAN..DEC, 0..500k) vs my
+three lonely labels; deep layered gradient fills vs a faint wash; a scrub
+interaction with a value readout vs nothing; a centrepiece vs a 180px strip.
+
+**Process failure, the root cause.** This environment has a `dataviz` skill that
+says in its own text to load it before writing the first line of chart code. I
+wrote two chart versions without loading it. Loading it changed the design
+materially, so this was not a formality I skipped, it was the step that would
+have prevented the miss.
+
+What the skill changed:
+- The hover layer is part of the deliverable, not an upgrade. That is exactly the
+  missing piece from the founder's screenshot 4.
+- Dashed gridlines are an anti-pattern (dashing reads as a threshold). The grid
+  is now solid hairlines; only the today and deadline markers stay dashed,
+  because those genuinely are thresholds.
+- The container must include the x-axis band so labels are never clipped.
+- It killed an idea before I built it: I was about to add daily-gain bars behind
+  the line to echo the bar reference. Daily gain and cumulative percent need
+  different y-scales, which is a dual-axis chart, the single worst listed
+  anti-pattern, because the alignment of the two scales is arbitrary and invents
+  a correlation that is not in the data. One series, drawn well, instead.
+
+**What shipped:** 400px tall on desktop, 230px on a phone; y-axis 0/25/50/75/100;
+x-axis of evenly spaced date ticks across the whole span (8 / 6 / 4 by width); a
+4.5px three-stop gradient stroke over a 10px blurred copy for the glow; a
+three-stop area gradient; and the scrub layer. Pointer or touch anywhere on the
+plot snaps a crosshair to the nearest reported day and reads out that day's exact
+percent, date and gain over the previous report. Arrow keys walk the days,
+Escape clears, and the readout flips side near the right edge.
+
+**Palette computed, not eyeballed.** Ran the validator. Contrast passes on the
+dark surface. The reported lightness failure is against the validator's own
+reference surface (#1a1a19), while ours is far darker navy (#0b1524), so brighter
+marks are correct. One genuine finding: the ahead-of-schedule green and the
+behind-schedule orange are deltaE 8.6 apart under protanopia, which is inside the
+band that is legal only with secondary encoding. They already carry different
+words, so colour is never the sole signal. The badge must keep its text label.
+
+**A German-only bug the rebuild exposed.** The stat tiles overflowed the phone
+viewport by 4px in German only. A plain `1fr` grid track cannot shrink below its
+content's minimum width, so the unbreakable compound "Baustellendokumentation"
+pushed the grid off screen. Fixed with `minmax(0, 1fr)` plus wrapping on the long
+labels, applied to the scope grid too. Slovenian and English never showed it,
+which is the argument for checking every locale at phone width, not just one.
+
+**Verification note.** A synthetic `pointerleave` suggested the tooltip did not
+clear. It was an artifact: React synthesises leave from `pointerout`. Dispatching
+`pointerout` with a relatedTarget confirmed it clears correctly. Second time this
+session that a naive probe produced a false alarm, so: drive the event the way
+the framework actually listens for it.
+
 ## Next
 
 1. Founder reviews the full dashboard live on a phone. The ring count-up and the
