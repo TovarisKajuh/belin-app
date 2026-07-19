@@ -168,6 +168,55 @@ theme colour #0b1524 in both the page and the manifest, and the EPC dashboard is
 unchanged after the rename, with the scope bar fills still measuring
 286/131/71px so yesterday's invisible-bar fix has not regressed.
 
+## Part three: the white bar, again, and the day one switch
+
+### The white bar, and why my first fix did not work
+
+The founder reported it still white after the first fix. The cause: iOS ignores
+`apple-mobile-web-app-status-bar-style` unless `apple-mobile-web-app-capable` is
+also present, and Next.js only emits the standardised `mobile-web-app-capable`
+for `appleWebApp.capable`. So the style tag was there and being thrown away, and
+iOS fell back to its default, which is precisely the white bar.
+
+**The part worth recording:** my own verification printed `webAppCapable: null`
+and I moved past it. I saw the exact signal that would have caught this and did
+not chase it, then told the founder it was fixed. Same shape as the invisible
+progress bars: the check ran, the anomaly showed, and I did not follow it.
+Fixed by setting the Apple tag explicitly through `metadata.other`, with all
+four tags now verified present in the live production HTML.
+
+### Day one switch
+
+The seeded project is half built, so the screens a real customer actually starts
+from (material check, empty log, zero progress) could not be seen or tested.
+Added a second seeded project at day zero and a pill that flips the session
+between the two, keeping the role.
+
+Two real projects rather than a date filter over one: switching is instant and
+non-destructive, neither state can corrupt the other, and the ground zero
+project is cleared of entries on every seed run so it always returns to a true
+day one. The switch refuses any token outside the demo set, so it can never move
+a real project session. Six unit tests cover the mapping, the round trip, role
+preservation and the refusal.
+
+**A good surprise:** the EPC dashboard at day one renders correctly with zero
+reports, showing "Zbiramo podatke", 0 percent and "izračunano iz 0 poročil in 0
+fotografij", with no NaN, no Infinity and no malformed SVG paths. The empty
+states written yesterday were already sound and had simply never been seen.
+
+### A fourth false alarm, same family as the other three
+
+The console showed `MISSING_MESSAGE` for the new scenario keys after they had
+been added. It was stale: `read_console_messages` returns accumulated history,
+so errors logged during the window between writing the component and adding the
+keys stay visible forever. The DOM showed the correct Slovenian and no raw key
+strings. **Read current state, not log history.**
+
+Similarly, the live `/sl` HTML contains "Povezava ni veljavna", which looks like
+the landing page rendering the invalid-link screen. It does not: Next.js ships
+the not-found boundary inside the RSC payload for client navigation. Confirmed
+by checking the page actually returns 200 with the login form.
+
 ## Next
 
 Founder reviews the login on a phone. Then step 2 of their order: the sub side
