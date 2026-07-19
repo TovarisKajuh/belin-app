@@ -2,11 +2,14 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { unstable_cache } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isUuid } from "@/lib/actor-shared";
 
 export interface UploadTarget {
   path: string;
   token: string;
 }
+
+const clampCount = (n: number) => Math.max(0, Math.min(Math.floor(n) || 0, 6));
 
 // Mint one signed upload URL per photo. The client uploads directly to the
 // private bucket with the returned token, so the service role key stays on
@@ -25,6 +28,34 @@ export async function createPhotoUploadTargets(
     targets.push({ path: data.path, token: data.token });
   }
   return targets;
+}
+
+// Mint signed upload URLs for a material check's two document kinds. Paths are
+// bound to the check's own folder (project/material/clientId/...), which is
+// exactly the prefix the RPC validates, so a check can only reference its own
+// uploads. checkClientId MUST be a UUID before it reaches a path.
+export async function createMaterialDocTargets(
+  projectId: string,
+  checkClientId: string,
+  photoCount: number,
+  noteCount: number
+): Promise<{ photos: UploadTarget[]; notes: UploadTarget[] }> {
+  if (!isUuid(checkClientId)) throw new Error("Invalid material check id");
+  const db = createAdminClient();
+  const base = `${projectId}/material/${checkClientId}`;
+
+  const mint = async (prefix: string, count: number): Promise<UploadTarget[]> => {
+    const out: UploadTarget[] = [];
+    for (let i = 0; i < clampCount(count); i++) {
+      const path = `${base}/${prefix}-${i}-${randomUUID()}.jpg`;
+      const { data, error } = await db.storage.from("photos").createSignedUploadUrl(path);
+      if (error || !data) throw new Error("Could not create upload URL");
+      out.push({ path: data.path, token: data.token });
+    }
+    return out;
+  };
+
+  return { photos: await mint("photo", photoCount), notes: await mint("note", noteCount) };
 }
 
 // Cached for just under the URL expiry (audit finding M8): repeated renders of
@@ -47,6 +78,9 @@ const signPaths = unstable_cache(
 );
 
 // Short-lived signed download URLs for private photos, keyed by storage path.
+// MUST only ever receive DB-derived paths already scoped to the caller's
+// project. It signs whatever it is handed with the service role, so a
+// client-influenced path here would mint a cross-project signed URL.
 export async function getSignedPhotoUrlMap(paths: string[]): Promise<Record<string, string>> {
   if (paths.length === 0) return {};
   // Sorted so the same set produces the same cache key regardless of order.

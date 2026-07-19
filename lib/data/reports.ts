@@ -113,6 +113,15 @@ export async function getCrewHome(actor: Actor): Promise<CrewHomeData | null> {
 export async function submitDailyReport(actor: Actor, payload: SubmitReportPayload): Promise<string> {
   const db = createAdminClient();
 
+  // Server-side gate: a daily report requires at least one material check on the
+  // project. The UI gate alone is decoration a hand-rolled request bypasses; the
+  // "material not arrived yet" escape is itself a check row, so it satisfies this.
+  const { count: checkCount } = await db
+    .from("material_checks")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", actor.projectId);
+  if (!checkCount) throw new Error("Material check required before reporting");
+
   const { data: project } = await db
     .from("projects")
     .select("lat, lng, country")
