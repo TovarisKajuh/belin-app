@@ -41,33 +41,66 @@ function r(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-// Smooth a polyline into a cubic path that passes exactly through every point
-// (Catmull-Rom converted to Bezier). Control points are clamped inside each
-// segment's own y range, so a smooth curve can never bulge past the data and
-// imply progress that was never reported.
-export function smoothPath(points: Pt[]): string {
+// Monotone cubic interpolation (Fritsch-Carlson), the same curve d3 calls
+// curveMonotoneX. It passes through every point and is guaranteed never to
+// overshoot between them, so the drawn line can never imply progress that was
+// not reported.
+//
+// This replaced an earlier approach that clamped control point positions inside
+// each segment. That also prevented overshoot, but it flattened the curve at
+// every data point and read as a rigid staircase. Fritsch-Carlson constrains
+// the tangents instead, which stays fluid while keeping the same guarantee.
+export function monotonePath(points: Pt[]): string {
   const n = points.length;
   if (n === 0) return "";
   if (n === 1) return `M ${r(points[0].x)},${r(points[0].y)}`;
+  if (n === 2) {
+    return `M ${r(points[0].x)},${r(points[0].y)} L ${r(points[1].x)},${r(points[1].y)}`;
+  }
+
+  // Secant slope of each segment.
+  const dx: number[] = [];
+  const slope: number[] = [];
+  for (let i = 0; i < n - 1; i++) {
+    const h = points[i + 1].x - points[i].x;
+    dx.push(h);
+    slope.push(h === 0 ? 0 : (points[i + 1].y - points[i].y) / h);
+  }
+
+  // Tangent at each point: the average of its neighbouring secants, flattened
+  // to zero at a local extremum so the curve turns without bulging past it.
+  const m: number[] = new Array(n);
+  m[0] = slope[0];
+  m[n - 1] = slope[n - 2];
+  for (let i = 1; i < n - 1; i++) {
+    m[i] = slope[i - 1] * slope[i] <= 0 ? 0 : (slope[i - 1] + slope[i]) / 2;
+  }
+
+  // Fritsch-Carlson: keep each tangent pair inside a circle of radius 3, which
+  // is the condition that makes the cubic monotone on every segment.
+  for (let i = 0; i < n - 1; i++) {
+    if (slope[i] === 0) {
+      m[i] = 0;
+      m[i + 1] = 0;
+      continue;
+    }
+    const a = m[i] / slope[i];
+    const b = m[i + 1] / slope[i];
+    const s = a * a + b * b;
+    if (s > 9) {
+      const scale = 3 / Math.sqrt(s);
+      m[i] = scale * a * slope[i];
+      m[i + 1] = scale * b * slope[i];
+    }
+  }
 
   let d = `M ${r(points[0].x)},${r(points[0].y)}`;
   for (let i = 0; i < n - 1; i++) {
-    const p0 = points[i - 1] ?? points[i];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[i + 2] ?? p2;
-
-    const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c2x = p2.x - (p3.x - p1.x) / 6;
-    let c1y = p1.y + (p2.y - p0.y) / 6;
-    let c2y = p2.y - (p3.y - p1.y) / 6;
-
-    const lo = Math.min(p1.y, p2.y);
-    const hi = Math.max(p1.y, p2.y);
-    c1y = Math.min(hi, Math.max(lo, c1y));
-    c2y = Math.min(hi, Math.max(lo, c2y));
-
-    d += ` C ${r(c1x)},${r(c1y)} ${r(c2x)},${r(c2y)} ${r(p2.x)},${r(p2.y)}`;
+    const h = dx[i] / 3;
+    d +=
+      ` C ${r(points[i].x + h)},${r(points[i].y + m[i] * h)}` +
+      ` ${r(points[i + 1].x - h)},${r(points[i + 1].y - m[i + 1] * h)}` +
+      ` ${r(points[i + 1].x)},${r(points[i + 1].y)}`;
   }
   return d;
 }
@@ -83,6 +116,7 @@ export function areaPath(line: string, points: Pt[], baselineY: number): string 
 export interface ProjectionChartInput {
   history: DailyProgressPoint[];
   today: string;
+  currentPercent: number;
   projectedFinish: string | null;
   plannedEnd: string | null;
   width: number;
@@ -106,9 +140,16 @@ export interface ProjectionChart {
 // the deadline, or today. Returns empty actual points when there is no history,
 // which the panel renders as its "gathering data" state.
 export function buildProjectionChart(input: ProjectionChartInput): ProjectionChart {
-  const { history, today, projectedFinish, plannedEnd, width, yTop, yBottom } = input;
+  const { history, today, currentPercent, projectedFinish, plannedEnd, width, yTop, yBottom } =
+    input;
 
   const sorted = [...history].sort((a, b) => a.date.localeCompare(b.date));
+  // Cumulative progress is a step function: if the last report predates today,
+  // the value today is still the current percent. Carrying the line flat to
+  // today keeps it truthful and stops it stopping short of the today marker.
+  if (sorted.length > 0 && sorted[sorted.length - 1].date < today) {
+    sorted.push({ date: today, cumulativePercent: currentPercent });
+  }
   if (sorted.length === 0) {
     return {
       actual: [],

@@ -935,7 +935,18 @@ button.gal-item {
 .epc-dark .e-panel-h .t { font-size: 15px; font-weight: 700; }
 .epc-dark .e-panel-h .s { font-size: 12.5px; color: var(--e-muted); margin-top: 4px; }
 .epc-dark .e-proj-badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--e-ok); background: rgba(74,208,122,.1); border: 1px solid rgba(74,208,122,.25); padding: 6px 12px; border-radius: 100px; white-space: nowrap; }
-.epc-dark .e-proj-svg { width: 100%; height: 210px; margin-top: 14px; }
+/* The chart measures its own width and draws at true pixel size, so the curve
+   is never squashed and looks the same on a phone as on a laptop. Height comes
+   from the component, so no height is set here. */
+.epc-dark .e-proj-svg { display: block; width: 100%; margin-top: 14px; overflow: visible; }
+.epc-dark .e-chart { position: relative; margin-top: 14px; }
+.epc-dark .e-chart-line { animation: epc-draw-line 1.6s cubic-bezier(.22,.75,.2,1) .15s both; }
+@keyframes epc-draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.epc-dark .e-chart-soft { animation: epc-soft-in 1.1s ease-out .5s both; }
+@keyframes epc-soft-in { from { opacity: 0; } }
+.epc-dark .e-chart-dot { animation: epc-soft-in .6s ease-out 1.4s both; }
+.epc-dark .e-chart-halo { transform-origin: center; animation: epc-halo 3.2s ease-in-out 1.6s infinite; }
+@keyframes epc-halo { 0%, 100% { opacity: .22; r: 10; } 50% { opacity: .40; r: 13; } }
 .epc-dark .e-proj-foot { font-size: 11.5px; color: var(--e-muted); font-style: italic; margin-top: 10px; }
 /* The plot stretches to the panel width (preserveAspectRatio none), which would
    distort any text or circle drawn inside the SVG. Geometry stays in the SVG;
@@ -955,8 +966,19 @@ button.gal-item {
 .epc-dark .e-scope-grid { display: grid; gap: 14px; }
 .epc-dark .e-srow { display: grid; grid-template-columns: 150px 1fr 110px 48px; align-items: center; gap: 16px; background: var(--e-surface); border: 1px solid var(--e-line); border-radius: 14px; padding: 16px 18px; }
 .epc-dark .e-sname { font-size: 14.5px; font-weight: 700; }
-.epc-dark .e-strack { height: 8px; background: rgba(255,255,255,.08); border-radius: 100px; overflow: hidden; }
-.epc-dark .e-sfill { height: 100%; background: linear-gradient(90deg, var(--e-gold-2), var(--e-gold)); border-radius: 100px; box-shadow: 0 0 12px -2px var(--e-glow); }
+/* display:block is load bearing. Both are spans: the track is a grid item so it
+   gets blockified, but the fill is nested one level deeper and stayed inline,
+   which silently ignores width and height and rendered the bar at 0 by 0. */
+.epc-dark .e-strack { display: block; height: 9px; background: rgba(255,255,255,.07); border-radius: 100px; overflow: hidden; }
+.epc-dark .e-sfill {
+  display: block; height: 100%; border-radius: 100px;
+  background: linear-gradient(90deg, #ff9d0f 0%, var(--e-gold) 45%, var(--e-gold-2) 100%);
+  box-shadow: 0 0 14px -1px var(--e-glow), 0 0 5px rgba(255,210,26,.55);
+}
+/* Deliberately not animated. A grow-from-zero keyframe with fill-mode both
+   renders the bar at zero width until the animation actually runs, so any
+   throttled or blocked animation makes the bar invisible: the exact bug this
+   rule was written to fix. The section already fades in on scroll. */
 .epc-dark .e-snums { font-size: 12.5px; color: var(--e-muted); text-align: right; }
 .epc-dark .e-snums b { color: var(--e-ink2); font-weight: 700; }
 .epc-dark .e-spct { font-size: 14px; font-weight: 800; text-align: right; color: var(--e-gold); }

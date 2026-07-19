@@ -2,11 +2,34 @@ import { describe, it, expect } from "vitest";
 import {
   ddmm,
   daysSinceEpoch,
-  smoothPath,
+  monotonePath,
   areaPath,
   buildProjectionChart,
   type Pt,
 } from "@/lib/dashboard-shared";
+
+// Walk a path's cubic segments and sample them, so we can assert on the curve
+// that actually renders rather than only on the points we fed in.
+function sampleCurve(d: string, steps = 24): Pt[] {
+  const nums = (s: string) => s.trim().split(/[\s,]+/).map(Number);
+  const start = d.match(/^M\s*([-\d.]+),([-\d.]+)/);
+  if (!start) return [];
+  let cur: Pt = { x: Number(start[1]), y: Number(start[2]) };
+  const out: Pt[] = [cur];
+  for (const seg of d.matchAll(/C\s*([-\d.,\s]+)/g)) {
+    const [c1x, c1y, c2x, c2y, ex, ey] = nums(seg[1]);
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      const u = 1 - t;
+      out.push({
+        x: u * u * u * cur.x + 3 * u * u * t * c1x + 3 * u * t * t * c2x + t * t * t * ex,
+        y: u * u * u * cur.y + 3 * u * u * t * c1y + 3 * u * t * t * c2y + t * t * t * ey,
+      });
+    }
+    cur = { x: ex, y: ey };
+  }
+  return out;
+}
 
 describe("ddmm", () => {
   it("formats an ISO date as day.month", () => {
@@ -26,10 +49,16 @@ describe("daysSinceEpoch", () => {
   });
 });
 
-describe("smoothPath", () => {
-  it("handles empty and single-point input", () => {
-    expect(smoothPath([])).toBe("");
-    expect(smoothPath([{ x: 1, y: 2 }])).toBe("M 1,2");
+describe("monotonePath", () => {
+  it("handles empty, single and two-point input", () => {
+    expect(monotonePath([])).toBe("");
+    expect(monotonePath([{ x: 1, y: 2 }])).toBe("M 1,2");
+    expect(
+      monotonePath([
+        { x: 0, y: 10 },
+        { x: 5, y: 4 },
+      ])
+    ).toBe("M 0,10 L 5,4");
   });
 
   it("passes exactly through every data point", () => {
@@ -38,27 +67,52 @@ describe("smoothPath", () => {
       { x: 50, y: 60 },
       { x: 100, y: 20 },
     ];
-    const d = smoothPath(pts);
-    // Every segment ends on the real point, so each one appears as a curve end.
+    const d = monotonePath(pts);
     expect(d.startsWith("M 0,100")).toBe(true);
     expect(d).toContain("50,60");
     expect(d.endsWith("100,20")).toBe(true);
   });
 
-  it("never lets a control point overshoot its segment, so the curve cannot imply unreported progress", () => {
-    // A flat day followed by a jump: naive Catmull-Rom would dip below the flat run.
+  it("never overshoots the reported values anywhere along the rendered curve", () => {
+    // A flat run then a jump. This is the shape that makes naive splines dip.
     const pts: Pt[] = [
       { x: 0, y: 100 },
       { x: 25, y: 100 },
       { x: 50, y: 40 },
       { x: 75, y: 38 },
     ];
-    const d = smoothPath(pts);
-    const ys = [...d.matchAll(/[-\d.]+,([-\d.]+)/g)].map((m) => Number(m[1]));
-    // y is inverted in SVG: smaller y means more progress. Nothing may sit
-    // above the best reported point (38) or below the worst (100).
-    expect(Math.min(...ys)).toBeGreaterThanOrEqual(38);
-    expect(Math.max(...ys)).toBeLessThanOrEqual(100);
+    const ys = sampleCurve(monotonePath(pts)).map((p) => p.y);
+    // SVG y is inverted: smaller y means more progress. The curve may never
+    // rise above the best reported value or sag below the worst.
+    expect(Math.min(...ys)).toBeGreaterThanOrEqual(38 - 1e-6);
+    expect(Math.max(...ys)).toBeLessThanOrEqual(100 + 1e-6);
+  });
+
+  it("stays monotone across the whole curve for ever-rising progress", () => {
+    const pts: Pt[] = [
+      { x: 0, y: 180 },
+      { x: 40, y: 176 },
+      { x: 80, y: 120 },
+      { x: 120, y: 60 },
+      { x: 160, y: 56 },
+      { x: 200, y: 20 },
+    ];
+    const sampled = sampleCurve(monotonePath(pts));
+    for (let i = 1; i < sampled.length; i++) {
+      // Cumulative progress never goes backwards, so y never increases.
+      expect(sampled[i].y).toBeLessThanOrEqual(sampled[i - 1].y + 1e-6);
+    }
+  });
+
+  it("keeps a flat stretch perfectly flat", () => {
+    const pts: Pt[] = [
+      { x: 0, y: 100 },
+      { x: 30, y: 50 },
+      { x: 60, y: 50 },
+      { x: 90, y: 50 },
+    ];
+    const tail = sampleCurve(monotonePath(pts)).filter((p) => p.x >= 30);
+    for (const p of tail) expect(Math.abs(p.y - 50)).toBeLessThan(1e-6);
   });
 });
 
@@ -68,7 +122,7 @@ describe("areaPath", () => {
       { x: 0, y: 50 },
       { x: 10, y: 20 },
     ];
-    const a = areaPath(smoothPath(pts), pts, 188);
+    const a = areaPath(monotonePath(pts), pts, 188);
     expect(a).toContain("L 10,188");
     expect(a).toContain("L 0,188");
     expect(a.endsWith("Z")).toBe(true);
@@ -78,12 +132,33 @@ describe("areaPath", () => {
 describe("buildProjectionChart", () => {
   const base = {
     today: "2026-07-10",
+    currentPercent: 54,
     projectedFinish: "2026-07-30",
     plannedEnd: "2026-08-08",
     width: 800,
     yTop: 12,
     yBottom: 188,
   };
+
+  it("carries the line flat to today when the last report is older", () => {
+    // Reported Friday, viewed on Sunday: progress today is still 54 percent.
+    const c = buildProjectionChart({
+      ...base,
+      today: "2026-07-12",
+      history: [
+        { date: "2026-07-08", cumulativePercent: 42 },
+        { date: "2026-07-10", cumulativePercent: 54 },
+      ],
+    });
+    expect(c.actual).toHaveLength(3);
+    const last = c.actual[c.actual.length - 1];
+    const prev = c.actual[c.actual.length - 2];
+    // The added point sits at today's x, at exactly the same height.
+    expect(last.x).toBe(c.todayX);
+    expect(last.y).toBe(prev.y);
+    // And the forecast starts from today, not from the stale last report.
+    expect(c.projection![0]).toEqual(last);
+  });
 
   it("returns an empty chart when there is no history", () => {
     const c = buildProjectionChart({ ...base, history: [] });
