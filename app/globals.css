@@ -1189,3 +1189,25 @@ button.gal-item {
   .lp-submit { transition: none; }
   .lp-submit:hover:not(:disabled) { transform: none; }
 }
+
+/* ==========================================================================
+   Installed-app safe areas. MUST stay last in this file: these override the
+   padding set in the base rules and in the mobile media queries above, and
+   with equal specificity the later rule wins.
+
+   The layout sets apple-mobile-web-app-status-bar-style to black-translucent
+   plus viewport-fit=cover, so the app's own dark background runs edge to edge
+   behind the iOS clock instead of iOS painting a bar above the app. The trade
+   is that content would otherwise sit under the clock, so every fixed and
+   sticky edge adds the inset. env() resolves to 0 in a normal browser and on
+   devices without a notch, so none of this changes anything off a real phone.
+   ========================================================================== */
+
+.epc-dark .e-bar-in { padding-top: calc(13px + env(safe-area-inset-top)); }
+.b-screen { padding-top: calc(20px + env(safe-area-inset-top)); }
+.lp-wrap { padding-top: calc(26px + env(safe-area-inset-top)); }
+.lp-logout { bottom: calc(12px + env(safe-area-inset-bottom)); }
+
+@media (max-width: 900px) {
+  .lp-wrap { padding-top: calc(20px + env(safe-area-inset-top)); }
+}

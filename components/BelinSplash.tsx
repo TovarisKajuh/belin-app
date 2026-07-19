@@ -1,12 +1,28 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
-// Belin full-screen launch animation. A 16x24 cell grid fills with gold column
-// by column to form the Belin mark, then the wordmark fades up, on a warm launch
-// background. Self-contained, no dependencies. Shown on app open via SplashGate.
+// Belin launch animation and logo mark: a 3 wide by 4 tall cell grid where the
+// columns rise like a bar chart, 1 cell then 2 then 3, filling gold from the
+// bottom. Same mark as the command bar, the landing page and the home screen
+// icon, so the launch, the header and the app icon are one shape.
 //
-// prefers-reduced-motion: skips the long build and shows the finished mark briefly
+// prefers-reduced-motion: skips the build and shows the finished mark briefly
 // before fading, so the launch stays accessible without a long moving animation.
+
+// Gold cells per column, left to right. This IS the mark.
+const GOLD_PER_COL = [1, 2, 3];
+const COLS = GOLD_PER_COL.length;
+const ROWS = 4;
+
+// cell geometry
+const CELL = 22;
+const STEP = 28; // cell + gap
+const MARK_W = COLS * STEP - (STEP - CELL);
+const MARK_H = ROWS * STEP - (STEP - CELL);
+const VIEW_W = 240;
+const MARK_X = (VIEW_W - MARK_W) / 2;
+const MARK_Y = 22;
+
 export function BelinSplash({
   background = "#0b1524",
   onFinish,
@@ -21,14 +37,15 @@ export function BelinSplash({
   const startRef = useRef(0);
   const rafRef = useRef(0);
 
-  // timeline (seconds)
-  const yellowStart = 0.4,
-    colStep = 0.06,
-    rowOffset = 0.008,
-    fade = 0.18;
-  const textStart = 1.9,
-    textDur = 2.6;
-  const END = textStart + textDur; // animation finishes
+  // timeline (seconds). Far fewer cells than the old 16x24 grid, so each step
+  // is much slower: with 3 columns a fast stagger would read as a single flash.
+  const yellowStart = 0.35,
+    colStep = 0.3,
+    rowOffset = 0.1,
+    fade = 0.26;
+  const textStart = 1.55,
+    textDur = 1.5;
+  const END = textStart + textDur;
   const HOLD = 0.6; // pause on the finished logo
   const FADE_MS = 600; // overlay fade-out
 
@@ -61,34 +78,47 @@ export function BelinSplash({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // grid geometry (16 x 24)
-  const blackCount = [18, 16, 17, 14, 15, 12, 13, 15, 11, 9, 12, 8, 10, 6, 8, 5];
-  const cols = 16,
-    rows = 24,
-    step = 9;
-  const dark: [number, number, number] = [42, 50, 66];
-  const gold: [number, number, number] = [255, 215, 0];
   const clamp = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
   const hex = (n: number) => n.toString(16).padStart(2, "0");
   const lerp = (a: number, b: number, k: number) => Math.round(a + (b - a) * k);
+  const dark: [number, number, number] = [42, 50, 66];
+  // #ffd21a, the --e-gold design token, so the splash, the command bar mark,
+  // the landing page and the home screen icon end on the identical gold.
+  const gold: [number, number, number] = [255, 210, 26];
 
-  type Cell = { x: number; y: number; c: number; fromBottom: number };
-  const black: Cell[] = [];
-  const yellow: Cell[] = [];
-  for (let c = 0; c < cols; c++) {
-    const bc = blackCount[c];
-    for (let r = 0; r < rows; r++) {
-      const obj: Cell = { x: c * step, y: r * step, c, fromBottom: rows - 1 - r };
-      (r >= bc ? yellow : black).push(obj);
+  const cells = [];
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const fromBottom = ROWS - 1 - r;
+      const isGold = fromBottom < GOLD_PER_COL[c];
+      const x = c * STEP;
+      const y = r * STEP;
+
+      if (!isGold) {
+        cells.push(
+          <rect key={`d${c}-${r}`} x={x} y={y} width={CELL} height={CELL} rx="2.5" fill="#2a3242" />
+        );
+        continue;
+      }
+
+      // Columns rise left to right; within a column, cells light bottom up.
+      const reveal = yellowStart + c * colStep + fromBottom * rowOffset;
+      const e = 1 - Math.pow(1 - clamp((t - reveal) / fade), 2);
+      const fill = "#" + [0, 1, 2].map((k) => hex(lerp(dark[k], gold[k], e))).join("");
+      cells.push(
+        <rect
+          key={`g${c}-${r}`}
+          x={x}
+          y={y}
+          width={CELL}
+          height={CELL}
+          rx="2.5"
+          fill={fill}
+          style={{ filter: e > 0.05 ? `drop-shadow(0 0 ${6 * e}px rgba(255,215,0,${0.5 * e}))` : undefined }}
+        />
+      );
     }
   }
-
-  const yellowRects = yellow.map((cell, i) => {
-    const reveal = yellowStart + cell.c * colStep + cell.fromBottom * rowOffset;
-    const e = 1 - Math.pow(1 - clamp((t - reveal) / fade), 2);
-    const fill = "#" + [0, 1, 2].map((k) => hex(lerp(dark[k], gold[k], e))).join("");
-    return <rect key={"y" + i} x={cell.x} y={cell.y} width="8" height="8" fill={fill} />;
-  });
 
   const tp = clamp((t - textStart) / textDur);
   const te = 1 - Math.pow(1 - tp, 3);
@@ -125,31 +155,26 @@ export function BelinSplash({
         }}
       />
       <svg
-        viewBox="64 34 172 322"
-        style={{ width: "min(92vw, 46vh)", height: "auto", overflow: "visible", display: "block" }}
+        viewBox={`0 0 ${VIEW_W} 210`}
+        style={{ width: "min(66vw, 38vh)", height: "auto", overflow: "visible", display: "block" }}
       >
-        <g transform="translate(78, 44)">
-          {black.map((cell, i) => (
-            <rect key={"b" + i} x={cell.x} y={cell.y} width="8" height="8" fill="#2a3242" />
-          ))}
-          {yellowRects}
-        </g>
+        <g transform={`translate(${MARK_X}, ${MARK_Y})`}>{cells}</g>
         <g style={textStyle}>
           <text
-            x="150"
-            y="322"
+            x={VIEW_W / 2}
+            y="172"
             fontFamily="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif"
-            fontSize="44"
-            fontWeight="600"
+            fontSize="40"
+            fontWeight="700"
             fill="#f2efe9"
             textAnchor="middle"
-            letterSpacing="1"
+            letterSpacing="2"
           >
             BELIN
           </text>
           <text
-            x="150"
-            y="344"
+            x={VIEW_W / 2}
+            y="194"
             fontFamily="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif"
             fontSize="10.5"
             fontWeight="500"
