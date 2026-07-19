@@ -80,7 +80,15 @@
     "dailyLog": "Daily log",
     "dayByDay": "day by day",
     "sitePhotos": "Site photos",
-    "noEntries": "No daily entries yet."
+    "noEntries": "No daily entries yet.",
+    "noPhotos": "No site photos yet.",
+    "workingDaysSub": "Mon to Fri on site",
+    "tempoSub": "last 6 working days",
+    "photosSub": "site documentation",
+    "endOfOverview": "end of overview",
+    "closePhoto": "Close photo",
+    "previousPhoto": "Previous photo",
+    "nextPhoto": "Next photo"
   },
   "status": {
     "draft": "Draft",

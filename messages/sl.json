@@ -80,7 +80,15 @@
     "dailyLog": "Dnevnik",
     "dayByDay": "dan za dnem",
     "sitePhotos": "Fotografije s terena",
-    "noEntries": "Še ni dnevnih vnosov."
+    "noEntries": "Še ni dnevnih vnosov.",
+    "noPhotos": "Še ni fotografij s terena.",
+    "workingDaysSub": "pon do pet na terenu",
+    "tempoSub": "zadnjih 6 delovnih dni",
+    "photosSub": "dokumentacija terena",
+    "endOfOverview": "konec pregleda",
+    "closePhoto": "Zapri fotografijo",
+    "previousPhoto": "Prejšnja fotografija",
+    "nextPhoto": "Naslednja fotografija"
   },
   "status": {
     "draft": "Osnutek",

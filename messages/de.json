@@ -80,7 +80,15 @@
     "dailyLog": "Bautagebuch",
     "dayByDay": "Tag für Tag",
     "sitePhotos": "Fotos von der Baustelle",
-    "noEntries": "Noch keine Tageseinträge."
+    "noEntries": "Noch keine Tageseinträge.",
+    "noPhotos": "Noch keine Fotos von der Baustelle.",
+    "workingDaysSub": "Mo bis Fr auf der Baustelle",
+    "tempoSub": "letzte 6 Arbeitstage",
+    "photosSub": "Baustellendokumentation",
+    "endOfOverview": "Ende der Übersicht",
+    "closePhoto": "Foto schließen",
+    "previousPhoto": "Vorheriges Foto",
+    "nextPhoto": "Nächstes Foto"
   },
   "status": {
     "draft": "Entwurf",

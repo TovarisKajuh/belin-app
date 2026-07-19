@@ -45,6 +45,7 @@ export interface EpcDashboardData {
   gallery: DashboardPhoto[];
   activity: DashboardActivity[];
   projection: Projection;
+  history: DailyProgressPoint[];
   reportCount: number;
   photoCount: number;
   needsReview: boolean;
@@ -186,6 +187,7 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
     gallery,
     activity,
     projection,
+    history,
     reportCount: entries.length,
     photoCount: photoRows.length,
     needsReview: core.status === "reviewing",

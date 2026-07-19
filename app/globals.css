@@ -937,6 +937,19 @@ button.gal-item {
 .epc-dark .e-proj-badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--e-ok); background: rgba(74,208,122,.1); border: 1px solid rgba(74,208,122,.25); padding: 6px 12px; border-radius: 100px; white-space: nowrap; }
 .epc-dark .e-proj-svg { width: 100%; height: 210px; margin-top: 14px; }
 .epc-dark .e-proj-foot { font-size: 11.5px; color: var(--e-muted); font-style: italic; margin-top: 10px; }
+/* The plot stretches to the panel width (preserveAspectRatio none), which would
+   distort any text or circle drawn inside the SVG. Geometry stays in the SVG;
+   labels and the current-value dot are HTML positioned in percent of the same
+   0..800 domain, so they stay crisp and translatable at every width. */
+.epc-dark .e-proj-plot { position: relative; }
+.epc-dark .e-proj-lab { position: absolute; bottom: 1px; transform: translateX(-50%); font-size: 11px; font-weight: 700; white-space: nowrap; color: var(--e-muted); }
+.epc-dark .e-proj-lab.today { color: var(--e-gold); }
+.epc-dark .e-proj-lab.end { transform: translateX(-100%); }
+.epc-dark .e-proj-lab.start { transform: none; left: 0; }
+.epc-dark .e-proj-dot { position: absolute; width: 11px; height: 11px; border-radius: 50%; background: var(--e-gold); border: 2px solid #0c1826; transform: translate(-50%, -50%); box-shadow: 0 0 14px var(--e-glow); }
+.epc-dark .e-proj-val { position: absolute; transform: translate(-50%, -150%); font-size: 12.5px; font-weight: 700; color: var(--e-gold-2); white-space: nowrap; }
+.epc-dark .e-proj-badge.late { color: #ff9f6b; background: rgba(255,159,107,.10); border-color: rgba(255,159,107,.28); }
+.epc-dark .e-proj-empty { height: 210px; display: flex; align-items: center; justify-content: center; color: var(--e-muted); font-size: 13px; }
 
 /* scope */
 .epc-dark .e-scope-grid { display: grid; gap: 14px; }

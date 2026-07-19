@@ -3,15 +3,18 @@ import type { EpcDashboardData } from "@/lib/data/epc-dashboard";
 import { CommandBar } from "@/components/epc/dashboard/CommandBar";
 import { AlertStrip } from "@/components/epc/dashboard/AlertStrip";
 import { ProgressRing } from "@/components/epc/dashboard/ProgressRing";
+import { ProjectionPanel } from "@/components/epc/dashboard/ProjectionPanel";
+import { ScopeByPhase } from "@/components/epc/dashboard/ScopeByPhase";
+import { StatRow } from "@/components/epc/dashboard/StatRow";
+import { LatestOnSite } from "@/components/epc/dashboard/LatestOnSite";
+import { DailyLogFeed } from "@/components/epc/dashboard/DailyLogFeed";
+import { PhotoGallery } from "@/components/epc/dashboard/PhotoGallery";
+import { RevealController } from "@/components/epc/dashboard/RevealController";
+import { ddmm } from "@/lib/dashboard-shared";
 
-function ddmm(iso: string | null): string | null {
-  if (!iso || iso.length < 10) return null;
-  return `${iso.slice(8, 10)}.${iso.slice(5, 7)}`;
-}
-
-// The dark EPC dashboard. This first slice is the shell (command bar, conditional
-// alert) and the hero (project identity, quick chips, the glowing progress ring).
-// Scope, projection, stats, feed and gallery are added as further sections.
+// The dark EPC dashboard: the shell and hero, then the path to completion,
+// the scope by phase, the headline numbers, the newest report, the day by day
+// log and the site photos. Everything below the hero reveals on scroll.
 export async function EpcDashboard({ token, data }: { token: string; data: EpcDashboardData }) {
   const t = await getTranslations("dashboard");
   const core = data.core;
@@ -68,7 +71,28 @@ export async function EpcDashboard({ token, data }: { token: string; data: EpcDa
             photoCount={data.photoCount}
           />
         </section>
+
+        <ProjectionPanel
+          history={data.history}
+          projection={proj}
+          today={core.today}
+          plannedEnd={core.plannedEnd}
+          currentPercent={data.progressPercent}
+        />
+
+        <ScopeByPhase scope={data.scope} />
+
+        <StatRow projection={proj} photoCount={data.photoCount} />
+
+        {data.latest && <LatestOnSite latest={data.latest} subName={sub} />}
+
+        <DailyLogFeed days={data.days} />
+
+        <PhotoGallery photos={data.gallery} />
+
+        <div className="e-foot">Belin · {t("endOfOverview")}</div>
       </div>
+      <RevealController />
     </div>
   );
 }
