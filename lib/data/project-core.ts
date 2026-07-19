@@ -34,6 +34,7 @@ export interface ProjectCore {
   moduleCount: number | null;
   plannedStart: string | null;
   plannedEnd: string | null;
+  subName: string | null;
   progressPercent: number;
   scope: ScopeItemStatus[];
   today: string;
@@ -46,7 +47,7 @@ export async function getProjectCore(actor: Actor): Promise<ProjectCore | null> 
     db
       .from("projects")
       .select(
-        "id, name, status, country, language, address_street, address_zip, address_city, lat, lng, kwp, module_count, planned_start, planned_end"
+        "id, name, status, country, language, address_street, address_zip, address_city, lat, lng, kwp, module_count, planned_start, planned_end, sub_org:organizations!projects_sub_org_id_fkey (name)"
       )
       .eq("id", actor.projectId)
       .maybeSingle(),
@@ -77,6 +78,13 @@ export async function getProjectCore(actor: Actor): Promise<ProjectCore | null> 
   }));
 
   const p = projectRes.data;
+  // The sub-org embed is to-one; supabase may type it as an object or a
+  // single-element array, so narrow defensively.
+  const subEmbed: unknown = p.sub_org ?? null;
+  const subName = Array.isArray(subEmbed)
+    ? ((subEmbed[0] as { name?: string })?.name ?? null)
+    : ((subEmbed as { name?: string } | null)?.name ?? null);
+
   return {
     id: p.id,
     name: p.name,
@@ -92,6 +100,7 @@ export async function getProjectCore(actor: Actor): Promise<ProjectCore | null> 
     moduleCount: p.module_count,
     plannedStart: p.planned_start,
     plannedEnd: p.planned_end,
+    subName,
     progressPercent: projectProgress(scope),
     scope,
     today: projectToday(p.country),

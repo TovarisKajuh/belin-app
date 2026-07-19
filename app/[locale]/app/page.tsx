@@ -26,6 +26,11 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
   const token = await sessionToken();
   if (!token) redirect(`/${locale}`);
 
+  // Start the token-independent reads so they overlap the main view fetch
+  // instead of running after it.
+  const siblingPromise = getSiblingToken(actor);
+  const scenarioPromise = sessionScenario();
+
   let view;
   if (actor.role === "sub") {
     const [data, material] = await Promise.all([getCrewHome(actor), getMaterialState(actor)]);
@@ -40,8 +45,7 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
   // The crew screen has a fixed submit bar along the bottom, so both pills lift
   // clear of it there.
   const raised = actor.role === "sub";
-  const scenario = await sessionScenario();
-  const sibling = await getSiblingToken(actor);
+  const [sibling, scenario] = await Promise.all([siblingPromise, scenarioPromise]);
   return (
     <>
       {view}

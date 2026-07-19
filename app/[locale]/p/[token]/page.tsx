@@ -23,6 +23,9 @@ export default async function ProjectTokenPage({
   const actor = await resolveActorFromToken(token);
   if (!actor) notFound();
 
+  // Start the sibling lookup so it overlaps the main view fetch.
+  const siblingPromise = getSiblingToken(actor);
+
   let view;
   if (actor.role === "sub") {
     const [data, material] = await Promise.all([getCrewHome(actor), getMaterialState(actor)]);
@@ -34,7 +37,7 @@ export default async function ProjectTokenPage({
     view = <EpcDashboard token={token} data={data} />;
   }
 
-  const sibling = await getSiblingToken(actor);
+  const sibling = await siblingPromise;
   return (
     <>
       {view}

@@ -56,12 +56,6 @@ export interface DashboardPhoto {
   date: string;
 }
 
-export interface DashboardActivity {
-  kind: string;
-  at: string;
-  payload: Record<string, unknown>;
-}
-
 export interface EpcDashboardData {
   core: ProjectCore;
   subName: string | null;
@@ -70,7 +64,6 @@ export interface EpcDashboardData {
   days: DashboardDay[];
   latest: DashboardDay | null;
   gallery: DashboardPhoto[];
-  activity: DashboardActivity[];
   projection: Projection;
   history: DailyProgressPoint[];
   reportCount: number;
@@ -90,58 +83,39 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
 
   const db = createAdminClient();
 
-  const [entriesRes, qtyRes, photoRes, activityRes, subRes, matItemsRes, matCheckRes] =
-    await Promise.all([
-      db
-        .from("daily_entries")
-        .select("id, entry_date, headcount, note, weather, created_at")
-        .eq("project_id", actor.projectId)
-        .order("entry_date", { ascending: false })
-        .order("created_at", { ascending: false }),
-      db
-        .from("entry_quantities")
-        .select("entry_id, scope_item_id, qty, daily_entries!inner (project_id)")
-        .eq("daily_entries.project_id", actor.projectId),
-      db
-        .from("entry_photos")
-        .select("entry_id, storage_path, sort_order, daily_entries!inner (project_id)")
-        .eq("daily_entries.project_id", actor.projectId)
-        .order("sort_order"),
-      db
-        .from("activity")
-        .select("kind, payload, created_at")
-        .eq("project_id", actor.projectId)
-        .order("created_at", { ascending: false })
-        .limit(12),
-      db
-        .from("projects")
-        .select("sub_org:organizations!projects_sub_org_id_fkey (name)")
-        .eq("id", actor.projectId)
-        .maybeSingle(),
-      db
-        .from("material_items")
-        .select("id, name, qty, unit, sort_order, updated_at")
-        .eq("project_id", actor.projectId)
-        .order("sort_order"),
-      db
-        .from("material_checks")
-        .select(
-          "id, is_complete, note, checked_at, material_check_items (material_item_id, status, missing_qty), material_check_docs (kind, storage_path, sort_order)"
-        )
-        .eq("project_id", actor.projectId)
-        .order("checked_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
+  const [entriesRes, qtyRes, photoRes, matItemsRes, matCheckRes] = await Promise.all([
+    db
+      .from("daily_entries")
+      .select("id, entry_date, headcount, note, weather, created_at")
+      .eq("project_id", actor.projectId)
+      .order("entry_date", { ascending: false })
+      .order("created_at", { ascending: false }),
+    db
+      .from("entry_quantities")
+      .select("entry_id, scope_item_id, qty, daily_entries!inner (project_id)")
+      .eq("daily_entries.project_id", actor.projectId),
+    db
+      .from("entry_photos")
+      .select("entry_id, storage_path, sort_order, daily_entries!inner (project_id)")
+      .eq("daily_entries.project_id", actor.projectId)
+      .order("sort_order"),
+    db
+      .from("material_items")
+      .select("id, name, qty, unit, sort_order, updated_at")
+      .eq("project_id", actor.projectId)
+      .order("sort_order"),
+    db
+      .from("material_checks")
+      .select(
+        "id, is_complete, note, checked_at, material_check_items (material_item_id, status, missing_qty), material_check_docs (kind, storage_path, sort_order)"
+      )
+      .eq("project_id", actor.projectId)
+      .order("checked_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
-  if (
-    entriesRes.error ||
-    qtyRes.error ||
-    photoRes.error ||
-    activityRes.error ||
-    matItemsRes.error ||
-    matCheckRes.error
-  )
+  if (entriesRes.error || qtyRes.error || photoRes.error || matItemsRes.error || matCheckRes.error)
     return null;
 
   const entries = entriesRes.data ?? [];
@@ -221,12 +195,6 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
     plannedEnd: core.plannedEnd,
   });
 
-  const activity: DashboardActivity[] = (activityRes.data ?? []).map((a) => ({
-    kind: a.kind,
-    at: a.created_at,
-    payload: (a.payload ?? {}) as Record<string, unknown>,
-  }));
-
   // Material panel: reduce the list and latest check to the gate/re-check state,
   // and sign the docs from the shared batch. The doc COUNT derives from
   // successfully signed URLs (via urlByPath), so a row whose path failed to sign
@@ -277,20 +245,14 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
 
   // The sub-org embed is to-one; supabase may type it as an object or a
   // single-element array, so narrow defensively.
-  const subEmbed: unknown = subRes.data?.sub_org ?? null;
-  const subName = Array.isArray(subEmbed)
-    ? ((subEmbed[0] as { name?: string })?.name ?? null)
-    : ((subEmbed as { name?: string } | null)?.name ?? null);
-
   return {
     core,
-    subName,
+    subName: core.subName,
     progressPercent: core.progressPercent,
     scope: core.scope,
     days,
     latest: days[0] ?? null,
     gallery,
-    activity,
     projection,
     history,
     reportCount: entries.length,
