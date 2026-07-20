@@ -95,7 +95,16 @@ export async function requestMagicLink(
   });
   if (error) return { sent: true };
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  // The link is built from the configured base URL and NEVER from the request's
+  // Host header: a poisoned Host would put a live login token into a link
+  // pointing at somebody else's server. If it is missing there is no safe
+  // guess, so say so loudly rather than emailing a broken link.
+  const base = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "");
+  if (!base) {
+    console.error("NEXT_PUBLIC_APP_URL is not set: cannot build a login link.");
+    return { sent: true };
+  }
+
   const query = next ? `?next=${encodeURIComponent(next)}` : "";
   const url = `${base}/${locale}/auth/verify/${raw}${query}`;
 
