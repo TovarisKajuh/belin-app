@@ -318,6 +318,7 @@ export function Wizard({
                   {t("roofsTitle")}
                   <span className="wz-count e-mono">{roofs.length}</span>
                 </h2>
+                <p className="wz-subhint">{t("roofsHint")}</p>
                 <div className="wz-roofs">
                   {roofs.map((roof, i) => (
                     <div className="wz-roof" key={i}>
@@ -367,6 +368,7 @@ export function Wizard({
               {t("articlesTitle")}
               <span className="wz-count e-mono">{items.length}</span>
             </h2>
+            <p className="wz-subhint">{t("articlesHint")}</p>
 
             {items.length === 0 ? (
               <p className="wz-empty">{t("noItems")}</p>

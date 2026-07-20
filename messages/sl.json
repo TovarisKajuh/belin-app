@@ -250,7 +250,9 @@
     "roofName": "Streha",
     "roofModules": "Modulov",
     "roofKwp": "kWp",
-    "roofSum": "Skupaj po strehah: {n} od {total} modulov"
+    "roofSum": "Skupaj po strehah: {n} od {total} modulov",
+    "roofsHint": "Razporeditev modulov po strehah. Kaj gre kam.",
+    "articlesHint": "Kar mora ekipa preveriti ob dostavi. Moduli so na vrhu, K2 načrt jih ne našteje sam."
   },
   "projects": {
     "title": "Projekti",

@@ -102,6 +102,60 @@ export function splitAddress(raw: string | null): AddressParts {
 }
 
 /**
+ * Shortens a module description to what belongs on a delivery checklist.
+ * "AIKO-A455-MAH54Db (1757x1134x30) 1.757x1.134x30 mm" -> "AIKO-A455-MAH54Db".
+ */
+function shortModuleName(raw: string): string {
+  const cut = raw.split(/\s*\(/)[0].trim();
+  return cut === "" ? raw.trim() : cut;
+}
+
+/**
+ * The modules, as material lines.
+ *
+ * K2 is a MOUNTING SYSTEM vendor: its article list contains only K2's own
+ * hardware (rails, hooks, screws, clamps) and never the panels, which appear
+ * only in the roof table because K2 is describing what its rails must carry.
+ * Taking the article list as the delivery checklist therefore produces a list
+ * with the single biggest item missing, and a crew would tick off 272 screws
+ * without ever confirming the 57 panels arrived.
+ *
+ * Modules are grouped by type, because one project can carry different panels
+ * on different roofs, and they lead the list because they are what the truck
+ * is mostly full of.
+ */
+export function moduleItemsFromRoofs(
+  roofs: DraftRoof[],
+  fallback: { moduleCount: number | null; moduleType: string | null },
+): DraftItem[] {
+  const byType = new Map<string, number>();
+
+  for (const roof of roofs) {
+    if (roof.moduleCount === null || roof.moduleCount <= 0) continue;
+    const name = roof.moduleType ? shortModuleName(roof.moduleType) : MODULE_FALLBACK_NAME;
+    byType.set(name, (byType.get(name) ?? 0) + roof.moduleCount);
+  }
+
+  // Reports whose roof rows do not break out (the 3.1.97 era merges them into
+  // one line) still know the project total, which is better than no panels.
+  if (byType.size === 0 && fallback.moduleCount !== null && fallback.moduleCount > 0) {
+    const name = fallback.moduleType
+      ? shortModuleName(fallback.moduleType)
+      : MODULE_FALLBACK_NAME;
+    byType.set(name, fallback.moduleCount);
+  }
+
+  return [...byType.entries()].map(([name, qty], i) => ({
+    name,
+    qty,
+    unit: "kos",
+    sortOrder: i,
+  }));
+}
+
+const MODULE_FALLBACK_NAME = "Modul";
+
+/**
  * The review screen's starting point. Nulls are normal: the EPC fills them in,
  * which is still far less work than typing the whole project.
  */
@@ -111,6 +165,20 @@ export function projectDraftFromParse(
 ): ProjectDraft {
   const meta = result.metadata;
   const address = splitAddress(meta.address);
+
+  const roofs: DraftRoof[] = meta.roofs.map((roof) => ({
+    name: roof.name,
+    moduleCount: roof.moduleCount,
+    kwp: roof.kwp,
+    moduleType: roof.moduleType,
+  }));
+
+  // Panels first, then K2's own hardware: the article list never contains the
+  // modules, so a checklist built from it alone would omit them entirely.
+  const modules = moduleItemsFromRoofs(roofs, {
+    moduleCount: meta.moduleCount,
+    moduleType: meta.moduleDesc,
+  });
 
   return {
     name: meta.projectName ?? "",
@@ -126,17 +194,15 @@ export function projectDraftFromParse(
     moduleType: meta.moduleDesc,
     mountingSystem: meta.mountingSystem,
     roofType: meta.roofType,
-    items: result.items.map((item, i) => ({
-      name: item.name,
-      qty: item.qty,
-      unit: "kos",
-      sortOrder: i,
-    })),
-    roofs: meta.roofs.map((roof) => ({
-      name: roof.name,
-      moduleCount: roof.moduleCount,
-      kwp: roof.kwp,
-      moduleType: roof.moduleType,
-    })),
+    items: [
+      ...modules,
+      ...result.items.map((item, i) => ({
+        name: item.name,
+        qty: item.qty,
+        unit: "kos",
+        sortOrder: modules.length + i,
+      })),
+    ],
+    roofs,
   };
 }

@@ -1701,3 +1701,6 @@ button.gal-item {
 .belin-dark .rp-n .u { font-size: 12.5px; font-weight: 600; color: var(--e-muted); margin-left: 6px; }
 .belin-dark .rp-kwp { margin-top: 8px; font-size: 13px; color: var(--e-gold-2); font-weight: 600; }
 .belin-dark .rp-total { margin-top: 12px; font-size: 12.5px; color: var(--e-muted); }
+.belin-dark .wz-subhint {
+  margin: -8px 0 16px; font-size: 12.5px; color: var(--e-muted); max-width: 62ch;
+}
