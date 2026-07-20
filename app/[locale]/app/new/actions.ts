@@ -1,5 +1,5 @@
 "use server";
-import { resolveActorFromSession } from "@/lib/auth";
+import { resolveTokenActorFromSession } from "@/lib/auth";
 import {
   createProjectFromReview,
   uploadAndParsePlan,
@@ -13,7 +13,7 @@ import type { Actor } from "@/lib/actor";
 // only office role is epc; when accounts land (master plan Part B) this is the
 // ONE function that becomes requireOfficeActor, and nothing else here changes.
 async function requireEpcActor(): Promise<Actor | null> {
-  const actor = await resolveActorFromSession();
+  const actor = await resolveTokenActorFromSession();
   if (!actor || actor.role !== "epc") return null;
   return actor;
 }

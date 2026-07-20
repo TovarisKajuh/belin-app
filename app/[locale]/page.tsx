@@ -2,8 +2,10 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { routing } from "@/i18n/routing";
-import { sessionToken } from "@/lib/auth";
+import { resolveActorFromSession } from "@/lib/auth";
+import { safeNext } from "@/lib/auth-core";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { MagicLinkForm } from "@/components/auth/MagicLinkForm";
 
 // A rising-gold cell pattern, the same mark the command bar and the launch
 // animation use, drawn larger here.
@@ -11,13 +13,26 @@ const MARK = [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1];
 
 const POINTS = ["point1", "point2", "point3"] as const;
 
-export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+export default async function Home({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ next?: string }>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  // Already signed in: skip the landing page entirely. Checked on the cookie
-  // alone, so a signed-out visitor costs no database round trip.
-  if (await sessionToken()) redirect(`/${locale}/app`);
+  // Already signed in: skip the landing page entirely. This RESOLVES the
+  // session rather than just reading the cookie. A cookie that no longer
+  // resolves (expired, revoked, or a session from a rebuilt database) would
+  // otherwise bounce here, get sent to /app, fail to resolve there, and be sent
+  // straight back: an infinite redirect. A signed-out visitor has no cookie at
+  // all and still costs no database round trip.
+  if (await resolveActorFromSession()) redirect(`/${locale}/app`);
+
+  const { next } = await searchParams;
+  const demoLogin = process.env.DEMO_LOGIN === "1";
 
   const t = await getTranslations("landing");
 
@@ -67,7 +82,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               {t("signIn")}
             </h2>
             <p className="lp-card-sub">{t("signInSub")}</p>
-            <LoginForm locale={locale} />
+            <MagicLinkForm locale={locale} next={safeNext(next) ?? ""} />
+            {/* The demo password path is opt IN and fail closed: it appears only
+                when DEMO_LOGIN is exactly "1". Task J4 deletes it outright. */}
+            {demoLogin && <LoginForm locale={locale} />}
           </section>
         </div>
 

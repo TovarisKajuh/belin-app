@@ -28,6 +28,19 @@ export function newRawToken(): string {
   return randomBytes(32).toString("base64url");
 }
 
+/**
+ * A post-login destination is only ever a path on this site. Anything else,
+ * including a protocol-relative "//evil.example" (which a browser reads as an
+ * absolute URL), is dropped rather than repaired, so a crafted login link
+ * cannot bounce a freshly signed-in person onto somebody else's site.
+ */
+export function safeNext(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  if (!value.startsWith("/") || value.startsWith("//")) return null;
+  if (value.includes("\\") || value.includes("\n") || value.includes("\r")) return null;
+  return value;
+}
+
 export function loginTokenValid(
   row: { expires_at: string; used_at: string | null },
   now: Date,

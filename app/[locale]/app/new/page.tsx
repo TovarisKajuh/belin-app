@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { resolveActorFromSession } from "@/lib/auth";
+import { resolveTokenActorFromSession } from "@/lib/auth";
 import { listKnownSubs } from "@/lib/data/plan-imports";
 import { orgCountry } from "@/lib/data/orgs";
 import { Wizard } from "@/components/wizard/Wizard";
@@ -16,7 +16,7 @@ export default async function NewProjectPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const actor = await resolveActorFromSession();
+  const actor = await resolveTokenActorFromSession();
   if (!actor || actor.role !== "epc") redirect(`/${locale}`);
 
   const [subs, country] = await Promise.all([listKnownSubs(actor), orgCountry(actor.orgId)]);

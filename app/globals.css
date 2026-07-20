@@ -1177,6 +1177,21 @@ button.gal-item {
 .lp-submit:active:not(:disabled) { transform: translateY(0); }
 .lp-submit:disabled { cursor: default; filter: saturate(.45) brightness(.86); }
 
+/* the calm confirmation after a magic link is requested: the form is gone and
+   this replaces it, so there is nothing left to press twice */
+.lp-note {
+  margin: 0; padding: 14px 16px; border-radius: 12px;
+  background: rgba(255,210,26,.08); border: 1px solid rgba(255,210,26,.26);
+  color: var(--e-ink); font-size: 14px; line-height: 1.5;
+}
+
+/* the verify page is one card on an otherwise empty screen */
+.lp-solo {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 32px 0;
+}
+.lp-solo .lp-card { width: 100%; max-width: 420px; }
+
 .lp-foot { color: var(--e-muted); font-size: 12px; text-align: center; padding-top: 8px; }
 
 /* logout control, paired with the DEV swap pill; goes with the demo login */

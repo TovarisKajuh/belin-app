@@ -9,6 +9,7 @@ import { CrewHome } from "@/components/crew/CrewHome";
 import { EpcDashboard } from "@/components/epc/EpcDashboard";
 import { DevSwapBar } from "@/components/dev/DevSwapBar";
 import { LogoutPill } from "@/components/auth/LogoutPill";
+import { SignedInPlaceholder } from "@/components/auth/SignedInPlaceholder";
 import { ScenarioPill } from "@/components/auth/ScenarioPill";
 
 // The signed-in view. Same role router as /p/[token], except identity comes
@@ -22,6 +23,18 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
 
   const actor = await resolveActorFromSession();
   if (!actor) redirect(`/${locale}`);
+
+  // A person session lands here after the magic link. Task B4 turns this into
+  // the real project list and the sub office home; until then it confirms who
+  // is signed in, which is what the login flow needs to be verifiable.
+  if (actor.kind === "person") {
+    return (
+      <>
+        <SignedInPlaceholder actor={actor} />
+        <LogoutPill locale={locale} />
+      </>
+    );
+  }
 
   const token = await sessionToken();
   if (!token) redirect(`/${locale}`);

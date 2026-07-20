@@ -3,6 +3,7 @@ import {
   hashToken,
   newRawToken,
   loginTokenValid,
+  safeNext,
   LOGIN_TOKEN_TTL_MIN,
   SESSION_TTL_DAYS,
   LOGIN_RATE_MAX,
@@ -72,6 +73,31 @@ describe("loginTokenValid", () => {
     expect(
       loginTokenValid({ expires_at: "2026-07-20T12:00:00.000Z", used_at: null }, now),
     ).toBe(false);
+  });
+});
+
+describe("safeNext", () => {
+  it("keeps an ordinary path on this site", () => {
+    expect(safeNext("/sl/app/settings")).toBe("/sl/app/settings");
+    expect(safeNext("/sl/app?tab=hours")).toBe("/sl/app?tab=hours");
+  });
+
+  it("drops anything that could leave the site", () => {
+    expect(safeNext("//evil.example/steal")).toBeNull();
+    expect(safeNext("https://evil.example")).toBeNull();
+    expect(safeNext("sl/app")).toBeNull();
+    expect(safeNext("javascript:alert(1)")).toBeNull();
+  });
+
+  it("drops backslashes and newlines, which some browsers normalize", () => {
+    expect(safeNext("/\\evil.example")).toBeNull();
+    expect(safeNext("/sl/app\nSet-Cookie: x")).toBeNull();
+  });
+
+  it("drops anything that is not a string", () => {
+    expect(safeNext(null)).toBeNull();
+    expect(safeNext(undefined)).toBeNull();
+    expect(safeNext(42)).toBeNull();
   });
 });
 

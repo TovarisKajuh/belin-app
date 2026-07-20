@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { resolveActorFromSession } from "@/lib/auth";
+import { resolveTokenActorFromSession } from "@/lib/auth";
 import { listProjectsForOrg } from "@/lib/data/projects-list";
 import { BelinMark } from "@/components/BelinMark";
 
@@ -16,7 +16,7 @@ export default async function ProjectsPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const actor = await resolveActorFromSession();
+  const actor = await resolveTokenActorFromSession();
   if (!actor || actor.role !== "epc") redirect(`/${locale}`);
 
   const [projects, t] = await Promise.all([

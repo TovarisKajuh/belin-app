@@ -15,7 +15,50 @@ export type TokenActor = {
   tokenId: string;
 };
 
+// A signed-in human, resolved from a person session rather than from a link.
+// Kept OUT of the Actor union on purpose for now: every lib/data function takes
+// Actor and reads projectId and role off it, and widening the union here would
+// force that whole rename in this task. Task B4 does that deliberately, with
+// requireProjectActor as the seam. Until then a PersonActor only carries
+// identity, which is all the login flow needs.
+export type PersonActor = {
+  kind: "person";
+  personId: string;
+  orgId: string;
+  orgType: "epc" | "sub";
+  role: "admin" | "bauleiter" | "owner" | "crew";
+  fullName: string;
+  email: string | null;
+};
+
 export type Actor = TokenActor;
+
+/** What a session cookie can resolve to today: a project link, or a person. */
+export type SessionActor = TokenActor | PersonActor;
+
+export async function resolvePersonActor(personId: string): Promise<PersonActor | null> {
+  const db = createAdminClient();
+  const { data, error } = await db
+    .from("people")
+    .select("id, org_id, full_name, email, role, organizations (type)")
+    .eq("id", personId)
+    .maybeSingle();
+
+  if (error || !data || !data.organizations) return null;
+
+  const orgType = data.organizations.type as "epc" | "sub";
+  if (orgType !== "epc" && orgType !== "sub") return null;
+
+  return {
+    kind: "person",
+    personId: data.id,
+    orgId: data.org_id,
+    orgType,
+    role: data.role as PersonActor["role"],
+    fullName: data.full_name,
+    email: data.email,
+  };
+}
 
 export async function resolveActorFromToken(token: string): Promise<TokenActor | null> {
   if (!isPlausibleToken(token)) return null;

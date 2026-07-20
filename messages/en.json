@@ -191,7 +191,18 @@
     "logout": "Odjava",
     "scenarioCurrent": "Trenutno",
     "scenarioStart": "Dan 1",
-    "scenarioSwitch": "Preklopi stanje projekta"
+    "scenarioSwitch": "Preklopi stanje projekta",
+    "emailLabel": "E-poštni naslov",
+    "sendLink": "Pošlji povezavo",
+    "linkSent": "Povezava za prijavo je poslana. Preverite e-pošto.",
+    "linkInvalid": "Povezava ni veljavna ali je potekla. Zahtevajte novo.",
+    "confirmTitle": "Prijava v Belin",
+    "confirmLogin": "Potrdi prijavo",
+    "loginSubject": "Vaša prijava v Belin",
+    "loginBody": "Kliknite gumb za prijavo. Povezava velja 15 minut.",
+    "loginCta": "Prijava v Belin",
+    "signedInTitle": "Prijavljeni ste",
+    "signedInAs": "Prijavljeni ste kot {name}."
   },
   "wizard": {
     "title": "Nov projekt",
