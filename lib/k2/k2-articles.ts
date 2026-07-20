@@ -1,12 +1,12 @@
 // Article list extraction and selection. Pure, total, never throws.
-// See lib/k2/k2-shared.ts for why nothing here imports "server-only".
+// See lib/k2/k2-core.ts for why nothing here imports "server-only".
 import {
   parseGermanNumber,
   readBreadcrumb,
   toLines,
   type K2LineItem,
   type K2WarningCode,
-} from "@/lib/k2/k2-shared";
+} from "@/lib/k2/k2-core";
 
 export type ArticleScope =
   | { kind: "total" }
