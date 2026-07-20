@@ -7,51 +7,15 @@ import { PendingButton } from "@/components/auth/PendingButton";
 
 const INITIAL: InviteState = { sent: false, error: null };
 
-// The EPC's two invitations: a subcontractor company onto one project, and a
-// colleague into their own organization. Nothing here can invite across an
-// organization boundary except the first, which is the whole point of the
-// matrix in lib/invites-shared.ts.
-//
-// Each card owns its own action state. Sharing one would announce "invitation
-// sent" on the card the person did not use.
-export function InvitePanel({
-  locale,
-  projects,
-}: {
-  locale: string;
-  projects: { id: string; name: string }[];
-}) {
+// Colleagues only. Inviting a SUBCONTRACTOR lives on the project itself (the
+// wizard's sub step, and the panel on a project that has none), because that is
+// the moment an EPC actually wants one; nobody opens settings mid job to add
+// the company they are about to send to site.
+export function InvitePanel({ locale }: { locale: string }) {
   const t = useTranslations("settings");
 
   return (
     <div className="st-grid">
-      {projects.length === 0 ? (
-        // Every project already has a subcontractor. Said plainly, with the way
-        // forward, rather than offering a form that can only be refused.
-        <div className="st-card">
-          <h3 className="st-h">{t("inviteSub")}</h3>
-          <p className="st-note">{t("inviteSubNoProjects")}</p>
-        </div>
-      ) : (
-        <InviteForm
-          locale={locale}
-          kind="sub_company"
-          title={t("inviteSub")}
-          note={t("inviteSubNote")}
-        >
-          <label className="lp-field">
-            <span className="lp-label">{t("project")}</span>
-            <select className="lp-input" name="projectId" required>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        </InviteForm>
-      )}
-
       <InviteForm
         locale={locale}
         kind="epc_member"

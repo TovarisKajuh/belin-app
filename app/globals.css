@@ -1688,6 +1688,19 @@ button.gal-item {
 }
 .belin-dark .st-h { margin: 0; font-size: 16px; font-weight: 700; }
 .belin-dark .st-note { margin: 0; font-size: 12.5px; color: var(--e-muted); line-height: 1.5; }
+/* share a link the way people actually pass links around */
+.belin-dark .sl-wrap { display: grid; gap: 12px; }
+.belin-dark .sl-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.belin-dark .sl-primary { margin-top: 0; }
+.belin-dark .sl-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 12px 16px; border-radius: 11px; cursor: pointer;
+  background: var(--e-surface-2); border: 1px solid var(--e-line);
+  color: var(--e-ink); font: inherit; font-size: 13.5px; font-weight: 600;
+  text-decoration: none; transition: border-color .15s ease, background .15s ease;
+}
+.belin-dark .sl-btn:hover { border-color: rgba(255,210,26,.4); background: var(--e-surface); }
+
 .belin-dark .st-card--form { grid-column: 1 / -1; max-width: 620px; }
 .belin-dark .st-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .belin-dark .st-hint { font-size: 11.5px; color: var(--e-muted); margin-top: 2px; }

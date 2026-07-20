@@ -97,3 +97,23 @@ export async function listProjectsForOrg(actor: OrgActor): Promise<ProjectListRo
     };
   });
 }
+
+/**
+ * The project's name when it still has no subcontractor, or null when one is
+ * attached. Used to decide whether to surface the invite panel.
+ */
+export async function projectNeedsSub(
+  projectId: string,
+): Promise<{ name: string } | null> {
+  if (!isUuid(projectId)) return null;
+
+  const db = createAdminClient();
+  const { data } = await db
+    .from("projects")
+    .select("name, sub_org_id")
+    .eq("id", projectId)
+    .maybeSingle();
+
+  if (!data || data.sub_org_id) return null;
+  return { name: data.name };
+}

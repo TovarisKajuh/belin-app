@@ -11,7 +11,15 @@
     "address": "Address",
     "installedOfTarget": "{installed} of {target} {unit}",
     "notFoundTitle": "Link not valid",
-    "notFoundBody": "This project link does not exist or has been revoked."
+    "notFoundBody": "This project link does not exist or has been revoked.",
+    "noSubTitle": "Podizvajalec še ni določen",
+    "noSubHint": "Ustvarite povezavo in jo pošljite podizvajalcu. Ko jo odpre, si ustvari račun in se poveže s tem projektom.",
+    "subEmailOptional": "E-poštni naslov (neobvezno)",
+    "subGenerate": "Ustvari povezavo",
+    "subGenerating": "Ustvarjam ...",
+    "subLinkReady": "Povezavo pošljite podizvajalcu.",
+    "subAlready": "Na tem projektu je podizvajalec že določen.",
+    "subFailed": "Povezave ni bilo mogoče ustvariti. Poskusite znova."
   },
   "crew": {
     "todayReport": "Today's report",
@@ -261,7 +269,12 @@
     "roofKwp": "kWp",
     "roofSum": "Skupaj po strehah: {n} od {total} modulov",
     "roofsHint": "Razporeditev modulov po strehah. Kaj gre kam.",
-    "articlesHint": "Kar mora ekipa preveriti ob dostavi. Moduli so na vrhu, K2 načrt jih ne našteje sam."
+    "articlesHint": "Kar mora ekipa preveriti ob dostavi. Moduli so na vrhu, K2 načrt jih ne našteje sam.",
+    "subInviteNew": "Povabi novega podizvajalca",
+    "subInviteHint": "Ustvarimo povezavo za povabilo. Pošljete jo lahko kar prek WhatsAppa ali SMS. E-pošta ni obvezna.",
+    "subInviteEmail": "E-poštni naslov (neobvezno)",
+    "subInviteReady": "Povezava za podizvajalca",
+    "subInviteReadyHint": "Pošljite to povezavo podizvajalcu. Ko jo odpre, si ustvari račun in se poveže s projektom."
   },
   "projects": {
     "title": "Projekti",
@@ -331,7 +344,9 @@
     "notifSection": "Obvestila",
     "notifNote": "Velja samo za vaš račun. Vsak sodelavec ima svoje nastavitve.",
     "vaultSection": "Dokumenti podjetja",
-    "inviteSubNoProjects": "Vsi projekti že imajo podizvajalca. Ustvarite nov projekt in ga povabite nanj."
+    "inviteSubNoProjects": "Vsi projekti že imajo podizvajalca. Ustvarite nov projekt in ga povabite nanj.",
+    "crewShareSubject": "Povezava za ekipo",
+    "crewShareMessage": "Povezava za dnevno poročanje na projektu {project}. Računa ne potrebujete."
   },
   "invite": {
     "title": "Povabilo v Belin",
@@ -346,7 +361,8 @@
     "alreadyLinked": "Na tem projektu je podizvajalec že določen.",
     "emailTaken": "Ta e-poštni naslov že ima račun.",
     "login": "Prijavite se.",
-    "goHome": "Na začetno stran"
+    "goHome": "Na začetno stran",
+    "shareMessage": "Vabim vas k sodelovanju na projektu {project} v aplikaciji Belin."
   },
   "vault": {
     "title": "Dokumenti",
@@ -394,5 +410,12 @@
       "invoice_sent": "Račun poslan",
       "document_expiring": "Dokument poteče"
     }
+  },
+  "share": {
+    "copy": "Kopiraj povezavo",
+    "copied": "Kopirano",
+    "share": "Deli",
+    "whatsapp": "WhatsApp",
+    "email": "E-pošta"
   }
 }

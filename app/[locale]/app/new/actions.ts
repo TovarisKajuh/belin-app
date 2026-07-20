@@ -1,5 +1,5 @@
 "use server";
-import { resolveTokenActorFromSession } from "@/lib/auth";
+import { resolveActorFromSession } from "@/lib/auth";
 import {
   createProjectFromReview,
   uploadAndParsePlan,
@@ -7,15 +7,28 @@ import {
   type PlanUploadError,
   type ReviewPayload,
 } from "@/lib/data/plan-imports";
-import type { Actor } from "@/lib/actor";
+import { requireOfficeActor, type OrgActor } from "@/lib/actor";
 
-// The office gate. Today identity comes from the demo session cookie and the
-// only office role is epc; when accounts land (master plan Part B) this is the
-// ONE function that becomes requireOfficeActor, and nothing else here changes.
-async function requireEpcActor(): Promise<Actor | null> {
-  const actor = await resolveTokenActorFromSession();
-  if (!actor || actor.role !== "epc") return null;
-  return actor;
+/**
+ * The office gate, now that accounts exist.
+ *
+ * A Bauleiter IS allowed here: creating a project from a plan is site
+ * preparation, not a contract, and the person who has the K2 export in their
+ * hand is usually the one running the site. The link-token path stays for the
+ * demo surfaces until Task J4 removes them.
+ */
+async function requireEpcActor(): Promise<OrgActor | null> {
+  const actor = await resolveActorFromSession();
+  if (!actor) return null;
+
+  if (actor.kind === "token") return actor.role === "epc" ? actor : null;
+
+  try {
+    const person = requireOfficeActor(actor, { allowBauleiter: true });
+    return person.orgType === "epc" ? person : null;
+  } catch {
+    return null;
+  }
 }
 
 export type UploadActionResult =

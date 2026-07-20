@@ -9,6 +9,8 @@ import { getEpcDashboard } from "@/lib/data/epc-dashboard";
 import { CrewHome } from "@/components/crew/CrewHome";
 import { EpcDashboard } from "@/components/epc/EpcDashboard";
 import { SubHome } from "@/components/sub/SubHome";
+import { AddSubPanel } from "@/components/project/AddSubPanel";
+import { projectNeedsSub } from "@/lib/data/projects-list";
 import { LogoutPill } from "@/components/auth/LogoutPill";
 
 // One project, opened by a signed-in person. Same views as the link routes,
@@ -75,8 +77,21 @@ export default async function ProjectPage({
 
   const data = await getEpcDashboard(project);
   if (!data) notFound();
+
+  // A project with no subcontractor cannot receive a naročilnica and no crew
+  // link resolves, so the gap is surfaced here where the EPC will see it,
+  // rather than left to be discovered later from a settings page.
+  const needsSub = await projectNeedsSub(projectId);
+
   return (
     <>
+      {needsSub && (
+        <div className="belin-dark">
+          <div className="e-wrap">
+            <AddSubPanel projectId={projectId} projectName={needsSub.name} locale={locale} />
+          </div>
+        </div>
+      )}
       <EpcDashboard token={null} projectId={projectId} data={data} locale={locale} />
       <LogoutPill locale={locale} />
     </>

@@ -1,7 +1,14 @@
 "use server";
+import { after } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { resolveActorFromSession } from "@/lib/auth";
-import { requireProjectActor, type ProjectActor } from "@/lib/actor";
+import { requireProjectActor, requireOfficeActor, type ProjectActor } from "@/lib/actor";
 import { isUuid } from "@/lib/actor-shared";
+import { canCreateInvite } from "@/lib/invites-shared";
+import { createInvite } from "@/lib/data/invites";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail, renderEmail } from "@/lib/email";
+import { appBaseUrl } from "@/lib/app-url";
 import {
   createPhotoUploadTargets,
   createMaterialDocTargets,
@@ -96,6 +103,79 @@ export async function submitReport(
   const entryId = await submitDailyReport(actor, payload);
   await notifyProject(actor.projectId);
   return { ok: true, entryId };
+}
+
+/**
+ * Create an invitation for a subcontractor company and return the LINK.
+ *
+ * A link rather than only an email, because that is how this actually happens:
+ * the EPC already has the sub in WhatsApp, and telling them to wait for an
+ * email from an app they have never heard of is a worse first contact than
+ * pasting a link into the thread they are already in. An email is sent as well
+ * when an address is given, but the link works on its own.
+ */
+export async function createSubInviteLink(
+  projectId: string,
+  email: string | null,
+  locale: string,
+): Promise<
+  { ok: true; url: string } | { ok: false; error: "forbidden" | "alreadyLinked" | "failed" }
+> {
+  if (!isUuid(projectId)) return { ok: false, error: "forbidden" };
+
+  const actor = await resolveActorFromSession();
+  if (!actor) return { ok: false, error: "forbidden" };
+
+  let person;
+  try {
+    person = requireOfficeActor(actor);
+  } catch {
+    return { ok: false, error: "forbidden" };
+  }
+  if (!canCreateInvite(person.orgType, person.role, "sub_company")) {
+    return { ok: false, error: "forbidden" };
+  }
+
+  const db = createAdminClient();
+  const { data: project } = await db
+    .from("projects")
+    .select("id, name, epc_org_id, sub_org_id")
+    .eq("id", projectId)
+    .maybeSingle();
+
+  if (!project || project.epc_org_id !== person.orgId) return { ok: false, error: "forbidden" };
+  if (project.sub_org_id) return { ok: false, error: "alreadyLinked" };
+
+  const base = appBaseUrl();
+  if (!base) return { ok: false, error: "failed" };
+
+  const { token } = await createInvite(person, {
+    kind: "sub_company",
+    email: email ?? "",
+    projectId,
+  });
+  const url = `${base}/${locale}/invite/${token}`;
+
+  if (email && email.includes("@")) {
+    const { data: org } = await db
+      .from("organizations")
+      .select("name")
+      .eq("id", person.orgId)
+      .maybeSingle();
+
+    const t = await getTranslations({ locale, namespace: "invite" });
+    const html = renderEmail(
+      t("title"),
+      [t("body", { org: org?.name ?? "", project: project.name })],
+      t("acceptCta"),
+      url,
+    );
+    after(async () => {
+      await sendEmail({ to: email, kind: "invite", projectId, subject: t("subject"), html });
+    });
+  }
+
+  return { ok: true, url };
 }
 
 // Either party may call this; which moves are legal is decided by role inside

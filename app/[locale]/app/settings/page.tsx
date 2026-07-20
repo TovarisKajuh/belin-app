@@ -105,16 +105,7 @@ export default async function SettingsPage({
         {person.orgType === "epc" && (
           <section className="e-sec e-reveal">
             <h2 className="e-sec-h">{t("peopleSection")}</h2>
-            {/* Only projects still without a subcontractor can receive one, so
-                only those are offered. Listing the rest would let somebody pick
-                a project and then be refused for a reason the form never
-                showed them. */}
-            <InvitePanel
-              locale={locale}
-              projects={projects
-                .filter((p) => p.subName === null)
-                .map((p) => ({ id: p.id, name: p.name }))}
-            />
+            <InvitePanel locale={locale} />
           </section>
         )}
 
@@ -124,13 +115,7 @@ export default async function SettingsPage({
             <p className="st-note">{t("crewLinkNote")}</p>
             <div className="st-grid">
               {crewLinks.map((l) => (
-                <CrewLink
-                  key={l.projectId}
-                  name={l.name}
-                  url={l.url}
-                  copyLabel={t("copyLink")}
-                  copiedLabel={t("copied")}
-                />
+                <CrewLink key={l.projectId} name={l.name} url={l.url} />
               ))}
             </div>
           </section>

@@ -11,6 +11,8 @@ const db = createClient(url, key, { auth: { persistSession: false } });
 
 const EPC_ORG = "11111111-1111-4111-8111-111111111111";
 const SUB_ORG = "22222222-2222-4222-8222-222222222222";
+// The founder's own company, deliberately separate from both demo companies.
+const FOUNDER_ORG = "12121212-1212-4121-8121-121212121212";
 const PROJECT = "33333333-3333-4333-8333-333333333333";
 const SCOPE_UK = "44444444-4444-4444-8444-444444444401";
 const SCOPE_MODULES = "44444444-4444-4444-8444-444444444402";
@@ -94,13 +96,31 @@ await upsert("organizations", [
 // seed is the founder's, taken from SEED_FOUNDER_EMAIL; without it the founder
 // person is skipped and login is demonstrated locally through the dev log.
 const founderEmail = process.env.SEED_FOUNDER_EMAIL?.trim().toLowerCase();
+
+// The founder gets their OWN company, not a seat inside the demo EPC.
+//
+// This matters: signed in with a real address, you are a real customer, and a
+// real customer's first login shows an empty project list, not somebody else's
+// staged data. The demo companies keep their staged projects and stay reachable
+// through the demo links for showing prospects; the two never mix.
+if (founderEmail) {
+  await upsert("organizations", [
+    {
+      id: FOUNDER_ORG,
+      type: "epc",
+      name: process.env.SEED_FOUNDER_ORG?.trim() || "Moje podjetje d.o.o.",
+      country: "si",
+    },
+  ]);
+}
+
 const people = [
   { id: PERSON_EPC, org_id: EPC_ORG, full_name: "Matej Kovač", role: "bauleiter", email: "matej@sonce-demo.si" },
   { id: PERSON_SUB, org_id: SUB_ORG, full_name: "Luka Zupan", role: "crew", email: "luka@avesol-demo.si" },
   { id: PERSON_SUB_ADMIN, org_id: SUB_ORG, full_name: "Ana Novak", role: "admin", email: "ana@avesol-demo.si" },
 ];
 if (founderEmail) {
-  people.push({ id: PERSON_FOUNDER, org_id: EPC_ORG, full_name: "Jan", role: "admin", email: founderEmail });
+  people.push({ id: PERSON_FOUNDER, org_id: FOUNDER_ORG, full_name: "Jan", role: "admin", email: founderEmail });
 } else {
   console.log("people: SEED_FOUNDER_EMAIL not set, founder person skipped");
 }

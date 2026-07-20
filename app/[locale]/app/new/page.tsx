@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { resolveTokenActorFromSession } from "@/lib/auth";
+import { resolveActorFromSession } from "@/lib/auth";
+import { requireOfficeActor, type OrgActor } from "@/lib/actor";
 import { listKnownSubs } from "@/lib/data/plan-imports";
 import { orgCountry } from "@/lib/data/orgs";
 import { Wizard } from "@/components/wizard/Wizard";
@@ -16,8 +17,19 @@ export default async function NewProjectPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const actor = await resolveTokenActorFromSession();
-  if (!actor || actor.role !== "epc") {
+  const session = await resolveActorFromSession();
+  let actor: OrgActor | null = null;
+  if (session?.kind === "token" && session.role === "epc") {
+    actor = session;
+  } else if (session?.kind === "person") {
+    try {
+      const person = requireOfficeActor(session, { allowBauleiter: true });
+      if (person.orgType === "epc") actor = person;
+    } catch {
+      actor = null;
+    }
+  }
+  if (!actor) {
     redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app/new`)}`);
   }
 

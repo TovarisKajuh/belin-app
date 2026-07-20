@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { createProjectAction, uploadPlanAction } from "@/app/[locale]/app/new/actions";
 import type { DraftItem, DraftRoof, ProjectDraft } from "@/lib/k2/k2-project";
 import type { SubOption } from "@/lib/data/plan-imports";
+import { createSubInviteLink } from "@/app/[locale]/app/[projectId]/actions";
+import { ShareLink } from "@/components/share/ShareLink";
 import type { K2WarningCode } from "@/lib/k2/k2-shared";
 
 type Step = "plan" | "review" | "sub" | "done";
@@ -48,6 +50,8 @@ export function Wizard({
   defaultCountry: string;
 }) {
   const t = useTranslations("wizard");
+  const tInvite = useTranslations("invite");
+  const tShare = useTranslations("share");
 
   const [step, setStep] = useState<Step>("plan");
   const [busy, setBusy] = useState(false);
@@ -59,7 +63,11 @@ export function Wizard({
   const [draft, setDraft] = useState<ProjectDraft>(emptyDraft(defaultCountry, locale));
   const [items, setItems] = useState<DraftItem[]>([]);
   const [roofs, setRoofs] = useState<DraftRoof[]>([]);
+  // "pick" an existing sub, "invite" a new company by link, or "later".
+  const [subMode, setSubMode] = useState<"pick" | "invite" | "later">("later");
   const [subOrgId, setSubOrgId] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [created, setCreated] = useState<{ projectId: string; epcToken: string } | null>(null);
 
   const fileRef = useRef<HTMLInputElement>(null);
@@ -116,7 +124,7 @@ export function Wizard({
     try {
       const res = await createProjectAction({
         importId,
-        subOrgId,
+        subOrgId: subMode === "pick" ? subOrgId : null,
         project: {
           name: draft.name.trim(),
           country: draft.country,
@@ -143,6 +151,18 @@ export function Wizard({
         return;
       }
       setCreated({ projectId: res.projectId, epcToken: res.epcToken });
+
+      // The invitation is minted AFTER the project exists, because it points at
+      // that project. A failure here must not lose the project that was just
+      // created, so it only costs the link.
+      if (subMode === "invite") {
+        const invite = await createSubInviteLink(
+          res.projectId,
+          inviteEmail.trim() || null,
+          locale,
+        );
+        if (invite.ok) setInviteUrl(invite.url);
+      }
       setStep("done");
     } catch {
       setError(t("createFailed"));
@@ -464,31 +484,58 @@ export function Wizard({
           <section className="e-sec">
             <h2 className="e-sec-h">{t("subPick")}</h2>
 
-            {subs.length === 0 ? (
-              <p className="wz-empty">{t("subEmpty")}</p>
-            ) : (
-              <div className="wz-subs" role="radiogroup" aria-label={t("subPick")}>
-                {subs.map((s) => (
-                  <button
-                    type="button"
-                    key={s.id}
-                    role="radio"
-                    aria-checked={subOrgId === s.id}
-                    className={`wz-sub${subOrgId === s.id ? " on" : ""}`}
-                    onClick={() => setSubOrgId(s.id)}
-                  >
-                    {s.name}
-                  </button>
-                ))}
+            <div className="wz-subs" role="radiogroup" aria-label={t("subPick")}>
+              {subs.map((s) => (
                 <button
                   type="button"
+                  key={s.id}
                   role="radio"
-                  aria-checked={subOrgId === null}
-                  className={`wz-sub${subOrgId === null ? " on" : ""}`}
-                  onClick={() => setSubOrgId(null)}
+                  aria-checked={subMode === "pick" && subOrgId === s.id}
+                  className={`wz-sub${subMode === "pick" && subOrgId === s.id ? " on" : ""}`}
+                  onClick={() => {
+                    setSubMode("pick");
+                    setSubOrgId(s.id);
+                  }}
                 >
-                  {t("subSkip")}
+                  {s.name}
                 </button>
+              ))}
+
+              <button
+                type="button"
+                role="radio"
+                aria-checked={subMode === "invite"}
+                className={`wz-sub${subMode === "invite" ? " on" : ""}`}
+                onClick={() => setSubMode("invite")}
+              >
+                {t("subInviteNew")}
+              </button>
+
+              <button
+                type="button"
+                role="radio"
+                aria-checked={subMode === "later"}
+                className={`wz-sub${subMode === "later" ? " on" : ""}`}
+                onClick={() => setSubMode("later")}
+              >
+                {t("subSkip")}
+              </button>
+            </div>
+
+            {subMode === "invite" && (
+              <div className="wz-invite">
+                <p className="wz-subhint">{t("subInviteHint")}</p>
+                <label className="lp-field">
+                  <span className="lp-label">{t("subInviteEmail")}</span>
+                  <input
+                    className="lp-input"
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    autoCapitalize="off"
+                    spellCheck={false}
+                  />
+                </label>
               </div>
             )}
 
@@ -510,7 +557,26 @@ export function Wizard({
             <p className="wz-hint">
               {t("articlesTitle")}: {items.length}
             </p>
-            <Link className="wz-primary wz-link" href={`/${locale}/p/${created.epcToken}`}>
+            {inviteUrl && (
+              <div className="wz-invite-done">
+                <h2 className="e-sec-h">{t("subInviteReady")}</h2>
+                <p className="wz-hint">{t("subInviteReadyHint")}</p>
+                <ShareLink
+                  url={inviteUrl}
+                  subject={tInvite("subject")}
+                  message={tInvite("shareMessage", { project: draft.name })}
+                  labels={{
+                    copy: tShare("copy"),
+                    copied: tShare("copied"),
+                    share: tShare("share"),
+                    whatsapp: tShare("whatsapp"),
+                    email: tShare("email"),
+                  }}
+                />
+              </div>
+            )}
+
+            <Link className="wz-primary wz-link" href={`/${locale}/app/${created.projectId}`}>
               {t("openProject")}
             </Link>
           </section>
