@@ -190,6 +190,7 @@ export type Database = {
       }
       change_orders: {
         Row: {
+          amount: number | null
           created_at: string
           created_by_person: string | null
           decided_at: string | null
@@ -203,6 +204,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          amount?: number | null
           created_at?: string
           created_by_person?: string | null
           decided_at?: string | null
@@ -216,6 +218,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          amount?: number | null
           created_at?: string
           created_by_person?: string | null
           decided_at?: string | null
@@ -943,6 +946,54 @@ export type Database = {
           },
         ]
       }
+      plan_imports: {
+        Row: {
+          created_at: string
+          created_by_person: string | null
+          id: string
+          parsed: Json
+          project_id: string | null
+          source: string
+          status: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_person?: string | null
+          id?: string
+          parsed: Json
+          project_id?: string | null
+          source: string
+          status?: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          created_by_person?: string | null
+          id?: string
+          parsed?: Json
+          project_id?: string | null
+          source?: string
+          status?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_imports_created_by_person_fkey"
+            columns: ["created_by_person"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_imports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_tokens: {
         Row: {
           created_at: string
@@ -1073,6 +1124,135 @@ export type Database = {
             columns: ["sub_org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_order_lines: {
+        Row: {
+          description: string
+          id: string
+          purchase_order_id: string
+          qty: number | null
+          sort_order: number
+          total: number
+          unit: string | null
+          unit_price: number | null
+        }
+        Insert: {
+          description: string
+          id?: string
+          purchase_order_id: string
+          qty?: number | null
+          sort_order?: number
+          total: number
+          unit?: string | null
+          unit_price?: number | null
+        }
+        Update: {
+          description?: string
+          id?: string
+          purchase_order_id?: string
+          qty?: number | null
+          sort_order?: number
+          total?: number
+          unit?: string | null
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_lines_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          accepted_at: string | null
+          accepted_by_name: string | null
+          accepted_by_person: string | null
+          created_at: string
+          created_by_person: string | null
+          currency: string
+          deadline: string | null
+          id: string
+          number: number
+          payment_terms: string | null
+          pdf_path: string | null
+          pdf_sha256: string | null
+          project_id: string
+          regie_hourly_rate: number | null
+          rejected_at: string | null
+          rejection_note: string | null
+          sent_at: string | null
+          status: string
+          total_net: number
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by_name?: string | null
+          accepted_by_person?: string | null
+          created_at?: string
+          created_by_person?: string | null
+          currency?: string
+          deadline?: string | null
+          id?: string
+          number: number
+          payment_terms?: string | null
+          pdf_path?: string | null
+          pdf_sha256?: string | null
+          project_id: string
+          regie_hourly_rate?: number | null
+          rejected_at?: string | null
+          rejection_note?: string | null
+          sent_at?: string | null
+          status?: string
+          total_net: number
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by_name?: string | null
+          accepted_by_person?: string | null
+          created_at?: string
+          created_by_person?: string | null
+          currency?: string
+          deadline?: string | null
+          id?: string
+          number?: number
+          payment_terms?: string | null
+          pdf_path?: string | null
+          pdf_sha256?: string | null
+          project_id?: string
+          regie_hourly_rate?: number | null
+          rejected_at?: string | null
+          rejection_note?: string | null
+          sent_at?: string | null
+          status?: string
+          total_net?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_accepted_by_person_fkey"
+            columns: ["accepted_by_person"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_created_by_person_fkey"
+            columns: ["created_by_person"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
