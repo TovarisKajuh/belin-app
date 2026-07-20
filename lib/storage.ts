@@ -86,3 +86,58 @@ export async function getSignedPhotoUrlMap(paths: string[]): Promise<Record<stri
   // Sorted so the same set produces the same cache key regardless of order.
   return signPaths([...paths].sort());
 }
+
+const signDocPaths = unstable_cache(
+  async (paths: string[]): Promise<Record<string, string>> => {
+    const db = createAdminClient();
+    const { data, error } = await db.storage.from("docs").createSignedUrls(paths, 3600);
+    if (error || !data) return {};
+    const map: Record<string, string> = {};
+    for (const d of data) {
+      if (d.path && d.signedUrl) map[d.path] = d.signedUrl;
+    }
+    return map;
+  },
+  ["signed-docs"],
+  { revalidate: 3000 }
+);
+
+/**
+ * Signed download URLs for compliance documents in the private docs bucket.
+ *
+ * THE RULE, because this function signs with the service role and therefore
+ * grants whatever it is handed: callers may pass ONLY storage paths read from
+ * documents rows they were already authorized to load. In practice that means
+ * rows where documents.org_id is the caller's own organization, or, for an EPC
+ * reader, rows where documents.org_id equals the project's sub_org_id resolved
+ * through requireProjectActor.
+ *
+ * Never pass a path that came from a request, and never pass a path from a
+ * documents row loaded without one of those two checks. An A1 certificate
+ * carries a named person's identity data; a leaked signed URL to it is a
+ * personal data breach, not an inconvenience.
+ */
+export async function getSignedDocUrlMap(paths: string[]): Promise<Record<string, string>> {
+  if (paths.length === 0) return {};
+  return signDocPaths([...paths].sort());
+}
+
+/**
+ * A signed upload URL for one vault document. The extension is chosen by the
+ * caller from the validated mime type, never from the uploaded filename, and
+ * the path is namespaced by organization so one company's vault can never
+ * receive another's file.
+ */
+export async function createVaultDocTarget(
+  orgId: string,
+  extension: string
+): Promise<UploadTarget> {
+  if (!isUuid(orgId)) throw new Error("Invalid organization id");
+  if (!/^[a-z0-9]{2,4}$/.test(extension)) throw new Error("Invalid extension");
+
+  const db = createAdminClient();
+  const path = `${orgId}/vault/${randomUUID()}.${extension}`;
+  const { data, error } = await db.storage.from("docs").createSignedUploadUrl(path);
+  if (error || !data) throw new Error("Could not create upload URL");
+  return { path: data.path, token: data.token };
+}

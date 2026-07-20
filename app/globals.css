@@ -1688,6 +1688,68 @@ button.gal-item {
 }
 .belin-dark .st-h { margin: 0; font-size: 16px; font-weight: 700; }
 .belin-dark .st-note { margin: 0; font-size: 12.5px; color: var(--e-muted); line-height: 1.5; }
+.belin-dark .st-card--form { grid-column: 1 / -1; max-width: 620px; }
+.belin-dark .st-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.belin-dark .st-hint { font-size: 11.5px; color: var(--e-muted); margin-top: 2px; }
+@media (max-width: 520px) { .belin-dark .st-row { grid-template-columns: 1fr; } }
+
+/* compliance vault: the colour has to carry the meaning before anyone reads a
+   date, because an expired A1 means the crew on the roof is not legally posted */
+.belin-dark .vt-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.belin-dark .vt-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--e-line);
+}
+.belin-dark .vt-item:last-child { border-bottom: none; }
+.belin-dark .vt-dot { width: 9px; height: 9px; border-radius: 999px; flex: none; }
+.belin-dark .vt-dot.vt-valid { background: var(--e-ok); box-shadow: 0 0 9px rgba(74,208,122,.5); }
+.belin-dark .vt-dot.vt-expiringSoon { background: var(--e-gold); box-shadow: 0 0 9px var(--e-glow-2); }
+.belin-dark .vt-dot.vt-expired { background: #ff5c5c; box-shadow: 0 0 9px rgba(255,92,92,.5); }
+.belin-dark .vt-dot.vt-none { background: var(--e-line); }
+.belin-dark .vt-main { flex: 1; min-width: 0; }
+.belin-dark .vt-name { font-size: 14px; font-weight: 600; }
+.belin-dark .vt-name a { color: inherit; }
+.belin-dark .vt-meta { font-size: 12px; color: var(--e-muted); margin-top: 2px; }
+.belin-dark .vt-badge {
+  flex: none; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  padding: 4px 9px; border-radius: 999px;
+}
+.belin-dark .vt-badge.vt-expiringSoon { color: var(--e-gold-2); background: rgba(255,210,26,.1); border: 1px solid rgba(255,210,26,.3); }
+.belin-dark .vt-badge.vt-expired { color: #ffb9b9; background: rgba(255,92,92,.1); border: 1px solid rgba(255,92,92,.32); }
+
+/* notification switches */
+.belin-dark .np-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.belin-dark .np-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 11px 0; border-bottom: 1px solid var(--e-line);
+}
+.belin-dark .np-item:last-child { border-bottom: none; }
+.belin-dark .np-label { font-size: 13.5px; }
+.belin-dark .np-switch { position: relative; flex: none; width: 44px; height: 26px; cursor: pointer; }
+.belin-dark .np-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.belin-dark .np-track {
+  position: absolute; inset: 0; border-radius: 999px;
+  background: var(--e-surface-2); border: 1px solid var(--e-line);
+  transition: background .18s ease, border-color .18s ease;
+}
+.belin-dark .np-track::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+  border-radius: 999px; background: var(--e-muted);
+  transition: transform .18s cubic-bezier(.2,.8,.2,1), background .18s ease;
+}
+.belin-dark .np-switch input:checked + .np-track {
+  background: rgba(255,210,26,.22); border-color: rgba(255,210,26,.5);
+}
+.belin-dark .np-switch input:checked + .np-track::after {
+  transform: translateX(18px); background: var(--e-gold);
+}
+.belin-dark .np-switch input:focus-visible + .np-track {
+  box-shadow: 0 0 0 3px rgba(255,210,26,.2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .belin-dark .np-track, .belin-dark .np-track::after { transition: none; }
+}
+
 .belin-dark .st-url {
   margin: 0; padding: 11px 13px; border-radius: 10px;
   background: rgba(4,9,16,.55); border: 1px solid var(--e-line);

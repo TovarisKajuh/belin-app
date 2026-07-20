@@ -7,8 +7,16 @@ import { listProjectsForPerson } from "@/lib/data/projects-list";
 import { ensureCrewLink } from "@/lib/data/invites";
 import { canIssueCrewLink } from "@/lib/invites-shared";
 import { appBaseUrl } from "@/lib/app-url";
+import {
+  getOrgSettings,
+  getNotificationPrefs,
+  listVaultDocs,
+} from "@/lib/data/org-settings";
 import { InvitePanel } from "@/components/settings/InvitePanel";
 import { CrewLink } from "@/components/settings/CrewLink";
+import { OrgForm } from "@/components/settings/OrgForm";
+import { VaultPanel } from "@/components/settings/VaultPanel";
+import { NotificationPrefs } from "@/components/settings/NotificationPrefs";
 import { BelinMark } from "@/components/BelinMark";
 
 // Settings. Task B5 gives it the invitations and the crew link; Task B6 adds
@@ -34,7 +42,12 @@ export default async function SettingsPage({
   }
 
   const t = await getTranslations("settings");
-  const projects = await listProjectsForPerson(person);
+  const [projects, org, prefs, docs] = await Promise.all([
+    listProjectsForPerson(person),
+    getOrgSettings(person),
+    getNotificationPrefs(person),
+    person.orgType === "sub" ? listVaultDocs(person) : Promise.resolve([]),
+  ]);
 
   // The crew link is per project and only the sub office hands it out.
   const crewLinks = canIssueCrewLink(person.orgType, person.role)
@@ -69,6 +82,26 @@ export default async function SettingsPage({
       </div>
 
       <div className="e-wrap">
+        {org && (
+          <section className="e-sec e-reveal">
+            <h2 className="e-sec-h">{t("orgSection")}</h2>
+            <OrgForm locale={locale} org={org} />
+          </section>
+        )}
+
+        <section className="e-sec e-reveal">
+          <h2 className="e-sec-h">{t("notifSection")}</h2>
+          <p className="st-note">{t("notifNote")}</p>
+          <NotificationPrefs prefs={prefs} side={person.orgType} />
+        </section>
+
+        {person.orgType === "sub" && (
+          <section className="e-sec e-reveal">
+            <h2 className="e-sec-h">{t("vaultSection")}</h2>
+            <VaultPanel docs={docs} today={new Date().toISOString()} />
+          </section>
+        )}
+
         {person.orgType === "epc" && (
           <section className="e-sec e-reveal">
             <h2 className="e-sec-h">{t("peopleSection")}</h2>

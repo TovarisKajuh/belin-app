@@ -316,7 +316,21 @@
     "crewLink": "Povezava za ekipo",
     "crewLinkNote": "Ekipa potrebuje samo to povezavo. Brez računa in brez gesla.",
     "copyLink": "Kopiraj povezavo",
-    "copied": "Kopirano"
+    "copied": "Kopirano",
+    "orgSection": "Podjetje",
+    "orgName": "Naziv podjetja",
+    "address": "Naslov",
+    "contactEmail": "Kontaktna e-pošta",
+    "contactPhone": "Telefon",
+    "vatId": "ID za DDV",
+    "iban": "IBAN",
+    "accountantEmail": "E-pošta računovodstva",
+    "accountantHint": "Sem pošljemo račun, ko ga potrdite.",
+    "save": "Shrani",
+    "saved": "Shranjeno.",
+    "notifSection": "Obvestila",
+    "notifNote": "Velja samo za vaš račun. Vsak sodelavec ima svoje nastavitve.",
+    "vaultSection": "Dokumenti podjetja"
   },
   "invite": {
     "title": "Povabilo v Belin",
@@ -332,5 +346,52 @@
     "emailTaken": "Ta e-poštni naslov že ima račun.",
     "login": "Prijavite se.",
     "goHome": "Na začetno stran"
+  },
+  "vault": {
+    "title": "Dokumenti",
+    "empty": "Ni naloženih dokumentov.",
+    "upload": "Naloži dokument",
+    "uploading": "Nalagam ...",
+    "type": "Vrsta dokumenta",
+    "docTitle": "Naziv",
+    "file": "Datoteka",
+    "validFrom": "Velja od",
+    "validUntil": "Velja do",
+    "expired": "Poteklo",
+    "expiringSoon": "Poteče kmalu",
+    "badType": "Dovoljeni so PDF, JPG in PNG.",
+    "uploadFailed": "Nalaganje ni uspelo. Poskusite znova.",
+    "types": {
+      "a1": "Potrdilo A1",
+      "freistellungsbescheinigung": "Freistellungsbescheinigung",
+      "unbedenklichkeitsbescheinigung": "Unbedenklichkeitsbescheinigung",
+      "id_document": "Osebni dokument",
+      "qualification": "Dokazilo o usposobljenosti",
+      "hfu_status": "Status HFU",
+      "zko_notification": "Prijava ZKO",
+      "insurance": "Zavarovanje",
+      "other": "Drugo"
+    }
+  },
+  "notify": {
+    "pref": {
+      "entry_submitted": "Novo dnevno poročilo",
+      "material_check_completed": "Prevzem materiala",
+      "request_created": "Nova zahteva z gradbišča",
+      "request_resolved": "Zahteva rešena",
+      "incident_created": "Dogodek na gradbišču",
+      "hours_submitted": "Oddane režijske ure",
+      "hours_decided": "Odločitev o režijskih urah",
+      "hours_deemed_approved": "Režijske ure samodejno potrjene",
+      "change_order_submitted": "Prijavljena nadgradnja",
+      "change_order_decided": "Odločitev o nadgradnji",
+      "po_sent": "Prejeta naročilnica",
+      "po_accepted": "Naročilnica sprejeta",
+      "po_rejected": "Naročilnica zavrnjena",
+      "finalization_requested": "Zahteva za zaključek",
+      "acceptance_signed": "Prevzem podpisan",
+      "invoice_sent": "Račun poslan",
+      "document_expiring": "Dokument poteče"
+    }
   }
 }
