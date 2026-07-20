@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Actor } from "@/lib/actor";
+import type { ProjectActor } from "@/lib/actor";
 import { canTransition, asProjectStatus, type ProjectStatus } from "@/lib/project-status";
 
 // Guarded status change with a compare-and-swap (audit finding H3): the update
@@ -8,7 +8,7 @@ import { canTransition, asProjectStatus, type ProjectStatus } from "@/lib/projec
 // and the activity row is written only when the swap actually changed a row, so
 // two devices racing cannot corrupt the status or leave a phantom audit entry.
 export async function updateProjectStatus(
-  actor: Actor,
+  actor: ProjectActor,
   newStatus: ProjectStatus
 ): Promise<{ ok: boolean; status: ProjectStatus }> {
   const db = createAdminClient();

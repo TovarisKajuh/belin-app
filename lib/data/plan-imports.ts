@@ -9,7 +9,7 @@ import {
   type ProjectDraft,
 } from "@/lib/k2/k2-project";
 import { emptyMetadata, type K2ParseResult, type K2WarningCode } from "@/lib/k2/k2-shared";
-import type { Actor } from "@/lib/actor";
+import type { OrgActor } from "@/lib/actor";
 import type { Json } from "@/lib/database.types";
 
 // The cap is enforced on the RECEIVED BYTES, before a single byte reaches the
@@ -48,7 +48,7 @@ function mintToken(): string {
  * The only failures are refusals to accept the file at all.
  */
 export async function uploadAndParsePlan(
-  actor: Actor,
+  actor: OrgActor,
   file: { bytes: Uint8Array; name: string; mime: string },
   opts: { fallbackCountry: string; locale: string },
 ): Promise<{ ok: true; upload: PlanUpload } | { ok: false; error: PlanUploadError }> {
@@ -109,7 +109,7 @@ export async function uploadAndParsePlan(
  * sub in the database: the picker must not become a directory of other
  * companies' partners.
  */
-export async function listKnownSubs(actor: Actor): Promise<SubOption[]> {
+export async function listKnownSubs(actor: OrgActor): Promise<SubOption[]> {
   const db = createAdminClient();
   const { data, error } = await db
     .from("projects")
@@ -155,7 +155,7 @@ export interface ReviewPayload {
  * refuses a second commit of the same import.
  */
 export async function createProjectFromReview(
-  actor: Actor,
+  actor: OrgActor,
   payload: ReviewPayload,
 ): Promise<{ ok: true; projectId: string; epcToken: string } | { ok: false }> {
   const db = createAdminClient();

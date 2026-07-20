@@ -20,6 +20,7 @@ import {
   LOGIN_RATE_MAX,
 } from "@/lib/auth-core";
 import { sendEmail, renderEmail } from "@/lib/email";
+import { appBaseUrl } from "@/lib/app-url";
 
 export type LoginState = { error: "invalid" | null };
 export type MagicLinkState = { sent: boolean };
@@ -95,13 +96,9 @@ export async function requestMagicLink(
   });
   if (error) return { sent: true };
 
-  // The link is built from the configured base URL and NEVER from the request's
-  // Host header: a poisoned Host would put a live login token into a link
-  // pointing at somebody else's server. If it is missing there is no safe
-  // guess, so say so loudly rather than emailing a broken link.
-  const base = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "");
+  const base = appBaseUrl();
   if (!base) {
-    console.error("NEXT_PUBLIC_APP_URL is not set: cannot build a login link.");
+    console.error("No app base URL available: cannot build a login link.");
     return { sent: true };
   }
 

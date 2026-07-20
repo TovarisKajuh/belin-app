@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Actor } from "@/lib/actor";
+import type { OrgActor } from "@/lib/actor";
 
 export interface ProjectListRow {
   id: string;
@@ -22,7 +22,7 @@ export interface ProjectListRow {
  * (master plan Part B) the token stops being needed here and this becomes a
  * plain id link.
  */
-export async function listProjectsForOrg(actor: Actor): Promise<ProjectListRow[]> {
+export async function listProjectsForOrg(actor: OrgActor): Promise<ProjectListRow[]> {
   const db = createAdminClient();
 
   const { data, error } = await db

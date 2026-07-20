@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Actor } from "@/lib/actor";
+import type { ProjectActor } from "@/lib/actor";
 import type { Json } from "@/lib/database.types";
 import {
   buildMaterialState,
@@ -16,7 +16,7 @@ export type { MaterialState } from "@/lib/materials-shared";
 // check (items and documents), reduced to the crew gate and the re-check count
 // by buildMaterialState. Document paths stay unsigned here; callers that render
 // them (the EPC panel) sign them where they batch with the photo gallery.
-export async function getMaterialState(actor: Actor): Promise<MaterialState | null> {
+export async function getMaterialState(actor: ProjectActor): Promise<MaterialState | null> {
   const db = createAdminClient();
 
   const [itemsRes, checkRes] = await Promise.all([
@@ -84,7 +84,7 @@ export interface SubmitMaterialCheckPayload {
 // validates ownership and paths, and derives completeness. No isComplete is
 // passed: the database is the authority.
 export async function submitMaterialCheck(
-  actor: Actor,
+  actor: ProjectActor,
   payload: SubmitMaterialCheckPayload
 ): Promise<string> {
   const db = createAdminClient();
@@ -103,7 +103,7 @@ export async function submitMaterialCheck(
 // EPC adds a line to the Stückliste. A stopgap until the plan PDF extraction
 // exists; it is the trigger for the crew re-check prompt.
 export async function addMaterialItem(
-  actor: Actor,
+  actor: ProjectActor,
   item: { name: string; qty: number; unit: string }
 ): Promise<void> {
   const name = item.name.trim();

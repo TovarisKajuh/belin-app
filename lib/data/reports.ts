@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Actor } from "@/lib/actor";
+import type { ProjectActor } from "@/lib/actor";
 import type { Json } from "@/lib/database.types";
 import { fetchWeatherSnapshot } from "@/lib/weather";
 import { projectToday } from "@/lib/project-time";
@@ -36,7 +36,7 @@ export interface SubmitReportPayload {
   photoPaths: string[];
 }
 
-export async function getCrewHome(actor: Actor): Promise<CrewHomeData | null> {
+export async function getCrewHome(actor: ProjectActor): Promise<CrewHomeData | null> {
   const core = await getProjectCore(actor);
   if (!core) return null;
 
@@ -112,7 +112,7 @@ export async function getCrewHome(actor: Actor): Promise<CrewHomeData | null> {
 // weather is bounded by a timeout, the day is server-computed, and the RPC
 // validates scope-item and photo-path ownership before writing entry, quantities,
 // photos and activity together, idempotent on the client-generated id.
-export async function submitDailyReport(actor: Actor, payload: SubmitReportPayload): Promise<string> {
+export async function submitDailyReport(actor: ProjectActor, payload: SubmitReportPayload): Promise<string> {
   const db = createAdminClient();
 
   // Server-side gate: a daily report requires at least one material check on the

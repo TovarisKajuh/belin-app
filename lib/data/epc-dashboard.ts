@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Actor } from "@/lib/actor";
+import type { ProjectActor } from "@/lib/actor";
 import { getProjectCore, type ProjectCore, type ScopeItemStatus } from "@/lib/data/project-core";
 import { getSignedPhotoUrlMap } from "@/lib/storage";
 import { weatherCodeToKey } from "@/lib/weather-codes";
@@ -87,7 +87,7 @@ export interface DashboardRoof {
 // log, the site photo set (signed in one cached batch), the recent activity,
 // a projection computed from the cumulative-progress history, and the material
 // panel state (list, latest check, re-check count). Realtime is a later chunk.
-export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | null> {
+export async function getEpcDashboard(actor: ProjectActor): Promise<EpcDashboardData | null> {
   const core = await getProjectCore(actor);
   if (!core) return null;
 

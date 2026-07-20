@@ -1,11 +1,11 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Actor } from "@/lib/actor";
+import type { ProjectActor } from "@/lib/actor";
 
 // Dev-only: find the other party's active token for the same project so one
 // person can swap between the connected EPC and sub views while building.
 export async function getSiblingToken(
-  actor: Actor
+  actor: ProjectActor
 ): Promise<{ token: string; role: "epc" | "sub" } | null> {
   const otherRole = actor.role === "epc" ? "sub" : "epc";
   const db = createAdminClient();

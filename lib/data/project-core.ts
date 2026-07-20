@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Actor } from "@/lib/actor";
+import type { ProjectActor } from "@/lib/actor";
 import { projectProgress } from "@/lib/progress";
 import { projectToday } from "@/lib/project-time";
 import { asProjectStatus, type ProjectStatus } from "@/lib/project-status";
@@ -40,7 +40,7 @@ export interface ProjectCore {
   today: string;
 }
 
-export async function getProjectCore(actor: Actor): Promise<ProjectCore | null> {
+export async function getProjectCore(actor: ProjectActor): Promise<ProjectCore | null> {
   const db = createAdminClient();
 
   const [projectRes, scopeRes, installedRes] = await Promise.all([
