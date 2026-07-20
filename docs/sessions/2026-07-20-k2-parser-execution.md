@@ -53,3 +53,20 @@ Master plan Part B (accounts and magic-link auth), which also replaces the wizar
 ## Addendum, evening: the hardening plan (Fable planning session)
 
 The founder supplied five real customer reports (kadir-trainer-projekt, martin-lang, petra-ullrich, planung-engelmeier, thomas-woginger) and mandated a bulletproof parser. Following the extract-first rule, all five were run through unpdf and the shipped parser before planning. Findings: kadir is an ENGLISH export (the founder's own K2 account) rejected outright by the slash-date footer; the 3.2.7x era renamed areas (Bereich/Area/custom names) so all four German reports lose their roofs; German prints period decimals in pitch and kWp cells; new covers carry the planner company's own HQ under a bare Adresse label; Austria has wind speed, not zones. Wrote docs/superpowers/plans/2026-07-20-k2-parser-hardening-plan.md (H1 to H8): locale packs as data, breadcrumb grammar instead of area vocabulary, per-area pitch and covering, planned-start harvest, hostile-input caps. Two adversarial reviews produced 24 findings including 2 blockers (a factually wrong forum2 pin; repo-vs-database drift of create_project_from_review, itself a discipline breach from the morning session, repaired by the plan's H6 step 0). All folded. Executed by Opus in a fresh session.
+
+## Third act, same day: the hardening plan executed (Opus, H1 to H8)
+
+Executed docs/superpowers/plans/2026-07-20-k2-parser-hardening-plan.md end to end. Eight tasks, eight commits, 257 tests (up from 152), tsc and build clean.
+
+What actually changed for the product: the founder's own English K2 exports parse (they were rejected outright), all four new German reports recovered their roofs (they had none), both 3.1.97 era fixtures gained roofs previously declared unrecoverable, pitch and covering became per roof data, and the planned installation date the plan states now prefills a visible field.
+
+The plan held up because it was pinned to real extracted text: every predicted page count, breadcrumb, area name and number matched. Three things still needed correcting during execution, all caught by tests rather than by reading:
+- A test pin of mine was wrong, not the code: German "4.005" is 4005 under the thousands rule, while petra-ullrich's kWp cell means 4.005. The pin now documents the hazard and explains why roof kWp is computed from wattage times count instead of from that cell.
+- The metadata test's roof pins and the k2-project 2023 draft test both had to be upgraded mid plan, exactly where the executability review predicted, each with a comment naming this plan.
+- Python string escaping silently mangled two regexes written through a script (a template literal collapsed "\s" to "s"); caught by the type checker and a failing test, then rewritten with String.raw.
+
+The drift repair landed as planned: the deployed create_project_from_review was pulled out of the database with pg_get_functiondef and committed as a baseline migration before being extended, so the repo and the database agree again.
+
+## Next
+
+Master plan Part B (accounts and magic-link auth), which replaces the wizard's one function demo gate and unlocks inviting a sub by email. Standing debt: still no real K2 Excel export has ever been seen, so all three xlsx fixtures remain synthetic.
