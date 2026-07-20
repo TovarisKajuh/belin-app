@@ -31,6 +31,9 @@ it("k2-report-2025: inline mode, full metadata", () => {
       moduleCount: 2,
       kwp: 0.91,
       moduleType: "TSM-455NEG9R.28 (Vertex S+) 1.762x1.134x30 mm",
+      // Filled from this roof's own statics page in H5 of the hardening plan.
+      pitchDeg: null,
+      covering: null,
     },
   ]);
 });
@@ -65,12 +68,16 @@ it("forum1: block mode pairing and two roofs", () => {
       moduleCount: 41,
       kwp: 18.655, // 41 x 455 Wp
       moduleType: "AIKO-A455-MAH54Db (1757x1134x30) 1.757x1.134x30 mm",
+      pitchDeg: null,
+      covering: null,
     },
     {
       name: "Dach 3",
       moduleCount: 16,
       kwp: 7.36, // 16 x 460 Wp
       moduleType: "AIKO-A460-MAH54Db (1757x1134x30) 1.757x1.134x30 mm",
+      pitchDeg: null,
+      covering: null,
     },
   ]);
   // The panel counts of the individual roofs must add up to the project total,

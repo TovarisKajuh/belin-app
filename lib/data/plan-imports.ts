@@ -91,7 +91,7 @@ export async function uploadAndParsePlan(
   try {
     parsed = ext === "pdf" ? await parseK2Pdf(file.bytes) : await parseK2Xlsx(file.bytes);
   } catch {
-    parsed = { ok: false, metadata: emptyMetadata(), items: [], warnings: [] };
+    parsed = { ok: false, metadata: emptyMetadata(), items: [], warnings: [], diagnostics: [] };
   }
 
   const { error: insertError } = await db.from("plan_imports").insert({

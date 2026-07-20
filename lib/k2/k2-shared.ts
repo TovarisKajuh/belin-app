@@ -6,6 +6,9 @@
 // both the vitest suite and scripts/k2-try.ts import them under plain Node,
 // where `import "server-only"` throws. They hold no secrets and read no
 // environment. The wizard's server actions are the only app callers.
+export type { K2Lang, K2LocalePack } from "@/lib/k2/k2-locale";
+export { LOCALES, inferLocale, parseLocaleDate, parseLocaleNumber } from "@/lib/k2/k2-locale";
+
 export type {
   K2Footer,
   K2LineItem,
@@ -42,11 +45,26 @@ import { extractMetadata } from "@/lib/k2/k2-metadata";
 export function parseK2Text(pagesText: string[]): K2ParseResult {
   const detected = detectK2(pagesText);
   if (!detected.isK2) {
-    return { ok: false, metadata: emptyMetadata(), items: [], warnings: [] };
+    return { ok: false, metadata: emptyMetadata(), items: [], warnings: [], diagnostics: [] };
   }
 
   const metadata = extractMetadata(pagesText);
   const { items, warnings } = selectItems(extractArticleLists(pagesText));
+
+  // Machine notes, assembled ONLY here: the extract functions keep their own
+  // return types and know nothing about diagnostics.
+  const roofsPaired =
+    metadata.roofs.length === 0
+      ? "none"
+      : metadata.roofs.every((r) => r.moduleCount !== null)
+        ? "yes"
+        : "no";
+  const diagnostics = [
+    `locale:${detected.lang ?? "unknown"}`,
+    `areas:${metadata.roofs.length}`,
+    `roofsPaired:${roofsPaired}`,
+    `items:${items.length}`,
+  ];
 
   // Fewer than three resolved fields means the review screen opens mostly empty
   // and the EPC types the rest. The parse is still ok.
@@ -61,5 +79,5 @@ export function parseK2Text(pagesText: string[]): K2ParseResult {
   const all: K2WarningCode[] = [...warnings];
   if (resolved < 3) all.push("meta_incomplete");
 
-  return { ok: true, metadata, items, warnings: all };
+  return { ok: true, metadata, items, warnings: all, diagnostics };
 }

@@ -7,16 +7,27 @@ const load = (n: string) =>
     pages: string[];
   }).pages;
 
-it("detects all four real reports with their exact versions", () => {
-  expect(detectK2(load("k2-report-2025"))).toEqual({ isK2: true, version: "3.2.28.0" });
-  expect(detectK2(load("k2-report-2023"))).toEqual({ isK2: true, version: "3.1.97.0" });
-  expect(detectK2(load("forum1"))).toEqual({ isK2: true, version: "3.2.21.1" });
-  expect(detectK2(load("forum2"))).toEqual({ isK2: true, version: "3.1.97.0" });
+// UPGRADED by the hardening plan (2026-07-20-k2-parser-hardening-plan.md):
+// detectK2 now also reports the report's language, because K2 exports in the
+// planner's UI language and the English variant was being rejected outright.
+it("detects all four original reports with their exact versions", () => {
+  expect(detectK2(load("k2-report-2025"))).toEqual({
+    isK2: true,
+    version: "3.2.28.0",
+    lang: "de",
+  });
+  expect(detectK2(load("k2-report-2023"))).toEqual({
+    isK2: true,
+    version: "3.1.97.0",
+    lang: "de",
+  });
+  expect(detectK2(load("forum1"))).toEqual({ isK2: true, version: "3.2.21.1", lang: "de" });
+  expect(detectK2(load("forum2"))).toEqual({ isK2: true, version: "3.1.97.0", lang: "de" });
 });
 
 it("rejects the annotations document and junk", () => {
   expect(detectK2(load("k2-base-report-annotations")).isK2).toBe(false);
-  expect(detectK2([])).toEqual({ isK2: false, version: null });
+  expect(detectK2([])).toEqual({ isK2: false, version: null, lang: null });
   expect(detectK2(["random text", "  binary junk"]).isK2).toBe(false);
 });
 
@@ -32,6 +43,8 @@ it("parseFooters returns the version, ISO date and project name", () => {
     version: "3.2.21.1",
     dateIso: "2025-01-10",
     projectName: "Bietigheim-Bissingen",
+    // The separator is carried because it is the language signal.
+    dateSeparator: ".",
   });
 });
 

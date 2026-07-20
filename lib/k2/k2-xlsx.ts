@@ -13,7 +13,7 @@ import {
 const ARTICLE_NO_RE = /^\d{7}$/;
 
 function failed(): K2ParseResult {
-  return { ok: false, metadata: emptyMetadata(), items: [], warnings: [] };
+  return { ok: false, metadata: emptyMetadata(), items: [], warnings: [], diagnostics: [] };
 }
 
 /** A cell's text, whatever exceljs hands back (number, string, formula, null). */
@@ -138,5 +138,6 @@ export async function parseK2Xlsx(bytes: Uint8Array): Promise<K2ParseResult> {
     metadata: emptyMetadata(),
     items,
     warnings: ["meta_incomplete"],
+    diagnostics: ["source:xlsx"],
   };
 }

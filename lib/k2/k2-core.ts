@@ -3,6 +3,8 @@
 // k2-shared composes all three into the public API, so nothing here may import
 // from any other k2 module: that would close an import cycle.
 //
+import { inferLocale, type K2Lang } from "@/lib/k2/k2-locale";
+
 // DELIBERATELY NOT "server-only" (see the K2 parser plan, finding 4): every
 // module under lib/k2 is Node safe pure logic. The vitest suite and the
 // scripts/k2-try.ts harness import them under plain Node, where an
@@ -27,11 +29,17 @@ export type K2WarningCode =
   | "meta_incomplete"; // fewer than 3 metadata fields resolved
 
 export interface K2Roof {
-  name: string; // "Dach 1"
+  /** Whatever the plan calls it: "Dach 1", "Bereich 2", "Area 1", or a name
+   *  the planner typed. Never inferred from a word list. */
+  name: string;
   moduleCount: number | null;
   kwp: number | null;
   /** This roof's own module, which can differ from roof to roof. */
   moduleType: string | null;
+  /** From this roof's own statics pages: a site can mix a steep tile roof and
+   *  a shallow standing seam one, and they are different days of work. */
+  pitchDeg: number | null;
+  covering: string | null;
 }
 
 export interface K2Metadata {
@@ -53,6 +61,10 @@ export interface K2Metadata {
   pitchDeg: number | null;
   verified: boolean | null;
   roofs: K2Roof[];
+  /** Which language the report itself is written in. */
+  reportLanguage: K2Lang | null;
+  /** ISO date the plan states for installation, when it states one. */
+  plannedInstallDate: string | null;
 }
 
 export interface K2ParseResult {
@@ -60,6 +72,10 @@ export interface K2ParseResult {
   metadata: K2Metadata;
   items: K2LineItem[];
   warnings: K2WarningCode[];
+  /** Machine notes about how this parse went ("locale:en", "areas:2").
+   *  Stored with the import row; the first thing to look at when a pilot EPC
+   *  reports a bad parse. Never shown to a user, never translated. */
+  diagnostics: string[];
 }
 
 export function emptyMetadata(): K2Metadata {
@@ -82,6 +98,8 @@ export function emptyMetadata(): K2Metadata {
     pitchDeg: null,
     verified: null,
     roofs: [],
+    reportLanguage: null,
+    plannedInstallDate: null,
   };
 }
 
@@ -89,13 +107,19 @@ export interface K2Footer {
   version: string;
   dateIso: string;
   projectName: string;
+  /** "." in German reports, "/" in English ones. This one character is the
+   *  most reliable language signal in the whole document. */
+  dateSeparator: string;
 }
 
 // The footer sits on every content page and never on the cover, so detection
 // scans all pages. "K2 Base Report" does NOT translate: German reports print
 // "K2 Base Bericht" on the cover and this exact English string in the footer.
+// The date separator varies by report language: German prints 04.03.2026,
+// English prints 24/03/2026. Demanding dots is what made the parser reject the
+// founder's own English exports outright.
 const FOOTER_RE =
-  /^K2 Base Report (\S+) \| (\d{2})\.(\d{2})\.(\d{4}) \| (.+?) (\d+)\/(\d+)$/;
+  /^K2 Base Report (\S+) \| (\d{2})([./-])(\d{2})[./-](\d{4}) \| (.+?) (\d+)\/(\d+)$/;
 
 export function toLines(pageText: string): string[] {
   if (typeof pageText !== "string") return [];
@@ -140,8 +164,9 @@ export function parseFooters(pagesText: string[]): K2Footer[] {
       if (!m) continue;
       out.push({
         version: m[1],
-        dateIso: `${m[4]}-${m[3]}-${m[2]}`,
-        projectName: m[5].trim(),
+        dateIso: `${m[5]}-${m[4]}-${m[2]}`,
+        projectName: m[6].trim(),
+        dateSeparator: m[3],
       });
     }
   }
@@ -173,11 +198,19 @@ export function mostFrequent<T extends string>(values: T[]): T | null {
  * footer line cannot false positive. The annotations fixture (K2's own
  * explanatory PDF) carries zero footers and is the negative proof.
  */
-export function detectK2(pagesText: string[]): { isK2: boolean; version: string | null } {
+export function detectK2(pagesText: string[]): {
+  isK2: boolean;
+  version: string | null;
+  lang: K2Lang | null;
+} {
   const footers = parseFooters(pagesText);
-  if (footers.length < 2) return { isK2: false, version: null };
+  if (footers.length < 2) return { isK2: false, version: null, lang: null };
 
-  return { isK2: true, version: mostFrequent(footers.map((f) => f.version)) };
+  return {
+    isK2: true,
+    version: mostFrequent(footers.map((f) => f.version)),
+    lang: inferLocale(pagesText, footers),
+  };
 }
 
 /**

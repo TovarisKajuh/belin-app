@@ -4,7 +4,7 @@ import { extractText, getDocumentProxy } from "unpdf";
 import { emptyMetadata, parseK2Text, type K2ParseResult } from "@/lib/k2/k2-shared";
 
 function notK2(): K2ParseResult {
-  return { ok: false, metadata: emptyMetadata(), items: [], warnings: [] };
+  return { ok: false, metadata: emptyMetadata(), items: [], warnings: [], diagnostics: [] };
 }
 
 /**
