@@ -52,9 +52,26 @@ The full phase is planned in one session with every review folded, and the
 founder's priority order was reconciled with hard dependencies explicitly
 (C3 after D1, which the founder's own ordering implied anyway).
 
+## Addendum (same day, later): the deep K2 parser plan
+
+The founder asked for a detailed standalone plan for the K2 parser. Authored
+docs/superpowers/plans/2026-07-20-k2-parser-plan.md (tasks K1 to K8,
+superseding master plan Part A). Method upgrade: instead of planning from the
+research agents' descriptions, the session ran unpdf over the five fixture
+PDFs and pinned every parsing rule and every test assertion to the real
+extracted text. That corrected the research record (three of five fixtures
+lack the article list; per-roof lists plus a breadcrumb-distinguished total;
+mixed decimal conventions inside one table; two label-value extraction modes)
+and let the row regex be validated against all 41 real rows with zero false
+positives. One adversarial review verified every pin independently and found
+two blockers in the metadata algorithm (a heading interrupts the label run;
+the statics-page anchor matched the wrong page in all four reports), both
+folded. Lesson recorded: for parser plans, extract first, plan second;
+descriptions of document structure are always lossy.
+
 ## Next
 
 1. Founder reads the plan summary and vetoes any of the 19 defaults.
-2. Execution by Opus in a fresh session, task by task, starting with Part A
-   (K2 parser core). Deadlines unchanged: v1 done 26.07 evening, German EPC
-   starts 27.07.
+2. Execution by Opus in a fresh session: the K2 parser plan (K1 to K8) first,
+   then the master plan from Part B. Deadlines unchanged: v1 done 26.07
+   evening, German EPC starts 27.07.
