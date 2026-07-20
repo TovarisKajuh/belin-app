@@ -31,8 +31,26 @@ Gates: 280 tests (up from 250), tsc clean, production build clean apart from the
 - safeNext lives in lib/auth-core.ts rather than the actions file, because a "use server" module may only export async functions. It is tested there.
 - PersonActor is NOT yet in the Actor union, and /app carries a temporary signed-in placeholder. Both belong to B4; adding the union in B3 would have dragged B4's whole lib/data rename forward. The placeholder exists only so the login flow has somewhere to land instead of bouncing.
 
+## Deployed, and the bug that only production could show
+
+The founder chose to deploy with magic link only (no DEMO_LOGIN in Vercel) and to find out empirically whether NEXT_PUBLIC_APP_URL was set. It was not, and had never been. The live landing therefore offered exactly one way in, and that way could not send: the guard written minutes earlier refused to build a link without a base URL.
+
+The diagnosis came from the data rather than from guessing. A login_tokens row existed but email_log was empty, and there is only one code path that inserts a token and then returns without attempting a send. If the Resend key had been the problem instead, email_log would have carried a failed row with error no-api-key.
+
+Fixed by lib/app-url.ts: NEXT_PUBLIC_APP_URL still wins when present, so a custom domain can override later without a code change, but it now falls back to VERCEL_PROJECT_PRODUCTION_URL, which the platform injects itself. The request Host header is still never used: a poisoned Host is the classic way to steal an account, because the attacker triggers a login email for somebody else and the link points at the attacker's server. Re-tested on production afterwards: the send succeeded with a provider id.
+
+The lesson is the plan's own rule, paid for again. Deploying is not verifying. The local flow was green in every respect and the deployed one was completely dead.
+
+## B4, partially done
+
+Committed with the URL fix, because widening the Actor union and leaving the tree red was not an option:
+
+- Actor is now TokenActor plus PersonActor. TokenActor gained personId: null so it satisfies ProjectActor structurally, which is what let every existing token call site keep working untouched.
+- ProjectActor, requireProjectActor and requireOfficeActor added; resolveProjectRole extracted pure into lib/actor-shared.ts with 7 tests. The office gate is person only by design, and excludes Bauleiter unless a caller opts in.
+- OrgActor added, which the plan did not anticipate: the wizard's three functions (uploadAndParsePlan, listKnownSubs, createProjectFromReview) only ever read orgId, and at upload time no project exists to scope to. Forcing them through ProjectActor would have meant inventing a project id that does not exist yet.
+
+Still open in B4: the /app/[projectId] route, the session action variants, threading token as string or null through the nine token-threaded components, ProjectList for person sessions and SubHome. 287 tests green, tsc and build clean at the checkpoint.
+
 ## Next
 
-Task B4: PersonActor into the Actor union, requireProjectActor and requireOfficeActor, the mechanical ProjectActor rename across lib/data, the session action variants at app/[locale]/app/[projectId]/actions.ts, ProjectList and SubHome. The temporary placeholder dies there.
-
-Open decision for the founder before pushing: production has no DEMO_LOGIN variable, so deploying removes the demo password login from the live site and leaves magic link as the only way in. NEXT_PUBLIC_APP_URL in Vercel must also point at the live domain or the emailed links will point at the wrong host.
+Finish B4, then B5 (invites) and B6 (settings and the compliance vault).
