@@ -105,9 +105,15 @@ export default async function SettingsPage({
         {person.orgType === "epc" && (
           <section className="e-sec e-reveal">
             <h2 className="e-sec-h">{t("peopleSection")}</h2>
+            {/* Only projects still without a subcontractor can receive one, so
+                only those are offered. Listing the rest would let somebody pick
+                a project and then be refused for a reason the form never
+                showed them. */}
             <InvitePanel
               locale={locale}
-              projects={projects.map((p) => ({ id: p.id, name: p.name }))}
+              projects={projects
+                .filter((p) => p.subName === null)
+                .map((p) => ({ id: p.id, name: p.name }))}
             />
           </section>
         )}

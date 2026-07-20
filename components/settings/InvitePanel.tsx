@@ -25,18 +25,32 @@ export function InvitePanel({
 
   return (
     <div className="st-grid">
-      <InviteForm locale={locale} kind="sub_company" title={t("inviteSub")} note={t("inviteSubNote")}>
-        <label className="lp-field">
-          <span className="lp-label">{t("project")}</span>
-          <select className="lp-input" name="projectId" required>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </InviteForm>
+      {projects.length === 0 ? (
+        // Every project already has a subcontractor. Said plainly, with the way
+        // forward, rather than offering a form that can only be refused.
+        <div className="st-card">
+          <h3 className="st-h">{t("inviteSub")}</h3>
+          <p className="st-note">{t("inviteSubNoProjects")}</p>
+        </div>
+      ) : (
+        <InviteForm
+          locale={locale}
+          kind="sub_company"
+          title={t("inviteSub")}
+          note={t("inviteSubNote")}
+        >
+          <label className="lp-field">
+            <span className="lp-label">{t("project")}</span>
+            <select className="lp-input" name="projectId" required>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </InviteForm>
+      )}
 
       <InviteForm
         locale={locale}

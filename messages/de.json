@@ -330,7 +330,8 @@
     "saved": "Shranjeno.",
     "notifSection": "Obvestila",
     "notifNote": "Velja samo za vaš račun. Vsak sodelavec ima svoje nastavitve.",
-    "vaultSection": "Dokumenti podjetja"
+    "vaultSection": "Dokumenti podjetja",
+    "inviteSubNoProjects": "Vsi projekti že imajo podizvajalca. Ustvarite nov projekt in ga povabite nanj."
   },
   "invite": {
     "title": "Povabilo v Belin",
