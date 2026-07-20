@@ -706,6 +706,41 @@ export type Database = {
           },
         ]
       }
+      login_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          person_id: string
+          token_hash: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          person_id: string
+          token_hash: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          person_id?: string
+          token_hash?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "login_tokens_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       material_check_docs: {
         Row: {
           check_id: string
@@ -868,37 +903,49 @@ export type Database = {
       }
       organizations: {
         Row: {
+          accountant_email: string | null
           address: string | null
           contact_email: string | null
           contact_phone: string | null
           country: string | null
           created_at: string
+          iban: string | null
           id: string
+          logo_path: string | null
           name: string
           type: string
           updated_at: string
+          vat_id: string | null
         }
         Insert: {
+          accountant_email?: string | null
           address?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string
+          iban?: string | null
           id?: string
+          logo_path?: string | null
           name: string
           type: string
           updated_at?: string
+          vat_id?: string | null
         }
         Update: {
+          accountant_email?: string | null
           address?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string
+          iban?: string | null
           id?: string
+          logo_path?: string | null
           name?: string
           type?: string
           updated_at?: string
+          vat_id?: string | null
         }
         Relationships: []
       }
@@ -909,6 +956,7 @@ export type Database = {
           email: string | null
           full_name: string
           id: string
+          notification_prefs: Json
           org_id: string
           phone: string | null
           role: string
@@ -920,6 +968,7 @@ export type Database = {
           email?: string | null
           full_name: string
           id?: string
+          notification_prefs?: Json
           org_id: string
           phone?: string | null
           role: string
@@ -931,6 +980,7 @@ export type Database = {
           email?: string | null
           full_name?: string
           id?: string
+          notification_prefs?: Json
           org_id?: string
           phone?: string | null
           role?: string
@@ -1107,6 +1157,7 @@ export type Database = {
           status: string
           sub_org_id: string | null
           updated_at: string
+          vat_mode: string | null
         }
         Insert: {
           address_city?: string | null
@@ -1132,6 +1183,7 @@ export type Database = {
           status?: string
           sub_org_id?: string | null
           updated_at?: string
+          vat_mode?: string | null
         }
         Update: {
           address_city?: string | null
@@ -1157,6 +1209,7 @@ export type Database = {
           status?: string
           sub_org_id?: string | null
           updated_at?: string
+          vat_mode?: string | null
         }
         Relationships: [
           {
@@ -1401,6 +1454,41 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          person_id: string
+          revoked: boolean
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          person_id: string
+          revoked?: boolean
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          person_id?: string
+          revoked?: boolean
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
             referencedColumns: ["id"]
           },
         ]

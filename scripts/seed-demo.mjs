@@ -17,6 +17,8 @@ const SCOPE_MODULES = "44444444-4444-4444-8444-444444444402";
 const SCOPE_DC = "44444444-4444-4444-8444-444444444403";
 const PERSON_EPC = "66666666-6666-4666-8666-666666666601";
 const PERSON_SUB = "66666666-6666-4666-8666-666666666602";
+const PERSON_SUB_ADMIN = "66666666-6666-4666-8666-666666666603";
+const PERSON_FOUNDER = "66666666-6666-4666-8666-666666666604";
 const TOKEN_EPC = "77777777-7777-4777-8777-777777777701";
 const TOKEN_SUB = "77777777-7777-4777-8777-777777777702";
 
@@ -64,15 +66,45 @@ const plannedStart = dates[0];
 const plannedEnd = isoPlusDays(dates[0], 42); // ~30 working days: gives an "ahead" buffer
 
 // ---- static rows ----
+// Both orgs carry the money fields from the start: an invoice cannot be
+// generated without a VAT id and an IBAN, so a demo project missing them would
+// fail at the last step of the acceptance script rather than at the first.
 await upsert("organizations", [
-  { id: EPC_ORG, type: "epc", name: "Sonce Energija d.o.o.", country: "si" },
-  { id: SUB_ORG, type: "sub", name: "AVESOL d.o.o.", country: "si" },
+  {
+    id: EPC_ORG,
+    type: "epc",
+    name: "Sonce Energija d.o.o.",
+    country: "si",
+    vat_id: "SI10000001",
+    iban: "SI56 1910 0000 0123 438",
+  },
+  {
+    id: SUB_ORG,
+    type: "sub",
+    name: "AVESOL d.o.o.",
+    country: "si",
+    vat_id: "SI10000002",
+    iban: "SI56 0201 0001 2345 685",
+    accountant_email: "racunovodstvo@avesol-demo.si",
+  },
 ]);
 
-await upsert("people", [
-  { id: PERSON_EPC, org_id: EPC_ORG, full_name: "Matej Kovač", role: "bauleiter" },
-  { id: PERSON_SUB, org_id: SUB_ORG, full_name: "Luka Zupan", role: "crew" },
-]);
+// Every demo address on a *-demo.si domain is fake and would hard bounce, so
+// lib/email.ts refuses to send to them. The only deliverable address in the
+// seed is the founder's, taken from SEED_FOUNDER_EMAIL; without it the founder
+// person is skipped and login is demonstrated locally through the dev log.
+const founderEmail = process.env.SEED_FOUNDER_EMAIL?.trim().toLowerCase();
+const people = [
+  { id: PERSON_EPC, org_id: EPC_ORG, full_name: "Matej Kovač", role: "bauleiter", email: "matej@sonce-demo.si" },
+  { id: PERSON_SUB, org_id: SUB_ORG, full_name: "Luka Zupan", role: "crew", email: "luka@avesol-demo.si" },
+  { id: PERSON_SUB_ADMIN, org_id: SUB_ORG, full_name: "Ana Novak", role: "admin", email: "ana@avesol-demo.si" },
+];
+if (founderEmail) {
+  people.push({ id: PERSON_FOUNDER, org_id: EPC_ORG, full_name: "Jan", role: "admin", email: founderEmail });
+} else {
+  console.log("people: SEED_FOUNDER_EMAIL not set, founder person skipped");
+}
+await upsert("people", people);
 
 await upsert("projects", [
   {
@@ -82,6 +114,8 @@ await upsert("projects", [
     name: "PSE Trgovski center Kranj",
     status: "active",
     language: "sl",
+    // domestic Slovenian construction services: reverse charge under 76.a ZDDV-1
+    vat_mode: "reverse_charge",
     country: "si",
     address_street: "Cesta Staneta Žagarja 69",
     address_zip: "4000",
@@ -227,6 +261,8 @@ await upsert("projects", [
     name: "PSE Trgovski center Kranj",
     status: "active",
     language: "sl",
+    // domestic Slovenian construction services: reverse charge under 76.a ZDDV-1
+    vat_mode: "reverse_charge",
     country: "si",
     address_street: "Cesta Staneta Žagarja 69",
     address_zip: "4000",
