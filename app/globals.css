@@ -1617,3 +1617,45 @@ button.gal-item {
   font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
   color: var(--e-gold); font-weight: 700; margin-bottom: 10px;
 }
+
+/* project list, the EPC's way back to a project the wizard created */
+.belin-dark .cb-nav {
+  font-size: 12.5px; color: var(--e-ink2); text-decoration: none;
+  padding: 7px 12px; border-radius: 9px; border: 1px solid var(--e-line);
+  white-space: nowrap;
+}
+.belin-dark .cb-nav:hover { background: var(--e-surface-2); color: var(--e-ink); }
+.belin-dark .pl-new {
+  font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap;
+  padding: 10px 18px; border-radius: 10px; color: #14100a;
+  background: linear-gradient(180deg, var(--e-gold-2), var(--e-gold));
+}
+.belin-dark .pl-empty { color: var(--e-muted); font-size: 13.5px; }
+.belin-dark .pl-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.belin-dark .pl-link {
+  display: block; text-decoration: none; color: inherit;
+  padding: 20px; border-radius: 14px;
+  background: var(--e-surface); border: 1px solid var(--e-line);
+  transition: background .15s ease, border-color .15s ease, transform .15s ease;
+}
+.belin-dark .pl-link:hover {
+  background: var(--e-surface-2); border-color: rgba(255,210,26,.35); transform: translateY(-2px);
+}
+.belin-dark .pl-dead { opacity: .55; }
+.belin-dark .pl-dead:hover { transform: none; border-color: var(--e-line); background: var(--e-surface); }
+.belin-dark .pl-name { font-size: 16.5px; font-weight: 700; margin-bottom: 6px; }
+.belin-dark .pl-facts { font-size: 12.5px; color: var(--e-muted); margin-bottom: 14px; }
+.belin-dark .pl-status {
+  display: inline-block; font-size: 10.5px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 999px;
+  background: var(--e-surface-2); color: var(--e-ink2); border: 1px solid var(--e-line);
+}
+.belin-dark .pl-status.s-active { color: var(--e-ok); border-color: rgba(74,208,122,.3); background: rgba(74,208,122,.08); }
+.belin-dark .pl-status.s-finished { color: var(--e-gold-2); border-color: rgba(255,210,26,.3); background: rgba(255,210,26,.07); }
+@media (prefers-reduced-motion: reduce) {
+  .belin-dark .pl-link { transition: none; }
+  .belin-dark .pl-link:hover { transform: none; }
+}
+@media (max-width: 640px) { .belin-dark .cb-nav { display: none; } }

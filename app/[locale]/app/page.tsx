@@ -39,7 +39,7 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
   } else {
     const data = await getEpcDashboard(actor);
     if (!data) notFound();
-    view = <EpcDashboard token={token} data={data} />;
+    view = <EpcDashboard token={token} data={data} locale={locale} />;
   }
 
   // The crew screen has a fixed submit bar along the bottom, so both pills lift

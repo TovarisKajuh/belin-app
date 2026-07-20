@@ -18,7 +18,15 @@ import { ddmm } from "@/lib/dashboard-shared";
 // The dark EPC dashboard: the shell and hero, then the path to completion,
 // the scope by phase, the headline numbers, the newest report, the day by day
 // log and the site photos. Everything below the hero reveals on scroll.
-export async function EpcDashboard({ token, data }: { token: string; data: EpcDashboardData }) {
+export async function EpcDashboard({
+  token,
+  data,
+  locale,
+}: {
+  token: string;
+  data: EpcDashboardData;
+  locale: string;
+}) {
   const t = await getTranslations("dashboard");
   const core = data.core;
   const sub = data.subName;
@@ -29,7 +37,14 @@ export async function EpcDashboard({ token, data }: { token: string; data: EpcDa
   return (
     <div className="belin-dark">
       <div className="e-grain" />
-      <CommandBar token={token} projectName={core.name} meta={sub} status={core.status} role="epc" />
+      <CommandBar
+        token={token}
+        projectName={core.name}
+        meta={sub}
+        status={core.status}
+        role="epc"
+        locale={locale}
+      />
       <div className="e-wrap">
         {data.needsReview && sub && <AlertStrip subName={sub} />}
 

@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ProjectStatusControl } from "@/components/project/ProjectStatusControl";
 import { BelinMark } from "@/components/BelinMark";
 import type { ProjectStatus } from "@/lib/project-status";
@@ -5,12 +7,13 @@ import type { ProjectStatus } from "@/lib/project-status";
 // The shared header for both parties. The EPC and the crew get the identical
 // bar (mark, wordmark, project, status control) so the two sides read as one
 // product; only the status control's permitted transitions differ by role.
-export function CommandBar({
+export async function CommandBar({
   token,
   projectName,
   meta,
   status,
   role,
+  locale,
 }: {
   token: string;
   projectName: string;
@@ -18,7 +21,15 @@ export function CommandBar({
   meta: string | null;
   status: ProjectStatus;
   role: "epc" | "sub";
+  /**
+   * Present only on the EPC side, where it turns on the office navigation
+   * (project list, new project). The crew never sees it: a phone on a roof
+   * gets one screen, not a menu.
+   */
+  locale?: string;
 }) {
+  const navLabel = locale ? (await getTranslations("projects"))("title") : null;
+
   return (
     <div className="e-bar">
       <div className="e-bar-in">
@@ -31,6 +42,11 @@ export function CommandBar({
         </div>
         <div className="e-br">
           {meta && <span className="e-upd">{meta}</span>}
+          {role === "epc" && locale && (
+            <Link href={`/${locale}/app/projects`} className="cb-nav">
+              {navLabel}
+            </Link>
+          )}
           <ProjectStatusControl token={token} role={role} status={status} />
         </div>
       </div>

@@ -241,5 +241,19 @@
     "newProject": "Nov projekt",
     "openProject": "Odprite projekt",
     "createdTitle": "Projekt je ustvarjen"
+  },
+  "projects": {
+    "title": "Projekti",
+    "eyebrow": "VAŠI PROJEKTI",
+    "new": "Nov projekt",
+    "empty": "Nimate še nobenega projekta. Naložite K2 načrt in ustvarite prvega.",
+    "status": {
+      "draft": "Osnutek",
+      "active": "Aktivno",
+      "paused": "Na čakanju",
+      "reviewing": "V pregledu",
+      "finished": "Zaključeno",
+      "cancelled": "Preklicano"
+    }
   }
 }

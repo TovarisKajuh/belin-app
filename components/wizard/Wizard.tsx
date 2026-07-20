@@ -162,7 +162,7 @@ export function Wizard({
               <b>{t("newProject")}</b>
             </span>
           </div>
-          <Link href={`/${locale}/app`} className="wz-exit">
+          <Link href={`/${locale}/app/projects`} className="wz-exit">
             {t("back")}
           </Link>
         </div>

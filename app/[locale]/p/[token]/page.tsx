@@ -34,7 +34,7 @@ export default async function ProjectTokenPage({
   } else {
     const data = await getEpcDashboard(actor);
     if (!data) notFound();
-    view = <EpcDashboard token={token} data={data} />;
+    view = <EpcDashboard token={token} data={data} locale={locale} />;
   }
 
   const sibling = await siblingPromise;
