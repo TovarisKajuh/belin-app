@@ -2,7 +2,6 @@ import "server-only";
 import { randomBytes, randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { parseK2Pdf } from "@/lib/k2/k2-pdf";
-import { parseK2Xlsx } from "@/lib/k2/k2-xlsx";
 import {
   projectDraftFromParse,
   type DraftItem,
@@ -13,14 +12,9 @@ import { emptyMetadata, type K2ParseResult, type K2WarningCode } from "@/lib/k2/
 import type { Actor } from "@/lib/actor";
 import type { Json } from "@/lib/database.types";
 
-// Caps are enforced on the RECEIVED BYTES, before a single byte reaches a
-// parser: an xlsx is a zip, and an unbounded one is a decompression bomb that
-// pins a serverless CPU. A PDF gets more room because real K2 reports with
-// site photos run to a few tens of megabytes.
+// The cap is enforced on the RECEIVED BYTES, before a single byte reaches the
+// parser. Real K2 reports with site photos run to a few tens of megabytes.
 const MAX_PDF_BYTES = 30 * 1024 * 1024;
-const MAX_XLSX_BYTES = 5 * 1024 * 1024;
-
-const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 export type PlanUploadError = "too_large" | "bad_type" | "upload_failed";
 
@@ -37,11 +31,8 @@ export interface SubOption {
   name: string;
 }
 
-function extensionFor(fileName: string, mime: string): "pdf" | "xlsx" | null {
-  const lower = fileName.toLowerCase();
-  if (mime === "application/pdf" || lower.endsWith(".pdf")) return "pdf";
-  if (mime === XLSX_MIME || lower.endsWith(".xlsx")) return "xlsx";
-  return null;
+function isPdf(fileName: string, mime: string): boolean {
+  return mime === "application/pdf" || fileName.toLowerCase().endsWith(".pdf");
 }
 
 /** A URL safe token that satisfies isPlausibleToken (8 to 64 of [A-Za-z0-9_-]). */
@@ -61,11 +52,9 @@ export async function uploadAndParsePlan(
   file: { bytes: Uint8Array; name: string; mime: string },
   opts: { fallbackCountry: string; locale: string },
 ): Promise<{ ok: true; upload: PlanUpload } | { ok: false; error: PlanUploadError }> {
-  const ext = extensionFor(file.name, file.mime);
-  if (!ext) return { ok: false, error: "bad_type" };
+  if (!isPdf(file.name, file.mime)) return { ok: false, error: "bad_type" };
 
-  const cap = ext === "pdf" ? MAX_PDF_BYTES : MAX_XLSX_BYTES;
-  if (file.bytes.byteLength === 0 || file.bytes.byteLength > cap) {
+  if (file.bytes.byteLength === 0 || file.bytes.byteLength > MAX_PDF_BYTES) {
     return { ok: false, error: "too_large" };
   }
 
@@ -73,30 +62,30 @@ export async function uploadAndParsePlan(
   // No project exists yet (the wizard is plan first), so the path is keyed by
   // the import alone. createProjectFromReview leaves it there and records it as
   // the project's plan path.
-  const storagePath = `pending/${importId}.${ext}`;
+  const storagePath = `pending/${importId}.pdf`;
 
   const db = createAdminClient();
   const { error: uploadError } = await db.storage
     .from("plans")
     .upload(storagePath, file.bytes, {
-      contentType: ext === "pdf" ? "application/pdf" : XLSX_MIME,
+      contentType: "application/pdf",
       upsert: false,
     });
   if (uploadError) return { ok: false, error: "upload_failed" };
 
-  // The parsers never throw (their tests pin that), but this call site is where
-  // a future vendor adapter might, so the guard stays: a broken parse must
+  // The parser never throws (its tests pin that), but this call site is where a
+  // future vendor adapter might, so the guard stays: a broken parse must
   // degrade to the manual path, never 500 the wizard.
   let parsed: K2ParseResult;
   try {
-    parsed = ext === "pdf" ? await parseK2Pdf(file.bytes) : await parseK2Xlsx(file.bytes);
+    parsed = await parseK2Pdf(file.bytes);
   } catch {
     parsed = { ok: false, metadata: emptyMetadata(), items: [], warnings: [], diagnostics: [] };
   }
 
   const { error: insertError } = await db.from("plan_imports").insert({
     id: importId,
-    source: ext === "pdf" ? "k2_pdf" : "k2_xlsx",
+    source: "k2_pdf",
     storage_path: storagePath,
     parsed: parsed as unknown as Json,
   });

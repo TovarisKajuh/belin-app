@@ -1,13 +1,11 @@
-// npm run k2:try -- <path to a pdf or xlsx>
+// npm run k2:try -- <path to a K2 PDF>
 //
 // Drops any file on the parser and prints what it found. The point is that the
 // founder or the pilot EPC can test a fresh K2 export the moment it exists,
 // days before the upload wizard is built, and that a future planner vendor's
 // PDF can be probed the same way.
 import { readFileSync } from "node:fs";
-import { extname } from "node:path";
 import { parseK2Pdf } from "@/lib/k2/k2-pdf";
-import { parseK2Xlsx } from "@/lib/k2/k2-xlsx";
 import type { K2ParseResult, K2WarningCode } from "@/lib/k2/k2-shared";
 
 // Slovenian, per the build-in-Slovenian mandate. This is a developer tool, so
@@ -39,16 +37,12 @@ function summary(r: K2ParseResult): string {
 async function main() {
   const path = process.argv[2];
   if (!path) {
-    console.error("Uporaba: npm run k2:try -- <pot do pdf ali xlsx>");
+    console.error("Uporaba: npm run k2:try -- <pot do K2 PDF>");
     process.exit(1);
   }
 
   const bytes = new Uint8Array(readFileSync(path));
-  const ext = extname(path).toLowerCase();
-  const result =
-    ext === ".xlsx" || ext === ".xlsm"
-      ? await parseK2Xlsx(bytes)
-      : await parseK2Pdf(bytes);
+  const result = await parseK2Pdf(bytes);
 
   console.log(JSON.stringify(result, null, 2));
   console.log("");

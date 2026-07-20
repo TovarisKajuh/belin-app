@@ -192,7 +192,7 @@ export function Wizard({
               <input
                 ref={fileRef}
                 type="file"
-                accept=".pdf,.xlsx,application/pdf"
+                accept=".pdf,application/pdf"
                 className="wz-file"
                 disabled={busy}
                 onChange={(e) => {

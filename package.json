@@ -21,7 +21,6 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.5",
     "@supabase/supabase-js": "^2.45.0",
-    "exceljs": "^4.4.0",
     "next": "^15.1.6",
     "next-intl": "^4.1.0",
     "react": "^19.0.0",
