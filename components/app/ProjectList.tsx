@@ -19,6 +19,7 @@ export async function ProjectList({
 }) {
   const t = await getTranslations("projects");
   const tApp = await getTranslations("app");
+  const tSettings = await getTranslations("settings");
   const isEpc = actor.orgType === "epc";
 
   return (
@@ -35,6 +36,9 @@ export async function ProjectList({
             </span>
           </div>
           <div className="e-br">
+            <Link href={`/${locale}/app/settings`} className="cb-nav">
+              {tSettings("title")}
+            </Link>
             {isEpc && (
               <Link href={`/${locale}/app/new`} className="pl-new">
                 {t("new")}

@@ -295,5 +295,42 @@
   },
   "app": {
     "signedInAs": "Prijavljeni kot {name}"
+  },
+  "settings": {
+    "title": "Nastavitve",
+    "backToProjects": "Projekti",
+    "peopleSection": "Ljudje in dostopi",
+    "inviteSub": "Povabi podizvajalca",
+    "inviteSubNote": "Podizvajalec si ustvari račun in se poveže s projektom.",
+    "inviteMember": "Povabi sodelavca",
+    "inviteMemberNote": "Sodelavec dobi račun v vašem podjetju.",
+    "inviteSend": "Pošlji povabilo",
+    "inviteSent": "Povabilo je poslano.",
+    "inviteForbidden": "Za to dejanje nimate pravic.",
+    "inviteInvalid": "Preverite vnesene podatke.",
+    "project": "Projekt",
+    "email": "E-poštni naslov",
+    "role": "Vloga",
+    "roleBauleiter": "Vodja gradbišča",
+    "roleAdmin": "Skrbnik",
+    "crewLink": "Povezava za ekipo",
+    "crewLinkNote": "Ekipa potrebuje samo to povezavo. Brez računa in brez gesla.",
+    "copyLink": "Kopiraj povezavo",
+    "copied": "Kopirano"
+  },
+  "invite": {
+    "title": "Povabilo v Belin",
+    "subject": "Povabilo v Belin",
+    "body": "{org} vas vabi k sodelovanju na projektu {project}.",
+    "bodyMember": "{org} vas vabi v Belin.",
+    "acceptCta": "Sprejmi povabilo",
+    "orgName": "Ime podjetja",
+    "yourName": "Vaše ime in priimek",
+    "email": "E-poštni naslov",
+    "invalid": "Povabilo ni veljavno ali je poteklo.",
+    "alreadyLinked": "Na tem projektu je podizvajalec že določen.",
+    "emailTaken": "Ta e-poštni naslov že ima račun.",
+    "login": "Prijavite se.",
+    "goHome": "Na začetno stran"
   }
 }
