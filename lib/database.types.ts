@@ -1363,6 +1363,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_project_from_review: {
+        Args: {
+          p_import_id: string
+          p_epc_org_id: string
+          p_sub_org_id: string | null
+          p_project: Json
+          p_items: Json
+          p_epc_token: string
+          p_sub_token: string | null
+        }
+        Returns: string
+      }
       scope_installed: {
         Args: { p_project: string }
         Returns: { scope_item_id: string; installed: number }[]

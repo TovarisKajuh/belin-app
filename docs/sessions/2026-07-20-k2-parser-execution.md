@@ -33,6 +33,19 @@ Final gate: 143 tests green, tsc clean, production build clean, zero em or en da
 - Both xlsx fixtures are synthetic. Get a real K2 Base Excel export from the pilot EPC before hardening.
 - The exceljs typings cast, to revisit when upstream fixes its declarations.
 
+## Then, in the same session: Task C2, the wizard
+
+The founder approved applying M2 and building the wizard, so the session continued into it.
+
+- Migration M2 applied and verified at the database level (plan_imports, purchase_orders, purchase_order_lines, change_orders.amount, plans bucket accepting xlsx), plus a second migration for create_project_from_review.
+- lib/k2/k2-project.ts turns a parse result into an editable project draft (9 tests): splitAddress, and the rule that the plan's own country beats the EPC's.
+- lib/data/plan-imports.ts (upload, size caps on received bytes, parse, known subs) and lib/data/orgs.ts.
+- app/[locale]/app/new (page plus server actions) and components/wizard/Wizard.tsx, styled in the existing dark system with no new palette.
+
+Verified by driving the real UI, not by reading code: forum1.pdf uploaded through the browser prefilled Bietigheim-Bissingen, 26.02 kWp, 57 modules, SingleRail, Ziegel and 11 material rows; committing created the project with 11 items, 2 tokens and the sub attached; the EPC link opened a correct day one dashboard; and the crew link showed the material check gate carrying the same 11 lines with quantities. Re-verified against a real production build after the unpdf import.meta build warning appeared, which turned out to be bundler noise. Every test row, upload and storage object was removed afterwards.
+
+Two probes caught real defects before any UI existed: projects.country is a lowercase de/at/si check constraint (my draft emitted uppercase), and the activity table's kind check has no project_created value, so that insert was dropped rather than widening the constraint for no information gain.
+
 ## Next
 
-Master plan Task C2: the plan-first project wizard (upload, review, sub attach). It needs migration M2 applied to the live Frankfurt database, so it waits on a founder go-ahead. The parser is usable today without any UI: `npm run k2:try -- <file>`.
+Master plan Part B (accounts and magic-link auth), which also replaces the wizard's one-function demo gate with requireOfficeActor and unlocks inviting a sub by email. Two debts logged in CHANGELOG.md: orphaned uploads from abandoned wizard runs, and the synthetic xlsx fixture still awaiting a real K2 Excel export.
