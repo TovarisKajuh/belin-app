@@ -144,6 +144,11 @@
       "addPending": "Dodajam...",
       "addFailed": "Postavke ni bilo mogoče dodati.",
       "crewNote": "Opomba ekipe"
+    },
+    "roofs": {
+      "title": "Strehe",
+      "modules": " modulov",
+      "total": "Skupaj {n} modulov"
     }
   },
   "status": {
@@ -240,7 +245,12 @@
     "nameRequired": "Vnesite naziv projekta.",
     "newProject": "Nov projekt",
     "openProject": "Odprite projekt",
-    "createdTitle": "Projekt je ustvarjen"
+    "createdTitle": "Projekt je ustvarjen",
+    "roofsTitle": "Strehe iz načrta",
+    "roofName": "Streha",
+    "roofModules": "Modulov",
+    "roofKwp": "kWp",
+    "roofSum": "Skupaj po strehah: {n} od {total} modulov"
   },
   "projects": {
     "title": "Projekti",

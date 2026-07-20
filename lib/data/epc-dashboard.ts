@@ -70,6 +70,14 @@ export interface EpcDashboardData {
   photoCount: number;
   needsReview: boolean;
   material: MaterialPanelData;
+  /** One entry per roof from the plan; empty when the plan named none. */
+  roofs: DashboardRoof[];
+}
+
+export interface DashboardRoof {
+  name: string;
+  moduleCount: number | null;
+  kwp: number | null;
 }
 
 // The single dashboard read. Composes the shared project core (header, scope,
@@ -83,7 +91,7 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
 
   const db = createAdminClient();
 
-  const [entriesRes, qtyRes, photoRes, matItemsRes, matCheckRes] = await Promise.all([
+  const [entriesRes, qtyRes, photoRes, matItemsRes, matCheckRes, roofRes] = await Promise.all([
     db
       .from("daily_entries")
       .select("id, entry_date, headcount, note, weather, created_at")
@@ -113,10 +121,23 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
       .order("checked_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    db
+      .from("project_roofs")
+      .select("name, module_count, kwp, sort_order")
+      .eq("project_id", actor.projectId)
+      .order("sort_order"),
   ]);
 
   if (entriesRes.error || qtyRes.error || photoRes.error || matItemsRes.error || matCheckRes.error)
     return null;
+
+  // A roof read failure degrades to no roof panel rather than killing the whole
+  // dashboard: it is context, not the point of the screen.
+  const roofs: DashboardRoof[] = (roofRes.data ?? []).map((r) => ({
+    name: r.name,
+    moduleCount: r.module_count,
+    kwp: r.kwp === null ? null : Number(r.kwp),
+  }));
 
   const entries = entriesRes.data ?? [];
   const scopeById = new Map(core.scope.map((s) => [s.id, s]));
@@ -259,5 +280,6 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
     photoCount: photoRows.length,
     needsReview: core.status === "reviewing",
     material,
+    roofs,
   };
 }

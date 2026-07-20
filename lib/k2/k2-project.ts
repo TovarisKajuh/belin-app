@@ -18,6 +18,13 @@ export interface DraftItem {
   sortOrder: number;
 }
 
+export interface DraftRoof {
+  name: string;
+  moduleCount: number | null;
+  kwp: number | null;
+  moduleType: string | null;
+}
+
 export interface ProjectDraft {
   name: string;
   addressStreet: string | null;
@@ -31,6 +38,8 @@ export interface ProjectDraft {
   mountingSystem: string | null;
   roofType: string | null;
   items: DraftItem[];
+  /** One entry per roof in the plan. A site is built roof by roof. */
+  roofs: DraftRoof[];
 }
 
 // The three pilot countries plus the spellings K2 actually prints.
@@ -122,6 +131,12 @@ export function projectDraftFromParse(
       qty: item.qty,
       unit: "kos",
       sortOrder: i,
+    })),
+    roofs: meta.roofs.map((roof) => ({
+      name: roof.name,
+      moduleCount: roof.moduleCount,
+      kwp: roof.kwp,
+      moduleType: roof.moduleType,
     })),
   };
 }

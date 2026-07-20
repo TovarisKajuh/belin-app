@@ -994,6 +994,47 @@ export type Database = {
           },
         ]
       }
+      project_roofs: {
+        Row: {
+          created_at: string
+          id: string
+          kwp: number | null
+          module_count: number | null
+          module_type: string | null
+          name: string
+          project_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kwp?: number | null
+          module_count?: number | null
+          module_type?: string | null
+          name: string
+          project_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kwp?: number | null
+          module_count?: number | null
+          module_type?: string | null
+          name?: string
+          project_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_roofs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_tokens: {
         Row: {
           created_at: string
@@ -1372,6 +1413,7 @@ export type Database = {
           p_items: Json
           p_epc_token: string
           p_sub_token: string | null
+          p_roofs?: Json
         }
         Returns: string
       }

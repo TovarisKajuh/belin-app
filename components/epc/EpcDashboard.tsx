@@ -6,6 +6,7 @@ import { ProgressRing } from "@/components/epc/dashboard/ProgressRing";
 import { ProjectionPanel } from "@/components/epc/dashboard/ProjectionPanel";
 import { ScopeByPhase } from "@/components/epc/dashboard/ScopeByPhase";
 import { MaterialPanel } from "@/components/epc/dashboard/MaterialPanel";
+import { RoofPanel } from "@/components/epc/dashboard/RoofPanel";
 import { StatRow } from "@/components/epc/dashboard/StatRow";
 import { LatestOnSite } from "@/components/epc/dashboard/LatestOnSite";
 import { DailyLogFeed } from "@/components/epc/dashboard/DailyLogFeed";
@@ -100,6 +101,7 @@ export async function EpcDashboard({
 
         <ScopeByPhase scope={data.scope} />
 
+        <RoofPanel roofs={data.roofs} />
         <MaterialPanel token={token} country={core.country} material={data.material} />
 
         <StatRow projection={proj} photoCount={data.photoCount} />

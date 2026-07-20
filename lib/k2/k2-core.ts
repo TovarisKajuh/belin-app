@@ -30,6 +30,8 @@ export interface K2Roof {
   name: string; // "Dach 1"
   moduleCount: number | null;
   kwp: number | null;
+  /** This roof's own module, which can differ from roof to roof. */
+  moduleType: string | null;
 }
 
 export interface K2Metadata {

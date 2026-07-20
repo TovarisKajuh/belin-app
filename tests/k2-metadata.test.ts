@@ -25,7 +25,14 @@ it("k2-report-2025: inline mode, full metadata", () => {
   expect(m.roofType).toBe("Ziegel");
   expect(m.pitchDeg).toBe(35);
   expect(m.verified).toBe(true);
-  expect(m.roofs).toEqual([{ name: "Dach 1", moduleCount: 2, kwp: 0.91 }]);
+  expect(m.roofs).toEqual([
+    {
+      name: "Dach 1",
+      moduleCount: 2,
+      kwp: 0.91,
+      moduleType: "TSM-455NEG9R.28 (Vertex S+) 1.762x1.134x30 mm",
+    },
+  ]);
 });
 
 it("k2-report-2023: Bearbeiter maps to author, Leistung era columns", () => {
@@ -50,10 +57,25 @@ it("forum1: block mode pairing and two roofs", () => {
   expect(m.address).toBe("74321 Bietigheim-Bissingen, Deutschland");
   expect(m.moduleCount).toBe(57);
   expect(m.kwpTotal).toBe(26.02);
+  // The two roofs carry DIFFERENT modules, which is exactly why each roof's kWp
+  // is computed from its own wattage rather than the project wide one.
   expect(m.roofs).toEqual([
-    { name: "Dach 1", moduleCount: 41, kwp: 18.655 }, // 41 x 455 Wp
-    { name: "Dach 3", moduleCount: 16, kwp: 7.36 }, // 16 x 460 Wp, a DIFFERENT module
+    {
+      name: "Dach 1",
+      moduleCount: 41,
+      kwp: 18.655, // 41 x 455 Wp
+      moduleType: "AIKO-A455-MAH54Db (1757x1134x30) 1.757x1.134x30 mm",
+    },
+    {
+      name: "Dach 3",
+      moduleCount: 16,
+      kwp: 7.36, // 16 x 460 Wp
+      moduleType: "AIKO-A460-MAH54Db (1757x1134x30) 1.757x1.134x30 mm",
+    },
   ]);
+  // The panel counts of the individual roofs must add up to the project total,
+  // the number the founder found missing on 2026-07-20.
+  expect(m.roofs.reduce((n, r) => n + (r.moduleCount ?? 0), 0)).toBe(m.moduleCount);
 });
 
 it("forum1: the block mode cover is never positionally paired", () => {

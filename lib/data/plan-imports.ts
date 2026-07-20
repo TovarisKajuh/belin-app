@@ -3,7 +3,12 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { parseK2Pdf } from "@/lib/k2/k2-pdf";
 import { parseK2Xlsx } from "@/lib/k2/k2-xlsx";
-import { projectDraftFromParse, type DraftItem, type ProjectDraft } from "@/lib/k2/k2-project";
+import {
+  projectDraftFromParse,
+  type DraftItem,
+  type DraftRoof,
+  type ProjectDraft,
+} from "@/lib/k2/k2-project";
 import { emptyMetadata, type K2ParseResult, type K2WarningCode } from "@/lib/k2/k2-shared";
 import type { Actor } from "@/lib/actor";
 import type { Json } from "@/lib/database.types";
@@ -152,6 +157,7 @@ export interface ReviewPayload {
     plannedEnd: string | null;
   };
   items: DraftItem[];
+  roofs: DraftRoof[];
 }
 
 /**
@@ -179,6 +185,7 @@ export async function createProjectFromReview(
     p_items: payload.items as unknown as Json,
     p_epc_token: epcToken,
     p_sub_token: payload.subOrgId ? mintToken() : null,
+    p_roofs: payload.roofs as unknown as Json,
   });
 
   if (error || typeof data !== "string") return { ok: false };

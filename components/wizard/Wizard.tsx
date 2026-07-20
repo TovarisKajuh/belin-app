@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { createProjectAction, uploadPlanAction } from "@/app/[locale]/app/new/actions";
-import type { DraftItem, ProjectDraft } from "@/lib/k2/k2-project";
+import type { DraftItem, DraftRoof, ProjectDraft } from "@/lib/k2/k2-project";
 import type { SubOption } from "@/lib/data/plan-imports";
 import type { K2WarningCode } from "@/lib/k2/k2-shared";
 
@@ -34,6 +34,7 @@ const emptyDraft = (country: string, locale: string): ProjectDraft => ({
   mountingSystem: null,
   roofType: null,
   items: [],
+  roofs: [],
 });
 
 export function Wizard({
@@ -56,6 +57,7 @@ export function Wizard({
   const [warnings, setWarnings] = useState<K2WarningCode[]>([]);
   const [draft, setDraft] = useState<ProjectDraft>(emptyDraft(defaultCountry, locale));
   const [items, setItems] = useState<DraftItem[]>([]);
+  const [roofs, setRoofs] = useState<DraftRoof[]>([]);
   const [subOrgId, setSubOrgId] = useState<string | null>(null);
   const [created, setCreated] = useState<{ projectId: string; epcToken: string } | null>(null);
 
@@ -91,6 +93,7 @@ export function Wizard({
       setWarnings(res.upload.warnings);
       setDraft(res.upload.draft);
       setItems(res.upload.draft.items);
+      setRoofs(res.upload.draft.roofs);
       setStep("review");
     } catch {
       setError(t("uploadFailed"));
@@ -129,6 +132,7 @@ export function Wizard({
           plannedEnd: null,
         },
         items: items.filter((i) => i.name.trim() !== ""),
+        roofs: roofs.filter((r) => r.name.trim() !== ""),
       });
 
       if (!res.ok) {
@@ -308,6 +312,57 @@ export function Wizard({
               </Field>
             </div>
 
+            {roofs.length > 0 && (
+              <>
+                <h2 className="e-sec-h wz-sec2">
+                  {t("roofsTitle")}
+                  <span className="wz-count e-mono">{roofs.length}</span>
+                </h2>
+                <div className="wz-roofs">
+                  {roofs.map((roof, i) => (
+                    <div className="wz-roof" key={i}>
+                      <input
+                        className="b-field wz-roof-name"
+                        value={roof.name}
+                        aria-label={t("roofName")}
+                        onChange={(e) => updateRoof(setRoofs, i, { name: e.target.value })}
+                      />
+                      <label className="wz-roof-n">
+                        <span className="wz-label">{t("roofModules")}</span>
+                        <input
+                          className="b-field e-mono"
+                          inputMode="numeric"
+                          value={roof.moduleCount ?? ""}
+                          onChange={(e) =>
+                            updateRoof(setRoofs, i, { moduleCount: numberOrNull(e.target.value) })
+                          }
+                        />
+                      </label>
+                      <label className="wz-roof-n">
+                        <span className="wz-label">{t("roofKwp")}</span>
+                        <input
+                          className="b-field e-mono"
+                          inputMode="decimal"
+                          value={roof.kwp ?? ""}
+                          onChange={(e) =>
+                            updateRoof(setRoofs, i, { kwp: numberOrNull(e.target.value) })
+                          }
+                        />
+                      </label>
+                      {roof.moduleType && <div className="wz-roof-mod">{roof.moduleType}</div>}
+                    </div>
+                  ))}
+                  {/* The roofs must add up to the project total, so the EPC can
+                      see at a glance when an edit has broken that. */}
+                  <div
+                    className={`wz-roof-sum${roofSum(roofs) === draft.moduleCount ? "" : " off"}`}
+                  >
+                    {t("roofSum", { n: roofSum(roofs), total: draft.moduleCount ?? 0 })}
+                  </div>
+                </div>
+              </>
+            )}
+
             <h2 className="e-sec-h wz-sec2">
               {t("articlesTitle")}
               <span className="wz-count e-mono">{items.length}</span>
@@ -482,6 +537,18 @@ function numberOrNull(raw: string): number | null {
   if (trimmed === "") return null;
   const n = Number(trimmed);
   return Number.isFinite(n) ? n : null;
+}
+
+function roofSum(roofs: DraftRoof[]): number {
+  return roofs.reduce((n, r) => n + (r.moduleCount ?? 0), 0);
+}
+
+function updateRoof(
+  setRoofs: React.Dispatch<React.SetStateAction<DraftRoof[]>>,
+  index: number,
+  patch: Partial<DraftRoof>,
+) {
+  setRoofs((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
 }
 
 function updateItem(
