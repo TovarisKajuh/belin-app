@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+Status: EXECUTED 2026-07-20 by Opus. All eight tasks are built, committed and green (143 tests, tsc clean, production build clean). Deviations from the plan as written, all logged in CHANGELOG.md: the primitives live in lib/k2/k2-core.ts with k2-shared.ts as the public facade, because composing inside k2-shared as specified would have closed an import cycle; the block mode value run additionally stops at page furniture, closing a shift-every-field hole a synthetic test exposed; one documented cast works around an exceljs typings bug. The public API is exactly as specified.
+
 Status: authored 2026-07-20 by the planning session (Fable). This plan SUPERSEDES Part A (Tasks A1 to A4) of docs/superpowers/plans/2026-07-20-v1-master-plan.md with tasks K1 to K8. The public API (parseK2Pdf, parseK2Xlsx, K2ParseResult) stays exactly as the master plan's consumers (Task C2, the wizard) expect, with the refinements in the Shapes section below. Everything else in the master plan is untouched.
 
 **Goal:** a deterministic, never-throwing parser that turns a K2 Base report PDF (or the article-list Excel export) into a normalized structure: article line items plus project metadata, with warnings instead of failures, proven against five real reports.
@@ -223,11 +225,11 @@ export async function parseK2Xlsx(bytes: Uint8Array): Promise<K2ParseResult>;
 
 **Interfaces:** produces the frozen `{ totalPages, pages: string[] }` JSON shape every later test consumes.
 
-- [ ] `npm install unpdf exceljs` (two deps only). Commit the lockfile change alone: "chore: add unpdf and exceljs for the k2 parser".
-- [ ] scripts/k2-freeze-fixtures.mjs: for each of the five PDFs, `getDocumentProxy(new Uint8Array(readFileSync(...)))`, `extractText(pdf, { mergePages: false })`, write tests/fixtures/k2/text/<name>.pages.json with `{ totalPages, pages }` (JSON.stringify with indent 1). Deterministic: run twice, `git diff` empty.
-- [ ] Write tests/k2-extract.test.ts (integration, real PDF): parseK2Pdf does not exist yet, so this test uses the raw unpdf calls inline: extract k2-report-2025.pdf, assert totalPages 17 and that page 2 (index 1) contains "K2 Base Report 3.2.28.0". Run: `npx vitest run tests/k2-extract.test.ts`, expect FAIL (missing dep wiring or path), fix, expect PASS.
-- [ ] Run the freeze script, verify the five JSONs exist and page counts are 17, 18, 10, 35, 19.
-- [ ] Commit: "feat(k2): fixture text freezing and extraction smoke test"
+- [x] `npm install unpdf exceljs` (two deps only). Commit the lockfile change alone: "chore: add unpdf and exceljs for the k2 parser".
+- [x] scripts/k2-freeze-fixtures.mjs: for each of the five PDFs, `getDocumentProxy(new Uint8Array(readFileSync(...)))`, `extractText(pdf, { mergePages: false })`, write tests/fixtures/k2/text/<name>.pages.json with `{ totalPages, pages }` (JSON.stringify with indent 1). Deterministic: run twice, `git diff` empty.
+- [x] Write tests/k2-extract.test.ts (integration, real PDF): parseK2Pdf does not exist yet, so this test uses the raw unpdf calls inline: extract k2-report-2025.pdf, assert totalPages 17 and that page 2 (index 1) contains "K2 Base Report 3.2.28.0". Run: `npx vitest run tests/k2-extract.test.ts`, expect FAIL (missing dep wiring or path), fix, expect PASS.
+- [x] Run the freeze script, verify the five JSONs exist and page counts are 17, 18, 10, 35, 19.
+- [x] Commit: "feat(k2): fixture text freezing and extraction smoke test"
 
 ## Task K2: the number core (TDD)
 
@@ -235,7 +237,7 @@ export async function parseK2Xlsx(bytes: Uint8Array): Promise<K2ParseResult>;
 
 **Interfaces:** produces parseGermanNumber consumed by K4 and K5.
 
-- [ ] Failing tests, the full pinned table:
+- [x] Failing tests, the full pinned table:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -264,10 +266,10 @@ it.each(cases)("parseGermanNumber(%j) -> %j", (raw, want) => {
 });
 ```
 
-- [ ] Run: `npx vitest run tests/k2-numbers.test.ts`, expect FAIL (not implemented).
-- [ ] Implement: trim; empty string or "-" returns null IMMEDIATELY (finding 6: `Number("")` is 0, not NaN, so the early return is load-bearing); strip internal spaces; if both "." and "," present: remove dots, comma to dot; else if only ",": comma to dot; else if only ".": count trailing digits after the last dot, 3 or more means thousands (remove dots), 1 to 2 means decimal; Number(); NaN to null; round to 3 decimals.
-- [ ] Run green. `npm run lint` clean.
-- [ ] Commit: "feat(k2): german number core with the period-ambiguity rule"
+- [x] Run: `npx vitest run tests/k2-numbers.test.ts`, expect FAIL (not implemented).
+- [x] Implement: trim; empty string or "-" returns null IMMEDIATELY (finding 6: `Number("")` is 0, not NaN, so the early return is load-bearing); strip internal spaces; if both "." and "," present: remove dots, comma to dot; else if only ",": comma to dot; else if only ".": count trailing digits after the last dot, 3 or more means thousands (remove dots), 1 to 2 means decimal; Number(); NaN to null; round to 3 decimals.
+- [x] Run green. `npm run lint` clean.
+- [x] Commit: "feat(k2): german number core with the period-ambiguity rule"
 
 ## Task K3: fingerprint and detection (TDD)
 
@@ -275,7 +277,7 @@ it.each(cases)("parseGermanNumber(%j) -> %j", (raw, want) => {
 
 **Interfaces:** produces detectK2 and the footer triples (version, dateIso, projectName) consumed by K5.
 
-- [ ] Failing tests against frozen texts:
+- [x] Failing tests against frozen texts:
 
 ```ts
 const load = (n: string) =>
@@ -294,8 +296,8 @@ it("rejects the annotations document and junk", () => {
 });
 ```
 
-- [ ] Implement: per page, per line, match `^K2 Base Report (\S+) \| (\d{2})\.(\d{2})\.(\d{4}) \| (.+?) (\d+)\/(\d+)$`; collect triples; isK2 when at least TWO pages carry a footer (a quoted footer inside some other document cannot false-positive a one-line fluke); version is the most frequent.
-- [ ] Run green. Commit: "feat(k2): footer fingerprint detection"
+- [x] Implement: per page, per line, match `^K2 Base Report (\S+) \| (\d{2})\.(\d{2})\.(\d{4}) \| (.+?) (\d+)\/(\d+)$`; collect triples; isK2 when at least TWO pages carry a footer (a quoted footer inside some other document cannot false-positive a one-line fluke); version is the most frequent.
+- [x] Run green. Commit: "feat(k2): footer fingerprint detection"
 
 ## Task K4: article extraction and selection (TDD)
 
@@ -303,7 +305,7 @@ it("rejects the annotations document and junk", () => {
 
 **Interfaces:** produces extractArticleLists and selectItems consumed by K6's parseK2Text. ArticlePage = `{ pageIndex: number; scope: { kind: "total" } | { kind: "roof"; n: number } | { kind: "unknown" }; rows: K2LineItem[]; summeKg: number | null }`.
 
-- [ ] Failing tests, pinned to the real rows:
+- [x] Failing tests, pinned to the real rows:
 
 ```ts
 it("forum2: one total list, 8 exact rows", () => {
@@ -364,8 +366,8 @@ it("weight mismatch is a warning, not a failure", () => {
 });
 ```
 
-- [ ] Run FAIL, implement per "The article algorithm, exactly" (row regex, defensive join, breadcrumb classification via the `| Connecting Strength` anchor, selection, Summe tolerance).
-- [ ] Run green. Commit: "feat(k2): article lists with breadcrumb scoping and roof aggregation"
+- [x] Run FAIL, implement per "The article algorithm, exactly" (row regex, defensive join, breadcrumb classification via the `| Connecting Strength` anchor, selection, Summe tolerance).
+- [x] Run green. Commit: "feat(k2): article lists with breadcrumb scoping and roof aggregation"
 
 ## Task K5: metadata extraction (TDD)
 
@@ -373,7 +375,7 @@ it("weight mismatch is a warning, not a failure", () => {
 
 **Interfaces:** produces extractMetadata consumed by K6. Uses K3's footer triples and K2's number core.
 
-- [ ] Failing tests, one block per fixture, pinned to the verified values:
+- [x] Failing tests, one block per fixture, pinned to the verified values:
 
 ```ts
 it("k2-report-2025: inline mode, full metadata", () => {
@@ -430,8 +432,8 @@ it("never throws on junk", () => {
 
 NOTE for the forum1 roof test: Dach 3 carries a DIFFERENT module (460 Wp) than Dach 1 (455 Wp). moduleWp is the FIRST Wp found and roofs compute kwp from their OWN block's Wp match when one exists inside the block, falling back to the period-decimal cell parse. The implementer derives per-block Wp exactly this way; the pinned values are the report's own (18.655, 7.36).
 
-- [ ] Run FAIL, implement per "The metadata algorithm, exactly".
-- [ ] Run green. Commit: "feat(k2): metadata extraction, inline and block modes"
+- [x] Run FAIL, implement per "The metadata algorithm, exactly".
+- [x] Run green. Commit: "feat(k2): metadata extraction, inline and block modes"
 
 ## Task K6: assembly, the public API, integration tests
 
@@ -439,7 +441,7 @@ NOTE for the forum1 roof test: Dach 3 carries a DIFFERENT module (460 Wp) than D
 
 **Interfaces:** produces parseK2Text and parseK2Pdf exactly as the master plan's Task C2 consumes them.
 
-- [ ] Failing tests:
+- [x] Failing tests:
 
 ```ts
 it("full parse of each frozen fixture", () => {
@@ -468,29 +470,29 @@ it("parseK2Pdf never throws on garbage bytes", async () => {
 });
 ```
 
-- [ ] Implement parseK2Text (detect; not K2 means ok false with empty metadata shell; else metadata + articles + warnings: no_articles when items empty, meta_incomplete per the rule) and parseK2Pdf (try/catch shell per the shape comment).
-- [ ] Run the ENTIRE suite: `npm test` green, `npm run lint` clean.
-- [ ] Commit: "feat(k2): assembled parser and pdf entry point"
+- [x] Implement parseK2Text (detect; not K2 means ok false with empty metadata shell; else metadata + articles + warnings: no_articles when items empty, meta_incomplete per the rule) and parseK2Pdf (try/catch shell per the shape comment).
+- [x] Run the ENTIRE suite: `npm test` green, `npm run lint` clean.
+- [x] Commit: "feat(k2): assembled parser and pdf entry point"
 
 ## Task K7: the Excel adapter (TDD)
 
 **Files:** Create lib/k2/k2-xlsx.ts, scripts/k2-make-xlsx-fixture.mjs, generated tests/fixtures/k2/articles.xlsx (committed). Test tests/k2-xlsx.test.ts.
 
-- [ ] Fixture script: exceljs workbook, sheet "Artikelliste", row 1 headers Position, Art-Nr., Artikel, Anzahl, Gewicht; rows: (1, "2003215", "SingleHook 3S", 36, "19,1 kg"), (2, "2004115", "Wood screw 8×160", 72, "2,9 kg"), (3, "2003222", "SingleRail 36; 4.40 m", 9, "30,5 kg"), then a "Summe" row: reproduces the PDF list shape faithfully. Run once, commit the xlsx.
-- [ ] Failing tests: parseK2Xlsx returns 3 items matching the K4 pins for those articles; metadata all null; ok true; empty workbook bytes yield ok false without throwing; a sheet with a shifted header row (headers on row 3) still parses (the header-search rule).
-- [ ] Implement per the k2-xlsx shape (cells may arrive as numbers or strings; qty Number() when numeric cell, else parseGermanNumber; weight strips " kg" then parseGermanNumber).
-- [ ] Run green. Commit: "feat(k2): xlsx article adapter with synthetic fixture"
-- [ ] CHANGELOG debt line (carried from the design record): the xlsx fixture is synthetic; obtain one real K2 Base Excel export from the pilot EPC before hardening, and extend the header-search if its shape differs.
+- [x] Fixture script: exceljs workbook, sheet "Artikelliste", row 1 headers Position, Art-Nr., Artikel, Anzahl, Gewicht; rows: (1, "2003215", "SingleHook 3S", 36, "19,1 kg"), (2, "2004115", "Wood screw 8×160", 72, "2,9 kg"), (3, "2003222", "SingleRail 36; 4.40 m", 9, "30,5 kg"), then a "Summe" row: reproduces the PDF list shape faithfully. Run once, commit the xlsx.
+- [x] Failing tests: parseK2Xlsx returns 3 items matching the K4 pins for those articles; metadata all null; ok true; empty workbook bytes yield ok false without throwing; a sheet with a shifted header row (headers on row 3) still parses (the header-search rule).
+- [x] Implement per the k2-xlsx shape (cells may arrive as numbers or strings; qty Number() when numeric cell, else parseGermanNumber; weight strips " kg" then parseGermanNumber).
+- [x] Run green. Commit: "feat(k2): xlsx article adapter with synthetic fixture"
+- [x] CHANGELOG debt line (carried from the design record): the xlsx fixture is synthetic; obtain one real K2 Base Excel export from the pilot EPC before hardening, and extend the header-search if its shape differs.
 
 ## Task K8: the try-harness and the wizard contract
 
 **Files:** Create scripts/k2-try.ts. Modify docs/superpowers/plans/2026-07-20-v1-master-plan.md (Part A heading AND its Data shapes K2 block, see below).
 
-- [ ] scripts/k2-try.ts: `npm run k2:try -- <path-to-pdf-or-xlsx>` prints the K2ParseResult as formatted JSON plus a one-line human summary ("K2 3.1.97.0, 8 artiklov, 58,5 kg, opozorila: brez" / "Ni K2 poročilo."). Purpose: the founder or the pilot EPC can drop ANY fresh K2 export on the parser the moment it exists, days before the wizard UI lands, and future planner-vendor PDFs can be probed the same way. The script imports only lib/k2. Because lib/k2 is TypeScript, the runner is tsx: `npm install -D tsx` in this task (one devDependency, logged in CHANGELOG), and package.json gains `"k2:try": "tsx scripts/k2-try.ts"`.
-- [ ] Update the master plan in TWO places (finding 5: otherwise two conflicting shape contracts exist): the Part A heading gains "SUPERSEDED by docs/superpowers/plans/2026-07-20-k2-parser-plan.md (tasks K1 to K8); entry points parseK2Pdf and parseK2Xlsx unchanged", and the master plan's Data shapes K2 block (the lib/k2/k2-shared.ts snippet) gains a first line "SUPERSEDED: the authoritative shapes live in the K2 parser plan's Shapes section (warnings are CODES not i18n keys, K2LineItem carries position, normalizeArticleRows is internal, K2Metadata is the richer shape)". Task C2's executor reads the parser plan's Shapes section as the contract.
-- [ ] Dependency note: tsx is one devDependency beyond the master plan's "capped at four" rule; the cap covered runtime dependencies, and this extension is deliberate and logged in CHANGELOG (finding 9).
-- [ ] Verify: `npm run k2:try tests/fixtures/k2/forum2.pdf` prints 8 items; `npm run k2:try tests/fixtures/k2/k2-base-report-annotations.pdf` prints "ni K2 poročilo".
-- [ ] Commit: "feat(k2): try-harness cli and master plan handoff"
+- [x] scripts/k2-try.ts: `npm run k2:try -- <path-to-pdf-or-xlsx>` prints the K2ParseResult as formatted JSON plus a one-line human summary ("K2 3.1.97.0, 8 artiklov, 58,5 kg, opozorila: brez" / "Ni K2 poročilo."). Purpose: the founder or the pilot EPC can drop ANY fresh K2 export on the parser the moment it exists, days before the wizard UI lands, and future planner-vendor PDFs can be probed the same way. The script imports only lib/k2. Because lib/k2 is TypeScript, the runner is tsx: `npm install -D tsx` in this task (one devDependency, logged in CHANGELOG), and package.json gains `"k2:try": "tsx scripts/k2-try.ts"`.
+- [x] Update the master plan in TWO places (finding 5: otherwise two conflicting shape contracts exist): the Part A heading gains "SUPERSEDED by docs/superpowers/plans/2026-07-20-k2-parser-plan.md (tasks K1 to K8); entry points parseK2Pdf and parseK2Xlsx unchanged", and the master plan's Data shapes K2 block (the lib/k2/k2-shared.ts snippet) gains a first line "SUPERSEDED: the authoritative shapes live in the K2 parser plan's Shapes section (warnings are CODES not i18n keys, K2LineItem carries position, normalizeArticleRows is internal, K2Metadata is the richer shape)". Task C2's executor reads the parser plan's Shapes section as the contract.
+- [x] Dependency note: tsx is one devDependency beyond the master plan's "capped at four" rule; the cap covered runtime dependencies, and this extension is deliberate and logged in CHANGELOG (finding 9).
+- [x] Verify: `npm run k2:try tests/fixtures/k2/forum2.pdf` prints 8 items; `npm run k2:try tests/fixtures/k2/k2-base-report-annotations.pdf` prints "ni K2 poročilo".
+- [x] Commit: "feat(k2): try-harness cli and master plan handoff"
 
 ## What this parser deliberately does NOT do (scope fence)
 

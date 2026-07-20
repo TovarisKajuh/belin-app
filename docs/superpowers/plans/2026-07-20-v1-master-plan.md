@@ -343,6 +343,14 @@ The invoices_vat_shape constraint is the database-level guarantee behind decisio
 ## Data shapes (decided before code)
 
 ```ts
+// SUPERSEDED: the authoritative shapes live in the K2 parser plan's Shapes
+// section (docs/superpowers/plans/2026-07-20-k2-parser-plan.md), and are now
+// SHIPPED in lib/k2/. Differences from the sketch below: warnings are CODES,
+// not i18n keys (the parser must not know about i18n namespaces; the UI maps
+// them); K2LineItem carries a position for review screen ordering;
+// normalizeArticleRows is internal; K2Metadata is a richer shape (report
+// version and date, author, customer, company, module wattage and count,
+// kWp total, roof type, pitch, the verification flag, and a roofs array).
 // lib/k2/k2-shared.ts (pure, fully unit tested against the fixtures)
 export interface K2LineItem {
   articleNo: string;   // 7 digits, zero-padded string, never a number
@@ -648,7 +656,9 @@ NAVIGATION MODEL (review blocker: without this, no new route is reachable):
   naročilnica state (with accept CTA when sent), hours and change orders summary,
   finalization state, crew link with QR, latest reports feed (read-only).
 
-## Part A: K2 parser core (founder build step 1 of the code, no UI, no schema)
+## Part A: K2 parser core (SUPERSEDED, and BUILT)
+
+> SUPERSEDED by docs/superpowers/plans/2026-07-20-k2-parser-plan.md (tasks K1 to K8), which was EXECUTED on 2026-07-20. The entry points parseK2Pdf and parseK2Xlsx are unchanged, so Task C2 and every other consumer are unaffected. Tasks A1 to A4 below are kept only as a record of the original thinking: do not execute them. The authoritative shapes are in the parser plan's Shapes section, and the shipped code is lib/k2/k2-core.ts, k2-articles.ts, k2-metadata.ts, k2-shared.ts (public facade), k2-pdf.ts and k2-xlsx.ts.
 
 ### Task A1: dependencies and extraction harness
 
