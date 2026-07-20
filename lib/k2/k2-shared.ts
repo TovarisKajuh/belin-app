@@ -80,6 +80,74 @@ export function emptyMetadata(): K2Metadata {
   };
 }
 
+export interface K2Footer {
+  version: string;
+  dateIso: string;
+  projectName: string;
+}
+
+// The footer sits on every content page and never on the cover, so detection
+// scans all pages. "K2 Base Report" does NOT translate: German reports print
+// "K2 Base Bericht" on the cover and this exact English string in the footer.
+const FOOTER_RE =
+  /^K2 Base Report (\S+) \| (\d{2})\.(\d{2})\.(\d{4}) \| (.+?) (\d+)\/(\d+)$/;
+
+export function toLines(pageText: string): string[] {
+  if (typeof pageText !== "string") return [];
+  return pageText.split("\n").map((l) => l.trim());
+}
+
+/** Every footer line across all pages, in page order. Total: never throws. */
+export function parseFooters(pagesText: string[]): K2Footer[] {
+  if (!Array.isArray(pagesText)) return [];
+
+  const out: K2Footer[] = [];
+  for (const page of pagesText) {
+    for (const line of toLines(page)) {
+      const m = FOOTER_RE.exec(line);
+      if (!m) continue;
+      out.push({
+        version: m[1],
+        dateIso: `${m[4]}-${m[3]}-${m[2]}`,
+        projectName: m[5].trim(),
+      });
+    }
+  }
+  return out;
+}
+
+/** The most frequent value in a list, ties broken by first appearance. */
+export function mostFrequent<T extends string>(values: T[]): T | null {
+  if (values.length === 0) return null;
+
+  const counts = new Map<T, number>();
+  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
+
+  let best: T = values[0];
+  let bestCount = 0;
+  for (const v of values) {
+    const c = counts.get(v) ?? 0;
+    if (c > bestCount) {
+      best = v;
+      bestCount = c;
+    }
+  }
+  return best;
+}
+
+/**
+ * A document is a K2 Base report when at least TWO pages carry the footer
+ * fingerprint. Two, not one, so that another document quoting a single K2
+ * footer line cannot false positive. The annotations fixture (K2's own
+ * explanatory PDF) carries zero footers and is the negative proof.
+ */
+export function detectK2(pagesText: string[]): { isK2: boolean; version: string | null } {
+  const footers = parseFooters(pagesText);
+  if (footers.length < 2) return { isK2: false, version: null };
+
+  return { isK2: true, version: mostFrequent(footers.map((f) => f.version)) };
+}
+
 /**
  * Parses a number written in COMMA DECIMAL contexts: weights, Summe values,
  * Bodenschneelast. Not a universal number parser, and deliberately so.
