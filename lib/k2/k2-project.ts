@@ -23,6 +23,8 @@ export interface DraftRoof {
   moduleCount: number | null;
   kwp: number | null;
   moduleType: string | null;
+  pitchDeg: number | null;
+  covering: string | null;
 }
 
 export interface ProjectDraft {
@@ -37,6 +39,8 @@ export interface ProjectDraft {
   moduleType: string | null;
   mountingSystem: string | null;
   roofType: string | null;
+  /** ISO date the plan states for installation, when it states one. */
+  plannedStart: string | null;
   items: DraftItem[];
   /** One entry per roof in the plan. A site is built roof by roof. */
   roofs: DraftRoof[];
@@ -171,6 +175,8 @@ export function projectDraftFromParse(
     moduleCount: roof.moduleCount,
     kwp: roof.kwp,
     moduleType: roof.moduleType,
+    pitchDeg: roof.pitchDeg,
+    covering: roof.covering,
   }));
 
   // Panels first, then K2's own hardware: the article list never contains the
@@ -194,6 +200,7 @@ export function projectDraftFromParse(
     moduleType: meta.moduleDesc,
     mountingSystem: meta.mountingSystem,
     roofType: meta.roofType,
+    plannedStart: meta.plannedInstallDate,
     items: [
       ...modules,
       ...result.items.map((item, i) => ({

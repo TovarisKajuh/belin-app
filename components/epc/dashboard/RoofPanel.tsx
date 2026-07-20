@@ -22,6 +22,13 @@ export async function RoofPanel({ roofs }: { roofs: DashboardRoof[] }) {
               <span className="u">{t("modules")}</span>
             </div>
             {roof.kwp !== null && <div className="rp-kwp e-mono">{roof.kwp} kWp</div>}
+            {(roof.pitchDeg !== null || roof.covering) && (
+              <div className="rp-spec">
+                {[roof.pitchDeg !== null ? `${roof.pitchDeg}°` : null, roof.covering]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </div>
+            )}
           </div>
         ))}
       </div>

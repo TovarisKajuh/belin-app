@@ -1704,3 +1704,7 @@ button.gal-item {
 .belin-dark .wz-subhint {
   margin: -8px 0 16px; font-size: 12.5px; color: var(--e-muted); max-width: 62ch;
 }
+.belin-dark .wz-roof-spec {
+  grid-column: 1 / -1; font-size: 12px; color: var(--e-gold-2); font-weight: 600;
+}
+.belin-dark .rp-spec { margin-top: 6px; font-size: 12px; color: var(--e-muted); }

@@ -996,32 +996,38 @@ export type Database = {
       }
       project_roofs: {
         Row: {
+          covering: string | null
           created_at: string
           id: string
           kwp: number | null
           module_count: number | null
           module_type: string | null
           name: string
+          pitch_deg: number | null
           project_id: string
           sort_order: number
         }
         Insert: {
+          covering?: string | null
           created_at?: string
           id?: string
           kwp?: number | null
           module_count?: number | null
           module_type?: string | null
           name: string
+          pitch_deg?: number | null
           project_id: string
           sort_order?: number
         }
         Update: {
+          covering?: string | null
           created_at?: string
           id?: string
           kwp?: number | null
           module_count?: number | null
           module_type?: string | null
           name?: string
+          pitch_deg?: number | null
           project_id?: string
           sort_order?: number
         }

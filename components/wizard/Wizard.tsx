@@ -33,6 +33,7 @@ const emptyDraft = (country: string, locale: string): ProjectDraft => ({
   moduleType: null,
   mountingSystem: null,
   roofType: null,
+  plannedStart: null,
   items: [],
   roofs: [],
 });
@@ -128,7 +129,9 @@ export function Wizard({
           moduleType: draft.moduleType,
           mountingSystem: draft.mountingSystem,
           roofType: draft.roofType,
-          plannedStart: null,
+          // Prefilled from the plan when it states an installation date, and
+          // editable on the review screen like everything else.
+          plannedStart: draft.plannedStart,
           plannedEnd: null,
         },
         items: items.filter((i) => i.name.trim() !== ""),
@@ -310,6 +313,16 @@ export function Wizard({
                   onChange={(e) => set("roofType", e.target.value || null)}
                 />
               </Field>
+              <Field label={t("fieldStart")}>
+                {/* Prefilled when the plan states an installation date. Shown
+                    rather than silently stored: the EPC reviews what it got. */}
+                <input
+                  className="b-field"
+                  type="date"
+                  value={draft.plannedStart ?? ""}
+                  onChange={(e) => set("plannedStart", e.target.value || null)}
+                />
+              </Field>
             </div>
 
             {roofs.length > 0 && (
@@ -350,6 +363,13 @@ export function Wizard({
                           }
                         />
                       </label>
+                      {(roof.pitchDeg !== null || roof.covering) && (
+                        <div className="wz-roof-spec">
+                          {[roof.pitchDeg !== null ? `${roof.pitchDeg}°` : null, roof.covering]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </div>
+                      )}
                       {roof.moduleType && <div className="wz-roof-mod">{roof.moduleType}</div>}
                     </div>
                   ))}

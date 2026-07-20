@@ -176,8 +176,22 @@ describe("modules reach the material list", () => {
   it("groups roofs that carry the same panel into one line", () => {
     const items = moduleItemsFromRoofs(
       [
-        { name: "Dach 1", moduleCount: 10, kwp: null, moduleType: "AIKO-A455 (1757x1134x30)" },
-        { name: "Dach 2", moduleCount: 6, kwp: null, moduleType: "AIKO-A455 (1757x1134x30)" },
+        {
+          name: "Dach 1",
+          moduleCount: 10,
+          kwp: null,
+          moduleType: "AIKO-A455 (1757x1134x30)",
+          pitchDeg: null,
+          covering: null,
+        },
+        {
+          name: "Dach 2",
+          moduleCount: 6,
+          kwp: null,
+          moduleType: "AIKO-A455 (1757x1134x30)",
+          pitchDeg: null,
+          covering: null,
+        },
       ],
       { moduleCount: 16, moduleType: null },
     );

@@ -78,6 +78,8 @@ export interface DashboardRoof {
   name: string;
   moduleCount: number | null;
   kwp: number | null;
+  pitchDeg: number | null;
+  covering: string | null;
 }
 
 // The single dashboard read. Composes the shared project core (header, scope,
@@ -123,7 +125,7 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
       .maybeSingle(),
     db
       .from("project_roofs")
-      .select("name, module_count, kwp, sort_order")
+      .select("name, module_count, kwp, pitch_deg, covering, sort_order")
       .eq("project_id", actor.projectId)
       .order("sort_order"),
   ]);
@@ -137,6 +139,8 @@ export async function getEpcDashboard(actor: Actor): Promise<EpcDashboardData | 
     name: r.name,
     moduleCount: r.module_count,
     kwp: r.kwp === null ? null : Number(r.kwp),
+    pitchDeg: r.pitch_deg === null ? null : Number(r.pitch_deg),
+    covering: r.covering,
   }));
 
   const entries = entriesRes.data ?? [];
