@@ -12,6 +12,14 @@ const FIXTURES = [
   "k2-base-report-annotations",
   "forum1",
   "forum2",
+  // Real customer reports supplied by the founder 2026-07-20. kadir is the
+  // ENGLISH export that the pre-hardening parser rejected outright; the other
+  // four are the 3.2.7x era that renamed roofs to "Bereich".
+  "kadir-trainer-projekt",
+  "martin-lang",
+  "petra-ullrich",
+  "planung-engelmeier",
+  "thomas-woginger",
 ];
 
 const pdfDir = join("tests", "fixtures", "k2");
