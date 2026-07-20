@@ -41,7 +41,18 @@ Fixed by lib/app-url.ts: NEXT_PUBLIC_APP_URL still wins when present, so a custo
 
 The lesson is the plan's own rule, paid for again. Deploying is not verifying. The local flow was green in every respect and the deployed one was completely dead.
 
-## B4, partially done
+## B4, finished
+
+The founder logged in on production, landed on the placeholder and asked what now, which was the right question: the placeholder was the whole remaining gap. B4 closed it.
+
+- /app for a person is the project list, scoped to whichever side their org sits on. listProjectsForPerson exists because listProjectsForOrg only asks about epc_org_id, which would show a subcontractor nothing at all.
+- /app/[projectId] renders the full surface with no token: EpcDashboard, SubHome, or the crew screen for a crew person.
+- SubHome is new and is deliberately not the crew screen. Sending a company owner to the roof reporting form would ask them to log headcount and photos while hiding the naročilnica and the hours they actually sign.
+- Components take a (token, projectId) pair. The two action families were given identical signatures so a component picks one in a single line rather than growing a second code path.
+
+Verified by driving it: signed in by magic link, three real projects listed, opened one, added a material item and confirmed the row reached the database through the session path. A stranger's project returns an unleaky not found. The sub admin was probed with a session minted by hand (her seeded address is on the fake demo domain and cannot receive mail): she gets SubHome, sees only her org's projects, has no new project button and is bounced out of the wizard.
+
+## What the earlier B4 checkpoint had already landed
 
 Committed with the URL fix, because widening the Actor union and leaving the tree red was not an option:
 
@@ -49,8 +60,10 @@ Committed with the URL fix, because widening the Actor union and leaving the tre
 - ProjectActor, requireProjectActor and requireOfficeActor added; resolveProjectRole extracted pure into lib/actor-shared.ts with 7 tests. The office gate is person only by design, and excludes Bauleiter unless a caller opts in.
 - OrgActor added, which the plan did not anticipate: the wizard's three functions (uploadAndParsePlan, listKnownSubs, createProjectFromReview) only ever read orgId, and at upload time no project exists to scope to. Forcing them through ProjectActor would have meant inventing a project id that does not exist yet.
 
-Still open in B4: the /app/[projectId] route, the session action variants, threading token as string or null through the nine token-threaded components, ProjectList for person sessions and SubHome. 287 tests green, tsc and build clean at the checkpoint.
+287 tests green, tsc and build clean.
 
 ## Next
 
-Finish B4, then B5 (invites) and B6 (settings and the compliance vault).
+B5 (invites) and B6 (settings and the compliance vault), which close Part B. B5 matters most: until it lands, the only person who can sign in on production is the founder, because every other seeded address is fake. It is also what lets a real subcontractor create their own account.
+
+Loose end to raise with the founder: a project named "Bietigheim-Bissingen" from the previous session's wizard testing is still in the database and now shows up in the project list for both the founder and the sub. It was created as a test but never removed, so it is left alone rather than deleted unilaterally.
