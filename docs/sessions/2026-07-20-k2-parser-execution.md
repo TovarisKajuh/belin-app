@@ -70,3 +70,21 @@ The drift repair landed as planned: the deployed create_project_from_review was 
 ## Next
 
 Master plan Part B (accounts and magic-link auth), which replaces the wizard's one function demo gate and unlocks inviting a sub by email. Standing debt: still no real K2 Excel export has ever been seen, so all three xlsx fixtures remain synthetic.
+
+## Close of session
+
+The founder uploaded a completely fresh K2 plan, one that was never a fixture, through the production wizard: it parsed correctly first time. That is the strongest evidence the segment has, because the fingerprint, the breadcrumb grammar and the locale packs all held on a document none of them were written against.
+
+Last act before closing: the Excel adapter was DELETED. The founder asked how one even exports xlsx from K2, which traced the entire feature to a single unverified research note from 2026-07-19. All five real reports carry the article list in the PDF, an article-less PDF still yields the project, roofs and modules, and the honest fallback for missing hardware is re-exporting from K2 with the article list section included. Four pieces of user-facing copy were instructing EPCs to upload Excel; all now say to re-export the PDF properly, naming the consequence (missing mounting material). 250 tests.
+
+Two lessons from the day, both worth carrying:
+- Both bugs the founder caught (per roof panel counts discarded, panels missing from the material list) passed every test, tsc and the production build. They were not code defects; the code did exactly what I intended. My model of what a K2 plan contains was wrong, and only real data and the founder's domain knowledge exposed that.
+- The Excel adapter is the same failure in a different shape: 150 lines of foundation code, tests and fixtures built on a research claim nobody had checked with a K2 user. Verify the premise before building on it.
+
+## State at close
+
+Parser segment closed. 250 tests, tsc clean, build clean, deployed and verified in production. Ten real reports across two languages and three K2 eras, plus a fresh unseen plan.
+
+Open debt: orphaned uploads from abandoned wizard runs; the demo login (12345/12345) hardcoded with a hard removal date of 27.07; the wizard's office gate still resolving the demo session cookie.
+
+Next session: master plan Part B (accounts and magic-link auth), which clears the last two of those.
