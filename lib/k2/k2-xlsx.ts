@@ -5,8 +5,9 @@
 import ExcelJS from "exceljs";
 import {
   emptyMetadata,
-  parseGermanNumber,
+  parseLocaleNumber,
   type K2LineItem,
+  type K2Lang,
   type K2ParseResult,
 } from "@/lib/k2/k2-shared";
 
@@ -51,7 +52,8 @@ function findHeader(sheet: ExcelJS.Worksheet): { rowNumber: number; cols: string
   sheet.eachRow((row, rowNumber) => {
     if (found) return;
     const cols = rowTexts(row);
-    const hasArticleNo = cols.some((c) => /art.?-?nr/i.test(c));
+    // German "Art.-Nr." and English "Item no." name the same column.
+    const hasArticleNo = cols.some((c) => /art.?-?nr|item\s*no/i.test(c));
     const hasQty = cols.some((c) => /^(anzahl|menge|qty|quantity|kolicina|količina)$/i.test(c));
     if (hasArticleNo && hasQty) found = { rowNumber, cols };
   });
@@ -93,8 +95,15 @@ export async function parseK2Xlsx(bytes: Uint8Array): Promise<K2ParseResult> {
   if (!header) return failed();
 
   const iPosition = columnIndex(header.cols, /^position$/i);
-  const iArticleNo = columnIndex(header.cols, /art.?-?nr/i);
-  const iName = columnIndex(header.cols, /^(artikel|article|name|naziv)$/i);
+  // A workbook has no footer to read a language off, so the header row is the
+  // signal: English headers mean English numbers, where a comma groups
+  // thousands instead of marking the decimal.
+  const lang: K2Lang = header.cols.some((c) => /item\s*no|quantity|weight/i.test(c))
+    ? "en"
+    : "de";
+
+  const iArticleNo = columnIndex(header.cols, /art.?-?nr|item\s*no/i);
+  const iName = columnIndex(header.cols, /^(artikel|article|item description|name|naziv)$/i);
   const iQty = columnIndex(header.cols, /^(anzahl|menge|qty|quantity|kolicina|količina)$/i);
   const iWeight = columnIndex(header.cols, /^(gewicht|weight|teza|teža)$/i);
 
@@ -110,12 +119,13 @@ export async function parseK2Xlsx(bytes: Uint8Array): Promise<K2ParseResult> {
     // row, a blank separator, or a trailing note.
     if (!ARTICLE_NO_RE.test(articleNo)) break;
 
-    const qty = parseGermanNumber(cols[iQty] ?? "");
+    const qty = parseLocaleNumber(cols[iQty] ?? "", lang);
     if (qty === null) break;
 
     // The printed position is used when it is a number, otherwise the running
     // index, so a sheet without a Position column still yields ordered items.
-    const printedPosition = iPosition === -1 ? null : parseGermanNumber(cols[iPosition] ?? "");
+    const printedPosition =
+      iPosition === -1 ? null : parseLocaleNumber(cols[iPosition] ?? "", lang);
     const position = printedPosition ?? items.length + 1;
 
     const weightRaw = iWeight === -1 ? "" : (cols[iWeight] ?? "").replace(/\s*kg\s*$/i, "");
@@ -125,7 +135,7 @@ export async function parseK2Xlsx(bytes: Uint8Array): Promise<K2ParseResult> {
       articleNo,
       name: iName === -1 ? "" : (cols[iName] ?? ""),
       qty,
-      weightKg: parseGermanNumber(weightRaw),
+      weightKg: parseLocaleNumber(weightRaw, lang),
     });
   }
 
@@ -138,6 +148,6 @@ export async function parseK2Xlsx(bytes: Uint8Array): Promise<K2ParseResult> {
     metadata: emptyMetadata(),
     items,
     warnings: ["meta_incomplete"],
-    diagnostics: ["source:xlsx"],
+    diagnostics: ["source:xlsx", `locale:${lang}`],
   };
 }

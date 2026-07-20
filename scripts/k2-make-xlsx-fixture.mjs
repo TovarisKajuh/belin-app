@@ -33,3 +33,15 @@ sheet2.addRow([1, "2003215", "SingleHook 3S", 36, "19,1 kg"]);
 
 await wb2.xlsx.writeFile(join(outDir, "articles-shifted.xlsx"));
 console.log("wrote tests/fixtures/k2/articles-shifted.xlsx");
+
+// A third fixture with ENGLISH headers, because K2 exports in the planner's UI
+// language and the founder's own account is English.
+const wb3 = new ExcelJS.Workbook();
+const sheet3 = wb3.addWorksheet("Bill of material");
+sheet3.addRow(["Position", "Item no.", "Item description", "Quantity", "Weight"]);
+sheet3.addRow([1, "2004112", "Wood screw 8x100", 112, "3.0 kg"]);
+sheet3.addRow([2, "2004545", "K2 Clamp EC 25-40 Black", 8, "0.6 kg"]);
+sheet3.addRow(["Total", "", "", "", "3.6 kg"]);
+
+await wb3.xlsx.writeFile(join(outDir, "articles-english.xlsx"));
+console.log("wrote tests/fixtures/k2/articles-english.xlsx");

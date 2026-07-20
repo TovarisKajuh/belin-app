@@ -56,3 +56,14 @@ it("a workbook with no article table is not ok", async () => {
   const r = await parseK2Xlsx(bytes("tests/fixtures/k2/forum2.pdf")); // a PDF, not a workbook
   expect(r.ok).toBe(false);
 });
+
+it("reads an english export's headers", () => {
+  // "Item no." and "Item description" are the same columns as "Art.-Nr." and
+  // "Artikel". Synthetic like the others: still no real K2 Excel export exists.
+  return parseK2Xlsx(bytes("tests/fixtures/k2/articles-english.xlsx")).then((r) => {
+    expect(r.ok).toBe(true);
+    expect(r.items).toHaveLength(2);
+    expect(r.items[0].name).toBe("Wood screw 8x100");
+    expect(r.items[0].qty).toBe(112);
+  });
+});

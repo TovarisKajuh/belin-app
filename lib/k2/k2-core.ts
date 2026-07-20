@@ -121,9 +121,15 @@ export interface K2Footer {
 const FOOTER_RE =
   /^K2 Base Report (\S+) \| (\d{2})([./-])(\d{2})[./-](\d{4}) \| (.+?) (\d+)\/(\d+)$/;
 
+// No real K2 line comes close to this. The cap exists because the article row
+// pattern ends in a lazy capture, which backtracks quadratically on a crafted
+// multi megabyte line: a PDF carrying one enormous line would pin a serverless
+// CPU long before it ever failed to match.
+const MAX_LINE_CHARS = 400;
+
 export function toLines(pageText: string): string[] {
   if (typeof pageText !== "string") return [];
-  return pageText.split("\n").map((l) => l.trim());
+  return pageText.split("\n").map((l) => l.trim().slice(0, MAX_LINE_CHARS));
 }
 
 // The breadcrumb sits on the line after this exact anchor, near the end of the
