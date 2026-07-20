@@ -1,16 +1,20 @@
 // Article list extraction and selection. Pure, total, never throws.
 // See lib/k2/k2-core.ts for why nothing here imports "server-only".
 import {
-  parseGermanNumber,
+  parseFooters,
   readBreadcrumb,
   toLines,
   type K2LineItem,
   type K2WarningCode,
 } from "@/lib/k2/k2-core";
+import { classifyCrumb } from "@/lib/k2/k2-crumbs";
+import { inferLocale, parseLocaleNumber, LOCALES, type K2Lang } from "@/lib/k2/k2-locale";
 
 export type ArticleScope =
   | { kind: "total" }
-  | { kind: "roof"; n: number }
+  // The area NAME as the document writes it. Not a number: K2 renamed roofs to
+  // Bereich and Area, and planners rename them to anything at all.
+  | { kind: "roof"; area: string }
   | { kind: "unknown" };
 
 export interface ArticlePage {
@@ -26,15 +30,16 @@ export interface ArticlePage {
 const ROW_RE = /^(\d{1,3})\s+(\d{7})\s+(.+?)\s+(\d+(?:,\d+)?)\s+([\d.,]+)\s*kg$/;
 // A line that starts like a row but does not complete: candidate for rejoining.
 const ROW_START_RE = /^\d{1,3}\s+\d{7}\s+/;
-const SUMME_RE = /^Summe\s+([\d.,]+)\s*kg$/;
+/** "Summe 292,9 kg" and "Total 94.6 kg" are the same row in two languages. */
+function summeRe(pack: { terms: { totalWord: string } }): RegExp {
+  return new RegExp(String.raw`^${pack.terms.totalWord}\s+([\d.,]+)\s*kg$`);
+}
 
-const ROOF_CRUMB_RE = /\|\s*Dach\s+(\d+)\s*\|/;
-
-function parseRow(line: string, position: number): K2LineItem | null {
+function parseRow(line: string, position: number, lang: K2Lang): K2LineItem | null {
   const m = ROW_RE.exec(line);
   if (!m) return null;
 
-  const qty = parseGermanNumber(m[4]);
+  const qty = parseLocaleNumber(m[4], lang);
   if (qty === null) return null;
 
   return {
@@ -42,24 +47,31 @@ function parseRow(line: string, position: number): K2LineItem | null {
     articleNo: m[2],
     name: m[3].trim(),
     qty,
-    weightKg: parseGermanNumber(m[5]),
+    weightKg: parseLocaleNumber(m[5], lang),
   };
 }
 
-function readScope(lines: string[]): ArticleScope {
+function readScope(lines: string[], lang: K2Lang): ArticleScope {
   const crumb = readBreadcrumb(lines);
   if (crumb === null) return { kind: "unknown" };
 
-  const roof = ROOF_CRUMB_RE.exec(crumb);
-  if (roof) return { kind: "roof", n: Number(roof[1]) };
-  if (crumb === "Artikelliste") return { kind: "total" };
+  const classified = classifyCrumb(crumb, LOCALES[lang]);
+  if (classified.kind === "bomTotal") return { kind: "total" };
+  if (classified.kind === "bomArea") return { kind: "roof", area: classified.area };
 
   return { kind: "unknown" };
 }
 
 /** Every page that carries at least one article row, in page order. */
-export function extractArticleLists(pagesText: string[]): ArticlePage[] {
+export function extractArticleLists(pagesText: string[], lang?: K2Lang): ArticlePage[] {
   if (!Array.isArray(pagesText)) return [];
+
+  // Callers that already know the language pass it; everyone else (including
+  // every existing test) gets it inferred here, so the one argument form stays
+  // valid.
+  const resolved: K2Lang = lang ?? inferLocale(pagesText, parseFooters(pagesText));
+  const pack = LOCALES[resolved];
+  const SUMME_RE = summeRe(pack);
 
   const out: ArticlePage[] = [];
 
@@ -71,7 +83,7 @@ export function extractArticleLists(pagesText: string[]): ArticlePage[] {
     for (let i = 0; i < lines.length; i += 1) {
       const line = lines[i];
 
-      const row = parseRow(line, rows.length + 1);
+      const row = parseRow(line, rows.length + 1, resolved);
       if (row) {
         rows.push(row);
         continue;
@@ -81,7 +93,7 @@ export function extractArticleLists(pagesText: string[]): ArticlePage[] {
       // is retried ONCE joined with the next line. Zero occurrences in the five
       // fixtures; this guards against future name wrapping.
       if (ROW_START_RE.test(line) && i + 1 < lines.length) {
-        const joined = parseRow(`${line} ${lines[i + 1]}`, rows.length + 1);
+        const joined = parseRow(`${line} ${lines[i + 1]}`, rows.length + 1, resolved);
         if (joined) {
           rows.push(joined);
           i += 1;
@@ -90,11 +102,11 @@ export function extractArticleLists(pagesText: string[]): ArticlePage[] {
       }
 
       const summe = SUMME_RE.exec(line);
-      if (summe) summeKg = parseGermanNumber(summe[1]);
+      if (summe) summeKg = parseLocaleNumber(summe[1], resolved);
     }
 
     if (rows.length > 0) {
-      out.push({ pageIndex, scope: readScope(lines), rows, summeKg });
+      out.push({ pageIndex, scope: readScope(lines, resolved), rows, summeKg });
     }
   });
 

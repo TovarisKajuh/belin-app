@@ -35,9 +35,12 @@ it("forum2: one total list, 8 exact rows", () => {
 
 it("forum1: the total list wins over the two roof lists", () => {
   const pages = extractArticleLists(load("forum1"));
+  // UPGRADED by the hardening plan: a roof scope now carries the area NAME the
+  // document uses, not a number parsed out of the word "Dach", because K2 no
+  // longer uses that word and planners rename areas freely.
   expect(pages.map((p) => p.scope)).toEqual([
-    { kind: "roof", n: 1 },
-    { kind: "roof", n: 3 },
+    { kind: "roof", area: "Dach 1" },
+    { kind: "roof", area: "Dach 3" },
     { kind: "total" },
   ]);
 
@@ -144,4 +147,65 @@ it("never throws on junk", () => {
   expect(() => extractArticleLists([])).not.toThrow();
   expect(() => extractArticleLists(["", "\n\n\n", "1 2 3"])).not.toThrow();
   expect(() => selectItems([])).not.toThrow();
+});
+
+// The real customer reports, added by the hardening plan.
+
+it("kadir: the english report parses its bill of material", () => {
+  const pages = extractArticleLists(load("kadir-trainer-projekt"));
+  expect(pages).toHaveLength(1);
+  expect(pages[0].scope).toEqual({ kind: "total" });
+  expect(pages[0].summeKg).toBe(94.6); // "Total 94.6 kg", english decimals
+
+  const { items, warnings } = selectItems(pages);
+  expect(warnings).toEqual([]);
+  expect(items).toHaveLength(8);
+  expect(items[1]).toEqual({
+    position: 2,
+    articleNo: "2004545",
+    name: "K2 Clamp EC 25-40 Black",
+    qty: 8,
+    weightKg: 0.6,
+  });
+});
+
+it("martin-lang: two area lists plus a project total, the total wins", () => {
+  const pages = extractArticleLists(load("martin-lang"));
+  expect(pages.map((p) => p.scope)).toEqual([
+    { kind: "roof", area: "Bereich 1" },
+    { kind: "roof", area: "Bereich 2" },
+    { kind: "total" },
+  ]);
+
+  const { items, warnings } = selectItems(pages);
+  expect(items).toHaveLength(12);
+  expect(warnings).toEqual([]);
+});
+
+it("the other three real reports parse their totals", () => {
+  const cases: [string, number, number][] = [
+    ["petra-ullrich", 11, 66.8],
+    ["planung-engelmeier", 10, 94.3],
+    ["thomas-woginger", 12, 132.2],
+  ];
+
+  for (const [name, count, summe] of cases) {
+    const pages = extractArticleLists(load(name));
+    const total = pages.find((p) => p.scope.kind === "total")!;
+    expect(total.summeKg).toBe(summe);
+    expect(selectItems(pages).items).toHaveLength(count);
+  }
+});
+
+it("per area lists with no project total aggregate instead of double counting", () => {
+  // The shipped selector treated unrecognized scopes as totals and concatenated
+  // them, so a report with per area lists and no grand total would have counted
+  // every article twice. Scoping them properly routes them to aggregation.
+  const pages = extractArticleLists(load("martin-lang")).filter((p) => p.scope.kind === "roof");
+  const { items, warnings } = selectItems(pages);
+
+  expect(warnings).toContain("per_roof_fallback");
+  // 10 + 11 rows across the two areas, but only the distinct articles survive.
+  expect(items.length).toBeLessThan(21);
+  expect(new Set(items.map((i) => i.articleNo)).size).toBe(items.length);
 });
