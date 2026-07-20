@@ -2,6 +2,7 @@
 // See lib/k2/k2-shared.ts for why nothing here imports "server-only".
 import {
   parseGermanNumber,
+  readBreadcrumb,
   toLines,
   type K2LineItem,
   type K2WarningCode,
@@ -27,10 +28,6 @@ const ROW_RE = /^(\d{1,3})\s+(\d{7})\s+(.+?)\s+(\d+(?:,\d+)?)\s+([\d.,]+)\s*kg$/
 const ROW_START_RE = /^\d{1,3}\s+\d{7}\s+/;
 const SUMME_RE = /^Summe\s+([\d.,]+)\s*kg$/;
 
-// The breadcrumb sits on the line after this exact anchor, near the end of the
-// page text. Exact equality matters: K2's annotations PDF carries the words
-// "Connecting Strength" without the leading pipe.
-const BREADCRUMB_ANCHOR = "| Connecting Strength";
 const ROOF_CRUMB_RE = /\|\s*Dach\s+(\d+)\s*\|/;
 
 function parseRow(line: string, position: number): K2LineItem | null {
@@ -50,12 +47,9 @@ function parseRow(line: string, position: number): K2LineItem | null {
 }
 
 function readScope(lines: string[]): ArticleScope {
-  const anchorAt = lines.findIndex((l) => l === BREADCRUMB_ANCHOR);
-  // A missing anchor, or an anchor that is the last line (covers and closing
-  // pages), means there is no breadcrumb to read.
-  if (anchorAt === -1 || anchorAt === lines.length - 1) return { kind: "unknown" };
+  const crumb = readBreadcrumb(lines);
+  if (crumb === null) return { kind: "unknown" };
 
-  const crumb = lines[anchorAt + 1];
   const roof = ROOF_CRUMB_RE.exec(crumb);
   if (roof) return { kind: "roof", n: Number(roof[1]) };
   if (crumb === "Artikelliste") return { kind: "total" };

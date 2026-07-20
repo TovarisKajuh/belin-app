@@ -97,6 +97,33 @@ export function toLines(pageText: string): string[] {
   return pageText.split("\n").map((l) => l.trim());
 }
 
+// The breadcrumb sits on the line after this exact anchor, near the end of the
+// page text, and is what tells an article list apart from a project total or
+// an overview page. Exact equality matters: K2's annotations PDF carries the
+// words "Connecting Strength" without the leading pipe.
+const BREADCRUMB_ANCHOR = "| Connecting Strength";
+
+/**
+ * Page furniture rather than content: the breadcrumb anchor, the breadcrumb's
+ * own footer line, the vendor URL. Positional pairing must stop at these, or a
+ * short value run silently absorbs them and shifts every field.
+ */
+export function isStructuralLine(line: string): boolean {
+  return (
+    line === BREADCRUMB_ANCHOR ||
+    FOOTER_RE.test(line) ||
+    /^www\./i.test(line)
+  );
+}
+
+/** The page's breadcrumb, or null when the page carries none. */
+export function readBreadcrumb(lines: string[]): string | null {
+  const anchorAt = lines.indexOf(BREADCRUMB_ANCHOR);
+  // An anchor on the LAST line (covers, closing pages) has no breadcrumb after it.
+  if (anchorAt === -1 || anchorAt === lines.length - 1) return null;
+  return lines[anchorAt + 1];
+}
+
 /** Every footer line across all pages, in page order. Total: never throws. */
 export function parseFooters(pagesText: string[]): K2Footer[] {
   if (!Array.isArray(pagesText)) return [];
