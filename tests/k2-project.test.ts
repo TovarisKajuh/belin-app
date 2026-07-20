@@ -153,15 +153,24 @@ describe("modules reach the material list", () => {
     expect(draft.items[0].name).toBe("TSM-455NEG9R.28");
   });
 
-  it("k2-report-2023: roofs never break out, so the project total is used", () => {
+  // UPGRADED by the hardening plan: the breadcrumb grammar recovers this
+  // report's area, which the shipped parser declared unrecoverable. The panels
+  // now come from the roof rather than from the project total fallback, and the
+  // count is the same either way, which is the point.
+  it("k2-report-2023: the merged row era now yields its roof and its panels", () => {
     const draft = projectDraftFromParse(parseK2Text(load("k2-report-2023")), {
       fallbackCountry: "si",
       locale: "sl",
     });
 
-    expect(draft.roofs).toEqual([]); // 3.1.97 era merges the roof row
+    expect(draft.roofs).toHaveLength(1);
+    expect(draft.roofs[0].name).toBe("Dach 1");
+    expect(draft.roofs[0].moduleCount).toBe(16);
     expect(draft.items).toHaveLength(1);
     expect(draft.items[0].qty).toBe(16);
+    // A merged row carries no module name, so the panel line falls back to the
+    // generic word rather than to a scrap of the table header.
+    expect(draft.items[0].name).toBe("Modul");
   });
 
   it("groups roofs that carry the same panel into one line", () => {
