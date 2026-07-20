@@ -62,8 +62,20 @@ Committed with the URL fix, because widening the Actor union and leaving the tre
 
 287 tests green, tsc and build clean.
 
+## B5 and B6, finished: Part B is complete
+
+B5, invitations. An EPC admin invites a subcontractor company onto a project or a colleague into their own org; the invited person opens the link, names their company, and lands signed in. The sub office invites nobody by email and gets a crew link instead. The whole policy is one tested function, because an invite is how a stranger gets an account and a rule spread across surfaces would drift.
+
+The design decision worth keeping: an address that already has an account is checked BEFORE the invite is consumed. The naive order would hit the unique index, show a raw database error, and burn the invitation on the way through, leaving the invited person locked out with nothing. Verified at the database that after that failure the invite is still pending and no half-made company exists.
+
+B6, settings and the vault. The company record (including the fields that decide where money goes), per-person notification switches, and the subcontractor's compliance documents with an expiry traffic light. Expiry is judged by date rather than timestamp so a certificate valid until the 20th stays valid all of the 20th. The vault upload takes its extension from the validated mime type and never from the filename, verified with a file named "evil name.pdf.exe" that landed as a plain uuid.pdf under the org's own prefix.
+
+Verification note: the sub side was driven as a real browser session by logging in as Ana through the dev-printed link. Her seeded address is on the fake demo domain and never receives mail, but the dev log prints the link before the send is refused, which turns out to be the cleanest way to test any seeded persona locally.
+
 ## Next
 
-B5 (invites) and B6 (settings and the compliance vault), which close Part B. B5 matters most: until it lands, the only person who can sign in on production is the founder, because every other seeded address is fake. It is also what lets a real subcontractor create their own account.
+Part C: the PDF engine and the naročilnica. Task C1 (engine bootstrap) then C2 is already done (the wizard), so the real next step is C1 followed by D1 (notifications engine) and then C3, per the execution order note in the plan. B5 matters most: until it lands, the only person who can sign in on production is the founder, because every other seeded address is fake. It is also what lets a real subcontractor create their own account.
 
-Loose end to raise with the founder: a project named "Bietigheim-Bissingen" from the previous session's wizard testing is still in the database and now shows up in the project list for both the founder and the sub. It was created as a test but never removed, so it is left alone rather than deleted unilaterally.
+Resolved: the founder approved deleting test projects. "Bietigheim-Bissingen" and an orphaned wizard upload were removed; the two seeded PSE projects were KEPT, because they are the demo itself rather than test data and the seed recreates them anyway.
+
+Also created docs/FOUNDER-VERIFICATION.md at the founder's request: the standing list of things only he can verify (email deliverability, Slovenian tone, phone feel, the real two-sided loop) plus the judgement calls he may want to overrule. To be ticked off as he confirms them.
