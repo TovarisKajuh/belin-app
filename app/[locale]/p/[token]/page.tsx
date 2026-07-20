@@ -30,11 +30,11 @@ export default async function ProjectTokenPage({
   if (actor.role === "sub") {
     const [data, material] = await Promise.all([getCrewHome(actor), getMaterialState(actor)]);
     if (!data || !material) notFound();
-    view = <CrewHome token={token} data={data} material={material} />;
+    view = <CrewHome token={token} projectId={actor.projectId} data={data} material={material} />;
   } else {
     const data = await getEpcDashboard(actor);
     if (!data) notFound();
-    view = <EpcDashboard token={token} data={data} locale={locale} />;
+    view = <EpcDashboard token={token} projectId={actor.projectId} data={data} locale={locale} />;
   }
 
   const sibling = await siblingPromise;

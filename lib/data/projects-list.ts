@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { OrgActor } from "@/lib/actor";
+import { isUuid } from "@/lib/actor-shared";
 
 export interface ProjectListRow {
   id: string;
@@ -22,6 +23,46 @@ export interface ProjectListRow {
  * (master plan Part B) the token stops being needed here and this becomes a
  * plain id link.
  */
+/**
+ * Every project the acting organization is a party to, on either side, newest
+ * first. A signed-in person needs this rather than listProjectsForOrg, because
+ * a subcontractor's projects are the ones where their org sits in sub_org_id,
+ * and asking only about epc_org_id would show them nothing at all.
+ *
+ * No token is carried: a person opens a project by id, having proved who they
+ * are, so there is nothing to hand out.
+ */
+export async function listProjectsForPerson(actor: OrgActor): Promise<ProjectListRow[]> {
+  // The or() filter builds a query string, so the id is interpolated rather
+  // than bound. It comes from our own session lookup, never from a request, but
+  // it is checked anyway: a value that reaches a query by interpolation should
+  // never be trusted on provenance alone.
+  if (!isUuid(actor.orgId)) return [];
+
+  const db = createAdminClient();
+
+  const { data, error } = await db
+    .from("projects")
+    .select(
+      "id, name, status, address_city, kwp, created_at, organizations!projects_sub_org_id_fkey (name)",
+    )
+    .or(`epc_org_id.eq.${actor.orgId},sub_org_id.eq.${actor.orgId}`)
+    .order("created_at", { ascending: false });
+
+  if (error || !data) return [];
+
+  return data.map((row) => ({
+    id: row.id,
+    name: row.name,
+    status: row.status,
+    city: row.address_city,
+    kwp: row.kwp,
+    subName: (row.organizations as { name: string } | null)?.name ?? null,
+    epcToken: null,
+    createdAt: row.created_at,
+  }));
+}
+
 export async function listProjectsForOrg(actor: OrgActor): Promise<ProjectListRow[]> {
   const db = createAdminClient();
 

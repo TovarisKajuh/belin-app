@@ -21,10 +21,13 @@ import { ddmm } from "@/lib/dashboard-shared";
 // log and the site photos. Everything below the hero reveals on scroll.
 export async function EpcDashboard({
   token,
+  projectId,
   data,
   locale,
 }: {
-  token: string;
+  /** Null on a signed-in session; the link token otherwise. */
+  token: string | null;
+  projectId: string;
   data: EpcDashboardData;
   locale: string;
 }) {
@@ -40,6 +43,7 @@ export async function EpcDashboard({
       <div className="e-grain" />
       <CommandBar
         token={token}
+        projectId={projectId}
         projectName={core.name}
         meta={sub}
         status={core.status}
@@ -102,7 +106,7 @@ export async function EpcDashboard({
         <ScopeByPhase scope={data.scope} />
 
         <RoofPanel roofs={data.roofs} />
-        <MaterialPanel token={token} country={core.country} material={data.material} />
+        <MaterialPanel token={token} projectId={projectId} country={core.country} material={data.material} />
 
         <StatRow projection={proj} photoCount={data.photoCount} />
 

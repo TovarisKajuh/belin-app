@@ -17,7 +17,9 @@ export default async function NewProjectPage({
   setRequestLocale(locale);
 
   const actor = await resolveTokenActorFromSession();
-  if (!actor || actor.role !== "epc") redirect(`/${locale}`);
+  if (!actor || actor.role !== "epc") {
+    redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app/new`)}`);
+  }
 
   const [subs, country] = await Promise.all([listKnownSubs(actor), orgCountry(actor.orgId)]);
 

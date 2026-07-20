@@ -17,7 +17,9 @@ export default async function ProjectsPage({
   setRequestLocale(locale);
 
   const actor = await resolveTokenActorFromSession();
-  if (!actor || actor.role !== "epc") redirect(`/${locale}`);
+  if (!actor || actor.role !== "epc") {
+    redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app/projects`)}`);
+  }
 
   const [projects, t] = await Promise.all([
     listProjectsForOrg(actor),

@@ -10,10 +10,13 @@ import type { MaterialState } from "@/lib/materials-shared";
 
 export async function CrewHome({
   token,
+  projectId,
   data,
   material,
 }: {
-  token: string;
+  /** Null on a signed-in session; the link token otherwise. */
+  token: string | null;
+  projectId: string;
   data: CrewHomeData;
   material: MaterialState;
 }) {
@@ -30,6 +33,7 @@ export async function CrewHome({
       <div className="e-grain" aria-hidden />
       <CommandBar
         token={token}
+        projectId={projectId}
         projectName={data.projectName}
         meta={null}
         status={data.status}
@@ -50,13 +54,13 @@ export async function CrewHome({
         {material.needsFirstCheck ? (
           // The gate: no report form and no today posts until the first check
           // (or the "not arrived yet" escape) exists.
-          <MaterialCheck token={token} country={data.country} material={material} />
+          <MaterialCheck token={token} projectId={projectId} country={data.country} material={material} />
         ) : (
           <>
-            <MaterialCheck token={token} country={data.country} material={material} />
+            <MaterialCheck token={token} projectId={projectId} country={data.country} material={material} />
 
             <h2 className="b-h b-sec">{t("todayReport")}</h2>
-            <CrewReportForm token={token} scope={data.scope} />
+            <CrewReportForm token={token} projectId={projectId} scope={data.scope} />
 
             <div className="b-card">
               <span className="b-label">{t("todayPosts")}</span>

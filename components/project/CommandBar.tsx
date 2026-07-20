@@ -9,13 +9,16 @@ import type { ProjectStatus } from "@/lib/project-status";
 // product; only the status control's permitted transitions differ by role.
 export async function CommandBar({
   token,
+  projectId,
   projectName,
   meta,
   status,
   role,
   locale,
 }: {
-  token: string;
+  /** Null on a signed-in session; the link token otherwise. */
+  token: string | null;
+  projectId: string;
   projectName: string;
   /** Secondary line: the sub company for the EPC, the site address for the crew. */
   meta: string | null;
@@ -47,7 +50,7 @@ export async function CommandBar({
               {navLabel}
             </Link>
           )}
-          <ProjectStatusControl token={token} role={role} status={status} />
+          <ProjectStatusControl token={token} projectId={projectId} role={role} status={status} />
         </div>
       </div>
     </div>

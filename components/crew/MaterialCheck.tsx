@@ -5,9 +5,13 @@ import { useTranslations } from "next-intl";
 import { PhotoCapture } from "./PhotoCapture";
 import { createBrowserClient } from "@/lib/supabase/client";
 import {
-  requestMaterialDocTargets,
-  submitMaterialCheckAction,
+  requestMaterialDocTargets as requestMaterialDocTargetsByToken,
+  submitMaterialCheckAction as submitMaterialCheckByToken,
 } from "@/app/[locale]/p/[token]/actions";
+import {
+  requestMaterialDocTargets as requestMaterialDocTargetsBySession,
+  submitMaterialCheckAction as submitMaterialCheckBySession,
+} from "@/app/[locale]/app/[projectId]/actions";
 import {
   buildCheckItemsPayload,
   parseQty,
@@ -21,13 +25,23 @@ const STATUSES: MaterialCheckStatus[] = ["present", "partial", "missing"];
 
 export function MaterialCheck({
   token,
+  projectId,
   country,
   material,
 }: {
-  token: string;
+  /** Null on a signed-in session; the link token otherwise. */
+  token: string | null;
+  projectId: string;
   country: string | null;
   material: MaterialState;
 }) {
+  const key = token ?? projectId;
+  const requestMaterialDocTargets = token
+    ? requestMaterialDocTargetsByToken
+    : requestMaterialDocTargetsBySession;
+  const submitMaterialCheckAction = token
+    ? submitMaterialCheckByToken
+    : submitMaterialCheckBySession;
   const t = useTranslations("crew.material");
   const tCrew = useTranslations("crew");
   const router = useRouter();
@@ -92,7 +106,7 @@ export function MaterialCheck({
   async function uploadSlot(clientId: string, kind: "photos" | "notes", blobs: Blob[]) {
     if (blobs.length === 0) return [] as string[];
     const targets = await requestMaterialDocTargets(
-      token,
+      key,
       clientId,
       kind === "photos" ? blobs.length : 0,
       kind === "notes" ? blobs.length : 0
@@ -139,7 +153,7 @@ export function MaterialCheck({
       const clientId = draftId.current;
       const materialPhotoPaths = await uploadSlot(clientId, "photos", photos);
       const deliveryNotePaths = await uploadSlot(clientId, "notes", notes);
-      await submitMaterialCheckAction(token, {
+      await submitMaterialCheckAction(key, {
         clientGeneratedId: clientId,
         note,
         items,

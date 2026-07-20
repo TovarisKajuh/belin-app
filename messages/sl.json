@@ -200,9 +200,7 @@
     "confirmLogin": "Potrdi prijavo",
     "loginSubject": "Vaša prijava v Belin",
     "loginBody": "Kliknite gumb za prijavo. Povezava velja 15 minut.",
-    "loginCta": "Prijava v Belin",
-    "signedInTitle": "Prijavljeni ste",
-    "signedInAs": "Prijavljeni ste kot {name}."
+    "loginCta": "Prijava v Belin"
   },
   "wizard": {
     "title": "Nov projekt",
@@ -278,5 +276,24 @@
       "finished": "Zaključeno",
       "cancelled": "Preklicano"
     }
+  },
+  "sub": {
+    "eyebrow": "Pregled projekta",
+    "material": "Manki pri materialu",
+    "materialOk": "Vse postavke so bile prevzete.",
+    "materialMissing": "Ekipa je zabeležila manke pri prevzemu.",
+    "waiting": "Čaka na vas",
+    "po": "Naročilnica",
+    "poEmpty": "Naročilnice še ni.",
+    "hours": "Režijske ure",
+    "hoursEmpty": "Ni oddanih listov.",
+    "changeOrders": "Nadgradnje",
+    "changeOrdersEmpty": "Ni prijavljenih nadgradenj.",
+    "finalization": "Zaključek",
+    "finalizationEmpty": "Projekt še poteka.",
+    "fromSite": "Z gradbišča"
+  },
+  "app": {
+    "signedInAs": "Prijavljeni kot {name}"
   }
 }

@@ -2,13 +2,22 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { addMaterialItemAction } from "@/app/[locale]/p/[token]/actions";
+import { addMaterialItemAction as addMaterialItemByToken } from "@/app/[locale]/p/[token]/actions";
+import { addMaterialItemAction as addMaterialItemBySession } from "@/app/[locale]/app/[projectId]/actions";
 import { parseQty } from "@/lib/materials-shared";
 
 // EPC adds a line to the Stückliste. An explicit stopgap: the real list will be
 // extracted from the uploaded plan PDF (design law 2, zero manual entry). Here
 // it is the trigger the founder uses to raise the crew re-check prompt live.
-export function AddMaterialItem({ token }: { token: string }) {
+export function AddMaterialItem({
+  token,
+  projectId,
+}: {
+  token: string | null;
+  projectId: string;
+}) {
+  const key = token ?? projectId;
+  const addMaterialItemAction = token ? addMaterialItemByToken : addMaterialItemBySession;
   const t = useTranslations("dashboard.material");
   const router = useRouter();
   const [name, setName] = useState("");
@@ -26,7 +35,7 @@ export function AddMaterialItem({ token }: { token: string }) {
     setBusy(true);
     setFailed(false);
     try {
-      await addMaterialItemAction(token, { name: name.trim(), qty: parsed, unit: unit.trim() });
+      await addMaterialItemAction(key, { name: name.trim(), qty: parsed, unit: unit.trim() });
       setName("");
       setQty("");
       setUnit("");

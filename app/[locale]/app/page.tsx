@@ -9,7 +9,8 @@ import { CrewHome } from "@/components/crew/CrewHome";
 import { EpcDashboard } from "@/components/epc/EpcDashboard";
 import { DevSwapBar } from "@/components/dev/DevSwapBar";
 import { LogoutPill } from "@/components/auth/LogoutPill";
-import { SignedInPlaceholder } from "@/components/auth/SignedInPlaceholder";
+import { ProjectList } from "@/components/app/ProjectList";
+import { listProjectsForPerson } from "@/lib/data/projects-list";
 import { ScenarioPill } from "@/components/auth/ScenarioPill";
 
 // The signed-in view. Same role router as /p/[token], except identity comes
@@ -22,15 +23,17 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
   setRequestLocale(locale);
 
   const actor = await resolveActorFromSession();
-  if (!actor) redirect(`/${locale}`);
+  // Not signed in: go to the login form, carrying where they were headed so
+  // the emailed link lands on the page they actually wanted.
+  if (!actor) redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app`)}`);
 
-  // A person session lands here after the magic link. Task B4 turns this into
-  // the real project list and the sub office home; until then it confirms who
-  // is signed in, which is what the login flow needs to be verifiable.
+  // A person session lands here after the magic link: their projects, on
+  // whichever side of each one their organization stands.
   if (actor.kind === "person") {
+    const projects = await listProjectsForPerson(actor);
     return (
       <>
-        <SignedInPlaceholder actor={actor} />
+        <ProjectList locale={locale} actor={actor} projects={projects} />
         <LogoutPill locale={locale} />
       </>
     );
@@ -48,11 +51,11 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
   if (actor.role === "sub") {
     const [data, material] = await Promise.all([getCrewHome(actor), getMaterialState(actor)]);
     if (!data || !material) notFound();
-    view = <CrewHome token={token} data={data} material={material} />;
+    view = <CrewHome token={token} projectId={actor.projectId} data={data} material={material} />;
   } else {
     const data = await getEpcDashboard(actor);
     if (!data) notFound();
-    view = <EpcDashboard token={token} data={data} locale={locale} />;
+    view = <EpcDashboard token={token} projectId={actor.projectId} data={data} locale={locale} />;
   }
 
   // The crew screen has a fixed submit bar along the bottom, so both pills lift

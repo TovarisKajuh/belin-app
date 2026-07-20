@@ -9,10 +9,13 @@ import { AddMaterialItem } from "./AddMaterialItem";
 // the attached documents, and an add-item control that triggers a re-check.
 export async function MaterialPanel({
   token,
+  projectId,
   country,
   material,
 }: {
-  token: string;
+  /** Null on a signed-in session; the link token otherwise. */
+  token: string | null;
+  projectId: string;
   country: string;
   material: MaterialPanelData;
 }) {
@@ -81,7 +84,7 @@ export async function MaterialPanel({
         </>
       )}
 
-      <AddMaterialItem token={token} />
+      <AddMaterialItem token={token} projectId={projectId} />
     </section>
   );
 }

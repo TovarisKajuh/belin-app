@@ -5,10 +5,31 @@ import { useTranslations } from "next-intl";
 import { Stepper } from "./Stepper";
 import { PhotoCapture } from "./PhotoCapture";
 import { createBrowserClient } from "@/lib/supabase/client";
-import { requestPhotoTargets, submitReport } from "@/app/[locale]/p/[token]/actions";
+import {
+  requestPhotoTargets as requestPhotoTargetsByToken,
+  submitReport as submitReportByToken,
+} from "@/app/[locale]/p/[token]/actions";
+import {
+  requestPhotoTargets as requestPhotoTargetsBySession,
+  submitReport as submitReportBySession,
+} from "@/app/[locale]/app/[projectId]/actions";
 import type { ScopeItemStatus } from "@/lib/data/reports";
 
-export function CrewReportForm({ token, scope }: { token: string; scope: ScopeItemStatus[] }) {
+export function CrewReportForm({
+  token,
+  projectId,
+  scope,
+}: {
+  /** Null on a signed-in session; the link token otherwise. */
+  token: string | null;
+  projectId: string;
+  scope: ScopeItemStatus[];
+}) {
+  // The two action families take the same arguments, so the only difference is
+  // which key identifies the caller: a shared link, or a proven session.
+  const key = token ?? projectId;
+  const requestPhotoTargets = token ? requestPhotoTargetsByToken : requestPhotoTargetsBySession;
+  const submitReport = token ? submitReportByToken : submitReportBySession;
   const t = useTranslations("crew");
   const router = useRouter();
   const [headcount, setHeadcount] = useState(1);
@@ -31,7 +52,7 @@ export function CrewReportForm({ token, scope }: { token: string; scope: ScopeIt
     try {
       let photoPaths: string[] = [];
       if (blobs.length > 0) {
-        const targets = await requestPhotoTargets(token, draftId.current, blobs.length);
+        const targets = await requestPhotoTargets(key, draftId.current, blobs.length);
         const supabase = createBrowserClient();
         const results = await Promise.all(
           targets.map((tg, i) =>
@@ -42,7 +63,7 @@ export function CrewReportForm({ token, scope }: { token: string; scope: ScopeIt
         );
         photoPaths = targets.filter((_, i) => !results[i].error).map((tg) => tg.path);
       }
-      await submitReport(token, {
+      await submitReport(key, {
         clientGeneratedId: draftId.current,
         note,
         headcount,

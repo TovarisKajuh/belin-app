@@ -8,17 +8,23 @@ import {
   type ProjectStatus,
   type PartyRole,
 } from "@/lib/project-status";
-import { setProjectStatus } from "@/app/[locale]/p/[token]/actions";
+import { setProjectStatus as setProjectStatusByToken } from "@/app/[locale]/p/[token]/actions";
+import { setProjectStatus as setProjectStatusBySession } from "@/app/[locale]/app/[projectId]/actions";
 
 export function ProjectStatusControl({
   token,
+  projectId,
   role,
   status,
 }: {
-  token: string;
+  /** Null on a signed-in session; the link token otherwise. */
+  token: string | null;
+  projectId: string;
   role: PartyRole;
   status: ProjectStatus;
 }) {
+  const key = token ?? projectId;
+  const setProjectStatus = token ? setProjectStatusByToken : setProjectStatusBySession;
   const t = useTranslations("status");
   const router = useRouter();
   const [current, setCurrent] = useState<ProjectStatus>(status);
@@ -55,7 +61,7 @@ export function ProjectStatusControl({
     if (busy) return;
     setBusy(true);
     try {
-      const res = await setProjectStatus(token, next);
+      const res = await setProjectStatus(key, next);
       if (res.ok) {
         setCurrent(res.status);
         router.refresh();

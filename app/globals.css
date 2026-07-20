@@ -1675,6 +1675,37 @@ button.gal-item {
 }
 @media (max-width: 640px) { .belin-dark .cb-nav { display: none; } }
 
+/* subcontractor office home: a reading screen, not the roof screen. The two
+   live cards lead, the not-yet-built ones follow in a visibly quieter state so
+   the shape of the page is honest about what is still coming. */
+.belin-dark .sh-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.belin-dark .sh-card {
+  padding: 20px; border-radius: 14px;
+  background: var(--e-surface); border: 1px solid var(--e-line);
+}
+.belin-dark .sh-card--wide { grid-column: span 2; }
+.belin-dark .sh-card--empty { opacity: .62; }
+.belin-dark .sh-big {
+  font-size: 34px; font-weight: 800; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums; margin-top: 8px;
+}
+.belin-dark .sh-unit { font-size: 17px; font-weight: 700; color: var(--e-muted); }
+.belin-dark .sh-note { margin: 8px 0 0; font-size: 12.5px; color: var(--e-muted); line-height: 1.5; }
+.belin-dark .sh-bar {
+  margin-top: 14px; height: 6px; border-radius: 999px;
+  background: var(--e-surface-2); overflow: hidden;
+}
+.belin-dark .sh-bar i {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--e-gold-2), var(--e-gold));
+}
+@media (max-width: 560px) {
+  .belin-dark .sh-card--wide { grid-column: span 1; }
+}
+
 /* roofs on the review screen: a site is built roof by roof, so the plan's
    per roof panel counts are shown and editable, not just the project total */
 .belin-dark .wz-roofs { display: flex; flex-direction: column; gap: 10px; }
