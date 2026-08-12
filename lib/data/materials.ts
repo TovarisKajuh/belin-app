@@ -9,6 +9,8 @@ import {
   type LatestCheck,
   type MaterialCheckStatus,
 } from "@/lib/materials-shared";
+import { emitEventDeferred } from "@/lib/notify";
+import { notifyProject } from "@/lib/realtime-server";
 
 export type { MaterialState } from "@/lib/materials-shared";
 
@@ -97,6 +99,32 @@ export async function submitMaterialCheck(
     p_delivery_notes: payload.deliveryNotePaths,
   });
   if (error || !data) throw new Error("Could not save the material check");
+
+  // Only a check WITH shortfalls is news. A delivery that arrived complete is
+  // the expected case, and mailing the EPC about every expected case is how a
+  // notification system trains people to ignore it. The database derives
+  // completeness inside the RPC, so it is read back rather than trusted from
+  // the client. The ping rides along with the event either way, which is why
+  // the callers of this function no longer ping separately.
+  const { data: check } = await db
+    .from("material_checks")
+    .select("is_complete")
+    .eq("id", data)
+    .maybeSingle();
+
+  if (check?.is_complete === false) {
+    await emitEventDeferred({
+      projectId: actor.projectId,
+      kind: "material_check_completed",
+      actorPerson: actor.personId,
+      skipActivity: true,
+    });
+  } else {
+    // Complete delivery: no notification, but the EPC dashboard still has to
+    // learn that the gate is cleared, so the ping goes out on its own.
+    await notifyProject(actor.projectId);
+  }
+
   return data;
 }
 

@@ -31,8 +31,20 @@ export async function sendEmail(input: {
   projectId: string | null;
   subject: string;
   html: string;
+  /**
+   * Set when the caller has decided this mail must NOT go out (a missing base
+   * URL, so every link in it would be dead). The attempt is written to
+   * email_log as failed with this reason and nothing is sent. Rule 2 says every
+   * attempt is visible; a refusal is an attempt with a known answer.
+   */
+  refuseReason?: string;
 }): Promise<void> {
   const to = input.to.trim();
+
+  if (input.refuseReason) {
+    await logEmail(input, "failed", null, input.refuseReason);
+    return;
+  }
 
   if (DEMO_DOMAIN.test(to)) {
     await logEmail(input, "failed", null, "demo-domain");

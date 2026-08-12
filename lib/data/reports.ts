@@ -7,6 +7,7 @@ import { projectToday } from "@/lib/project-time";
 import { getSignedPhotoUrlMap } from "@/lib/storage";
 import { summarizeTodayPosts, type TodayPost } from "@/lib/reports-shared";
 import { getProjectCore, type ScopeItemStatus } from "@/lib/data/project-core";
+import { emitEventDeferred } from "@/lib/notify";
 import type { ProjectStatus } from "@/lib/project-status";
 
 export type { TodayPost } from "@/lib/reports-shared";
@@ -148,5 +149,17 @@ export async function submitDailyReport(actor: ProjectActor, payload: SubmitRepo
   });
 
   if (error || !data) throw new Error("Could not save the report");
+
+  // The RPC already wrote the activity row inside its transaction, so the event
+  // only has to do the fanout: skipActivity keeps the feed from showing the
+  // same submission twice. It also carries the live ping, which is why no
+  // caller of this function pings separately any more.
+  await emitEventDeferred({
+    projectId: actor.projectId,
+    kind: "entry_submitted",
+    actorPerson: actor.personId,
+    skipActivity: true,
+  });
+
   return data;
 }

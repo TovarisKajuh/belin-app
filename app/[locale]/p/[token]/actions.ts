@@ -55,8 +55,9 @@ export async function submitMaterialCheckAction(
   payload: SubmitMaterialCheckPayload
 ): Promise<{ ok: true; checkId: string }> {
   const actor = await requireSubActor(token);
+  // submitMaterialCheck owns the fanout and the ping (it decides whether a
+  // shortfall is worth notifying about), so there is no ping here.
   const checkId = await submitMaterialCheck(actor, payload);
-  await notifyProject(actor.projectId);
   return { ok: true, checkId };
 }
 
@@ -75,8 +76,8 @@ export async function submitReport(
   payload: SubmitReportPayload
 ): Promise<{ ok: true; entryId: string }> {
   const actor = await requireSubActor(token);
+  // submitDailyReport emits entry_submitted, which carries the ping.
   const entryId = await submitDailyReport(actor, payload);
-  await notifyProject(actor.projectId);
   return { ok: true, entryId };
 }
 

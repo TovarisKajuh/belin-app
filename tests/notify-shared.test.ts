@@ -4,6 +4,8 @@ import {
   recipientsFor,
   emailSubjectKey,
   emailBodyKey,
+  formatTemplate,
+  lookupKey,
   wantsEmail,
   type NotifyKind,
 } from "@/lib/notify-shared";
@@ -88,5 +90,66 @@ describe("wantsEmail", () => {
     const prefs = { po_sent: false };
     expect(wantsEmail(prefs, "po_sent")).toBe(false);
     expect(wantsEmail(prefs, "po_accepted")).toBe(true);
+  });
+});
+
+describe("formatTemplate", () => {
+  it("substitutes named variables", () => {
+    expect(formatTemplate("List št. {number}", { number: "3" })).toBe("List št. 3");
+    expect(formatTemplate("{author}: {text}", { author: "Luka", text: "Manjka vijak" })).toBe(
+      "Luka: Manjka vijak",
+    );
+  });
+
+  // An email subject that reads "Nov zahtevek: {project}" is ugly, but an email
+  // that never went out because a variable was missing is worse. Unknown tokens
+  // survive untouched rather than throwing or emptying the string.
+  it("leaves unknown tokens alone", () => {
+    expect(formatTemplate("Projekt {project}", {})).toBe("Projekt {project}");
+    expect(formatTemplate("{a} in {b}", { a: "ena" })).toBe("ena in {b}");
+  });
+
+  it("substitutes a repeated token everywhere it appears", () => {
+    expect(formatTemplate("{n} od {n}", { n: "2" })).toBe("2 od 2");
+  });
+
+  // The values are crew-typed text. A note reading "$& kaj zdaj" must not be
+  // interpreted as a replacement pattern by the regex engine underneath.
+  it("treats values as literal text, never as replacement patterns", () => {
+    expect(formatTemplate("Opomba: {note}", { note: "$& in $1" })).toBe("Opomba: $& in $1");
+  });
+
+  it("leaves a template without tokens untouched", () => {
+    expect(formatTemplate("Prevzem opravljen.", { project: "X" })).toBe("Prevzem opravljen.");
+  });
+});
+
+describe("lookupKey", () => {
+  const catalog = {
+    notify: {
+      subject: { po_sent: "Nova naročilnica: {project}" },
+      body: { po_sent: "Prejeli ste naročilnico." },
+    },
+  };
+
+  it("walks a dotted key through the catalog", () => {
+    expect(lookupKey(catalog, "notify.subject.po_sent")).toBe("Nova naročilnica: {project}");
+  });
+
+  it("returns null for a missing path instead of throwing", () => {
+    expect(lookupKey(catalog, "notify.subject.nope")).toBeNull();
+    expect(lookupKey(catalog, "nothing.here")).toBeNull();
+    expect(lookupKey(catalog, "")).toBeNull();
+  });
+
+  // Half a path resolving to an object is a missing string, not a value:
+  // returning "[object Object]" into an email subject is the failure mode.
+  it("returns null when the path stops on an object", () => {
+    expect(lookupKey(catalog, "notify.subject")).toBeNull();
+  });
+
+  it("tolerates a catalog that is not an object", () => {
+    expect(lookupKey(null, "notify.subject.po_sent")).toBeNull();
+    expect(lookupKey("nope", "notify.subject.po_sent")).toBeNull();
   });
 });

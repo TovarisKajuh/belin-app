@@ -683,6 +683,80 @@ export type Database = {
           },
         ]
       }
+      incident_photos: {
+        Row: {
+          id: string
+          incident_id: string
+          sort_order: number
+          storage_path: string
+        }
+        Insert: {
+          id?: string
+          incident_id: string
+          sort_order?: number
+          storage_path: string
+        }
+        Update: {
+          id?: string
+          incident_id?: string
+          sort_order?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_photos_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          created_at: string
+          created_by_person: string | null
+          id: string
+          kind: string
+          note: string
+          occurred_on: string
+          project_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_person?: string | null
+          id?: string
+          kind: string
+          note?: string
+          occurred_on: string
+          project_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by_person?: string | null
+          id?: string
+          kind?: string
+          note?: string
+          occurred_on?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_created_by_person_fkey"
+            columns: ["created_by_person"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invites: {
         Row: {
           created_at: string
@@ -938,6 +1012,51 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          payload: Json
+          project_id: string | null
+          read_at: string | null
+          recipient_person: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          payload?: Json
+          project_id?: string | null
+          read_at?: string | null
+          recipient_person: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          project_id?: string | null
+          read_at?: string | null
+          recipient_person?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_person_fkey"
+            columns: ["recipient_person"]
+            isOneToOne: false
+            referencedRelation: "people"
             referencedColumns: ["id"]
           },
         ]
