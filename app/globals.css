@@ -2156,3 +2156,79 @@ button.gal-item {
 .belin-dark .rp-answer { display: flex; gap: 10px; margin-top: 11px; flex-wrap: wrap; }
 .belin-dark .rp-answer .b-field { flex: 1; min-width: 200px; }
 .belin-dark .rp-answer .rp-send { margin-top: 0; }
+
+/* Regiestunden. The countdown is the feature: a submitted sheet approves
+   itself after six working days of silence, and a client who does not know
+   that is a client who gets surprised by an invoice. */
+.belin-dark .hr-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.belin-dark .hr-new {
+  font: inherit; font-size: 13px; font-weight: 700; padding: 9px 15px; border-radius: 11px;
+  background: rgba(255,210,26,.12); border: 1px solid rgba(255,210,26,.35); color: var(--e-gold-2);
+}
+.belin-dark .hr-sheet {
+  padding: 14px 15px; margin-bottom: 12px; border-radius: 16px;
+  background: var(--e-surface); border: 1px solid var(--e-line);
+}
+.belin-dark .hr-badge {
+  font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: 100px;
+  background: var(--e-surface-2); color: var(--e-muted); white-space: nowrap;
+}
+.belin-dark .hr-badge.s-submitted { color: var(--e-gold-2); background: rgba(255,210,26,.10); }
+.belin-dark .hr-badge.s-approved, .belin-dark .hr-badge.s-deemed_approved {
+  color: var(--e-ok); background: rgba(74,208,122,.10);
+}
+.belin-dark .hr-badge.s-rejected { color: #ff9f6b; background: rgba(255,159,107,.10); }
+
+.belin-dark .hr-count {
+  margin: 10px 0 0; font-size: 13px; font-weight: 700; color: var(--e-ink2);
+}
+.belin-dark .hr-count.amber { color: #ffb45c; }
+.belin-dark .hr-count.red { color: #ff7a6b; }
+.belin-dark .hr-count-note { display: block; font-weight: 400; font-size: 12px; color: var(--e-muted); margin-top: 3px; }
+
+.belin-dark .hr-lines { list-style: none; margin: 12px 0 0; padding: 0; }
+.belin-dark .hr-lines li {
+  display: grid; grid-template-columns: 46px 1fr auto auto; gap: 10px; align-items: center;
+  padding: 9px 0; border-top: 1px solid var(--e-line); font-size: 13px;
+}
+.belin-dark .hr-l-date { color: var(--e-muted); font-variant-numeric: tabular-nums; }
+.belin-dark .hr-l-desc { color: var(--e-ink2); }
+.belin-dark .hr-l-h { color: var(--e-gold-2); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.belin-dark .hr-editor { margin-top: 12px; }
+.belin-dark .hr-form {
+  margin-top: 12px; padding: 14px; border-radius: 14px;
+  background: rgba(4,9,16,.35); border: 1px solid var(--e-line);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+}
+.belin-dark .hr-f-wide { grid-column: 1 / -1; }
+.belin-dark .hr-quick { display: flex; gap: 8px; margin-bottom: 10px; }
+.belin-dark .hr-chip {
+  flex: 1; font: inherit; font-size: 15px; font-weight: 700; padding: 13px 0;
+  border-radius: 12px; background: var(--e-surface); border: 1px solid var(--e-line);
+  color: var(--e-ink); touch-action: manipulation;
+}
+.belin-dark .hr-chip.on {
+  border-color: rgba(255,210,26,.55); background: rgba(255,210,26,.10); color: var(--e-gold-2);
+}
+.belin-dark .hr-stepper { justify-content: space-between; }
+.belin-dark .hr-actions, .belin-dark .hr-decide {
+  display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap;
+}
+.belin-dark .hr-actions { grid-column: 1 / -1; }
+.belin-dark .hr-submit {
+  font: inherit; font-size: 13px; font-weight: 700; padding: 11px 18px; border-radius: 11px;
+  background: linear-gradient(180deg, var(--e-gold-2), var(--e-gold)); border: none; color: #0b1524;
+}
+.belin-dark .hr-reject {
+  font: inherit; font-size: 13px; font-weight: 700; padding: 10px 16px; border-radius: 11px;
+  background: transparent; border: 1px solid rgba(255,159,107,.35); color: #ff9f6b;
+}
+.belin-dark .hr-back { margin: 18px 0 40px; }
+.belin-dark .hr-back a { color: var(--e-muted); text-decoration: none; font-size: 22px; }
+
+@media (max-width: 760px) {
+  .belin-dark .hr-form { grid-template-columns: 1fr; }
+  .belin-dark .hr-lines li { grid-template-columns: 44px 1fr auto; }
+  .belin-dark .hr-lines li .po-x { grid-column: 3; grid-row: 2; }
+}

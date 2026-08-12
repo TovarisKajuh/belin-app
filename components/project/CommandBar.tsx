@@ -36,7 +36,7 @@ export async function CommandBar({
    * project link opens exactly one screen and needs no menu, and the office
    * screens it would point at refuse a link actor anyway.
    */
-  active?: "overview" | "po";
+  active?: "overview" | "po" | "hours";
 }) {
   const navLabel = locale ? (await getTranslations("projects"))("title") : null;
   const nav = locale ? await getTranslations("nav") : null;
@@ -76,6 +76,12 @@ export async function CommandBar({
             className={`e-nav-l${active === "po" ? " on" : ""}`}
           >
             {nav("po")}
+          </Link>
+          <Link
+            href={`/${locale}/app/${projectId}/hours`}
+            className={`e-nav-l${active === "hours" ? " on" : ""}`}
+          >
+            {nav("hours")}
           </Link>
         </nav>
       ) : null}

@@ -12,6 +12,8 @@
 // the deadline becomes a timestamp exactly once, in deadlineTimestamp, at the
 // last second of its day.
 
+import { projectZone } from "@/lib/project-time";
+
 export type Country = "si" | "de" | "at";
 
 /** § 15 VOB/B. A parameter everywhere, so a different contract can say otherwise. */
@@ -92,12 +94,46 @@ export function addWorkingDays(startIso: string, days: number, country: Country)
 }
 
 /**
- * The stored deadline: the last instant of the deadline DAY. A sheet whose
- * deadline is the 22nd is open for all of the 22nd, which is what "six working
- * days to respond" means to the person counting them.
+ * The stored deadline: the last instant of the deadline DAY at the SITE.
+ *
+ * The zone is not a formatting detail here. Storing 23:59:59Z would mean the
+ * deadline actually falls at 01:59 the following morning in Ljubljana, which
+ * hands the client two extra hours and, worse, prints as the wrong DATE on
+ * every screen that renders it in local time. A deadline everybody can read
+ * differently is not a deadline.
  */
-export function deadlineTimestamp(deadlineDateIso: string): string {
-  return `${deadlineDateIso.slice(0, 10)}T23:59:59.000Z`;
+export function deadlineTimestamp(deadlineDateIso: string, country: Country): string {
+  const wallClock = Date.parse(`${deadlineDateIso.slice(0, 10)}T23:59:59.000Z`);
+  const offset = zoneOffsetMs(new Date(wallClock), projectZone(country));
+  return new Date(wallClock - offset).toISOString();
+}
+
+/** How far the given zone was from UTC at that moment, in milliseconds. */
+function zoneOffsetMs(at: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  })
+    .formatToParts(at)
+    .filter((part) => part.type !== "literal");
+
+  const value = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? 0);
+  const asIfUtc = Date.UTC(
+    value("year"),
+    value("month") - 1,
+    value("day"),
+    value("hour") % 24,
+    value("minute"),
+    value("second"),
+  );
+
+  return asIfUtc - at.getTime();
 }
 
 export type SheetStatus = "draft" | "submitted" | "approved" | "rejected" | "deemed_approved";

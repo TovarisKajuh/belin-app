@@ -75,10 +75,18 @@ describe("HOLIDAYS", () => {
 });
 
 describe("deadlineTimestamp", () => {
-  // The deadline is the END of its day: a sheet submitted on the 14th with a
-  // deadline of the 22nd is still open all day on the 22nd.
-  it("puts the deadline at the last second of the day", () => {
-    expect(deadlineTimestamp("2026-08-22")).toBe("2026-08-22T23:59:59.000Z");
+  // The deadline is the end of its day AT THE SITE. Slovenia is UTC+2 in
+  // August, so the last instant of the 22nd there is 21:59:59Z on the 22nd.
+  // Storing 23:59:59Z instead would put the real deadline at 01:59 on the
+  // 23rd local, and would print the wrong DATE on every screen.
+  it("ends the day in the site's own timezone, not in UTC", () => {
+    expect(deadlineTimestamp("2026-08-22", "si")).toBe("2026-08-22T21:59:59.000Z");
+    expect(deadlineTimestamp("2026-08-22", "de")).toBe("2026-08-22T21:59:59.000Z");
+  });
+
+  // Winter: the same zones are UTC+1, so the instant moves an hour later.
+  it("follows daylight saving", () => {
+    expect(deadlineTimestamp("2026-12-22", "si")).toBe("2026-12-22T22:59:59.000Z");
   });
 });
 

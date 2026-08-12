@@ -578,5 +578,42 @@
       "text": "Napišite, kaj potrebujete.",
       "generic": "Ni bilo mogoče poslati. Poskusite znova."
     }
+  },
+  "hours": {
+    "title": "Režijske ure",
+    "new": "Nov list",
+    "empty": "Ni še listov.",
+    "sheetNo": "List št. {number}",
+    "total": "skupaj {hours} h",
+    "addLine": "Dodaj vrstico",
+    "removeLine": "Odstrani vrstico",
+    "close": "Zapri",
+    "date": "Datum",
+    "hoursLabel": "Ure",
+    "description": "Opis dela",
+    "descriptionPlaceholder": "Kaj ste delali",
+    "submit": "Oddaj v potrditev",
+    "submitted": "Oddano {date}",
+    "deadline": "Rok za odziv: {date}",
+    "approve": "Potrdi",
+    "reject": "Zavrni",
+    "deemed": "Potrjeno po poteku roka",
+    "conflict": "List je bil medtem odločen ali je rok potekel.",
+    "noSub": "Najprej dodajte podizvajalca.",
+    "pdf": "Prenesi PDF",
+    "status": {
+      "draft": "Osnutek",
+      "submitted": "V odločanju",
+      "approved": "Potrjeno",
+      "rejected": "Zavrnjeno",
+      "deemed_approved": "Potrjeno po poteku roka"
+    },
+    "err": {
+      "description": "Vpišite, kaj ste delali.",
+      "hours": "Ure morajo biti večje od nič.",
+      "empty": "Dodajte vsaj eno vrstico."
+    },
+    "daysLeft": "{n, plural, one {še # delovni dan} two {še # delovna dneva} few {še # delovni dnevi} other {še # delovnih dni}}",
+    "deemedNote": "{n, plural, one {Brez odziva v # delovnem dnevu se list šteje za potrjen.} two {Brez odziva v # delovnih dnevih se list šteje za potrjen.} few {Brez odziva v # delovnih dnevih se list šteje za potrjen.} other {Brez odziva v # delovnih dnevih se list šteje za potrjen.}}"
   }
 }
