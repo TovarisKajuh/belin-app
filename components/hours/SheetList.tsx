@@ -159,6 +159,19 @@ export function SheetList({
                   </ul>
                 )}
 
+                {/* Person sessions only, per the PDF access matrix: a link
+                    surface shows no document buttons at all. */}
+                {actionKey === projectId && sheet.status !== "draft" ? (
+                  <a
+                    className="hr-pdf"
+                    href={`/api/pdf/regie/${sheet.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {t("pdf")}
+                  </a>
+                ) : null}
+
                 {canDecide && status === "submitted" ? (
                   <div className="hr-decide">
                     <button

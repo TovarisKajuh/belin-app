@@ -614,6 +614,23 @@
       "empty": "Dodajte vsaj eno vrstico."
     },
     "daysLeft": "{n, plural, one {še # delovni dan} two {še # delovna dneva} few {še # delovni dnevi} other {še # delovnih dni}}",
-    "deemedNote": "{n, plural, one {Brez odziva v # delovnem dnevu se list šteje za potrjen.} two {Brez odziva v # delovnih dnevih se list šteje za potrjen.} few {Brez odziva v # delovnih dnevih se list šteje za potrjen.} other {Brez odziva v # delovnih dnevih se list šteje za potrjen.}}"
+    "deemedNote": "{n, plural, one {Brez odziva v # delovnem dnevu se list šteje za potrjen.} two {Brez odziva v # delovnih dnevih se list šteje za potrjen.} few {Brez odziva v # delovnih dnevih se list šteje za potrjen.} other {Brez odziva v # delovnih dnevih se list šteje za potrjen.}}",
+    "doc": {
+      "title": "Poročilo o režijskih urah",
+      "docNo": "št.",
+      "project": "Projekt",
+      "contractor": "Izvajalec",
+      "submitted": "Oddano",
+      "status": "Status",
+      "decidedBy": "Odločil",
+      "colDate": "Datum",
+      "colPerson": "Oseba",
+      "colHours": "Ure",
+      "colDescription": "Opis dela",
+      "totalHours": "Skupaj ur",
+      "hoursUnit": "h",
+      "deemedNote": "Ta list je bil potrjen po poteku roka za odziv: naročnik se v dogovorjenem roku šestih delovnih dni ni odzval, zato se šteje za potrjenega.",
+      "generated": "Ustvarjeno v Belinu"
+    }
   }
 }

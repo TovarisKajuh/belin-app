@@ -2232,3 +2232,9 @@ button.gal-item {
   .belin-dark .hr-lines li { grid-template-columns: 44px 1fr auto; }
   .belin-dark .hr-lines li .po-x { grid-column: 3; grid-row: 2; }
 }
+.belin-dark .hr-pdf {
+  display: inline-block; margin-top: 11px; font-size: 12.5px; font-weight: 600;
+  color: var(--e-ink2); text-decoration: none; padding: 8px 13px;
+  border-radius: 10px; background: var(--e-surface); border: 1px solid var(--e-line);
+}
+.belin-dark .hr-pdf:hover { background: var(--e-surface-2); color: var(--e-ink); }

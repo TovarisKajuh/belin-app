@@ -15,6 +15,7 @@ import sl from "@/messages/sl.json";
 import de from "@/messages/de.json";
 import en from "@/messages/en.json";
 import type { NarocilnicaStrings } from "@/lib/pdf/narocilnica";
+import type { RegieberichtStrings } from "@/lib/pdf/regiebericht";
 
 export type DocLocale = "sl" | "de" | "en";
 
@@ -50,4 +51,30 @@ export function poStrings(locale: DocLocale): NarocilnicaStrings {
     hashLabel: t("po.doc.hashLabel"),
     generated: t("po.doc.generated"),
   };
+}
+
+export function regieStrings(locale: DocLocale): RegieberichtStrings {
+  const t = (key: string) => docString(locale, key);
+  return {
+    title: t("hours.doc.title"),
+    docNo: t("hours.doc.docNo"),
+    project: t("hours.doc.project"),
+    contractor: t("hours.doc.contractor"),
+    submitted: t("hours.doc.submitted"),
+    status: t("hours.doc.status"),
+    decidedBy: t("hours.doc.decidedBy"),
+    colDate: t("hours.doc.colDate"),
+    colPerson: t("hours.doc.colPerson"),
+    colHours: t("hours.doc.colHours"),
+    colDescription: t("hours.doc.colDescription"),
+    totalHours: t("hours.doc.totalHours"),
+    hoursUnit: t("hours.doc.hoursUnit"),
+    deemedNote: t("hours.doc.deemedNote"),
+    generated: t("hours.doc.generated"),
+  };
+}
+
+/** Status labels for documents, resolved in the project's language. */
+export function sheetStatusLabel(locale: DocLocale, status: string): string {
+  return docString(locale, `hours.status.${status}`);
 }
