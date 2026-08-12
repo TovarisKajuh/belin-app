@@ -117,6 +117,12 @@ describe("documents rendered in sequence", () => {
       "Zaključno poročilo · 23 °C · 30. 07. - 11. 08. Kranj Naročnik",
       "Prevzem Pomanjkljivosti Pogodbena kazen Garancijska doba xyzq QWXY",
       "Račun Obrnjena davčna obveznost po 76.a členu ZDDV-1 Kranj Naročnik",
+      // German last, on purpose: ä ö ü ß enter the process only here, which is
+      // the exact shape that corrupted the map. German is the pilot language,
+      // so a document that copies as "Auftraggeber" minus its umlauts would be
+      // found by the customer rather than by us.
+      "Abschlussbericht Auftraggeber Nachunternehmer Vertragsstrafe Gewährleistung",
+      "Regiestunden Werktage Mängel Ausführungsfrist Umsatzsteuer Straße 30",
     ];
 
     for (const body of bodies) {
@@ -131,8 +137,10 @@ describe("documents rendered in sequence", () => {
       const { text } = await extractText(pdf, { mergePages: true });
       const out = String(text).replace(/\s+/g, " ");
 
-      // Every character the document was asked to draw must read back.
-      expect(out).toContain(body.split(" ")[0]);
+      // Every WORD the document was asked to draw must read back, not just the
+      // first one: the corruption dropped single letters out of the middle of
+      // words, so checking one token would have missed it.
+      for (const word of body.split(" ")) expect(out).toContain(word);
       expect(out).not.toMatch(CONTROL);
     }
   }, 180000);
