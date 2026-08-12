@@ -613,6 +613,50 @@ await db.from("invoices").delete().in("project_id", [PROJECT, PROJECT_START]);
 await db.from("acceptances").delete().in("project_id", [PROJECT, PROJECT_START]);
 await db.from("notifications").delete().in("project_id", [PROJECT, PROJECT_START]);
 
+// And the two records that made the reset a lie.
+//
+// The upsert above puts status back to "active", but the final page does not
+// read status to decide whether the handover was requested: it reads the
+// ACTIVITY TRAIL, deliberately, so that fact has one home. A leftover
+// finalization_requested row therefore left a freshly seeded, active project
+// insisting it had already been handed over, with the acceptance step open
+// underneath it. Likewise a completion report from a previous run reappeared on
+// the card, dated and downloadable, describing days this seed had just deleted.
+//
+// Found on 2026-08-12 by walking the whole finalization chain on production and
+// then re-seeding, which is the exact sequence the runbook's prep ritual asks
+// the founder to perform before every demo.
+//
+// Only the closing events are cleared, never the trail the demo is made of:
+// entry_submitted and material_check_completed are the live feed on the
+// dashboard, and deleting those would empty the screen the demo opens on.
+const CLOSING_EVENTS = [
+  "finalization_requested",
+  "acceptance_signed",
+  "invoice_generated",
+  "invoice_sent",
+];
+await db
+  .from("activity")
+  .delete()
+  .in("project_id", [PROJECT, PROJECT_START])
+  .in("kind", CLOSING_EVENTS);
+
+const { data: staleDocs } = await db
+  .from("generated_documents")
+  .select("id, storage_path")
+  .in("project_id", [PROJECT, PROJECT_START]);
+
+if (staleDocs?.length) {
+  const paths = staleDocs.map((row) => row.storage_path).filter((p) => p && p !== "pending");
+  if (paths.length) await db.storage.from("reports").remove(paths);
+  await db
+    .from("generated_documents")
+    .delete()
+    .in("id", staleDocs.map((row) => row.id));
+  console.log(`reset: ${staleDocs.length} generated document(s) removed`);
+}
+
 console.log("Seed complete.");
 console.log(`Current project: ${plannedStart} .. ${plannedEnd}, ${dates.length} working days logged.`);
 console.log(`Day one project: ${startPlannedStart} .. ${startPlannedEnd}, nothing logged.`);

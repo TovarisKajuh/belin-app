@@ -51,3 +51,113 @@ The founder answered three open questions before I continued: two vetoes (finali
 Tasks 1 to 4 are done and verified, plus the drift reconciliation. Task 5 (crew incident capture) is next, then 6 (dashboard panels), 7 (requests), 8 to 11 (Regiestunden and change orders), 12 to 15 (finalization, completion report, acceptance, invoice), 16 (portfolio), 17 to 21 (seeds, landing, translations, security, QA). The two vetoes are folded into Tasks 12 and 17 of the plan file.
 
 Execution continued on Fable at the founder's explicit instruction rather than moving to Opus.
+
+## Tasks 19 to 21: translation, security, and the production pass
+
+**The single translation pass (Task 19).** 676 keys into German, 675 into
+English, every namespace. German uses Sie throughout, because the reader is a
+company the EPC is paying. This clears every i18n debt line in CHANGELOG.md,
+including the landing and auth keys outstanding since 20.07. de and en were
+written as their own texts, not as Slovenian rendered word by word: the
+Slovenian plural forms are four and the German and English forms are two, so
+those messages were rebuilt rather than copied.
+
+What survived untouched: the reverse-charge notes in lib/invoice-shared.ts, which
+live in code precisely because they are statutory sentences and not wording
+anybody may improve. A translation pass is exactly the moment somebody would have
+improved them.
+
+**And the test that had to come with it.** The parity test was proving something
+that stopped being true the moment the pass landed. While de and en carried the
+Slovenian string, identical keys plus non-empty strings really did mean the
+catalogs agreed. Now they are three independent texts, and a broken plural or a
+renamed placeholder in German would have reached the pilot customer before it
+reached us. tests/messages-icu.test.ts compiles every message as ICU in all three
+languages, compares each argument set against Slovenian, and fails on a dash.
+Verified red first, on an unclosed plural and a {number} renamed to {nummer}.
+
+The PDF sequence test also gained German, rendered LAST, after every Slovenian
+glyph, because the font subset bug bites when new glyphs enter a warm process and
+until today no document in the suite contained an umlaut. The assertion now
+checks every word of the body rather than the first, since the corruption dropped
+letters out of the middle of words.
+
+**A live privilege escalation, found by sweeping (Task 20).** Fetching the seeded
+crew link on production returned the EPC project token in the page HTML.
+DevSwapBar, the dev convenience that jumps between the two connected views, was
+never gated by anything. A crew link is designed to be forwarded to whoever turns
+up on the roof, so every holder of one could step into the client's dashboard.
+
+The gate went into getSiblingToken rather than at the two render sites: the
+function hands its caller a capability, and a page that forgets the check would
+ship the hole again. Tested, verified red by deleting the gate, deployed, and
+re-probed on production in both directions.
+
+**The rest of the security list.** Secret sweep by value shape clean. The only
+log carrying a live credential is behind a NODE_ENV guard. All five buckets
+private, with the signed-URL boundary probed rather than assumed: the public path
+400s, a valid signature 200s, one changed character 400s, and the same link 400s
+once its seconds are up. All five PDF routes refuse anonymously on production and
+answer a non-member with the same 404 as a document that does not exist.
+
+**Abandoned plan uploads swept**, clearing the wizard debt from 20.07. Every
+upload that never became a project is a customer's construction plan sitting in
+storage for no reason, so this is a retention rule before it is housekeeping.
+Object deleted before row, deliberately: dying between the two lets the next
+sweep retry, while the other order strands the file forever. Triggered on a new
+upload rather than by a cron this codebase does not have, and global rather than
+per-org so active EPCs clean up after inactive ones.
+
+**The acceptance script, on production (Task 21), and it earned its keep.** Two
+people signed in by magic link, every surface walked, and the entire closing
+chain driven: handover requested by the subcontractor, acceptance conducted with
+a defect, both on-screen signatures and the penalty reservation, invoice issued.
+Every document was pulled back out of storage and read. Twelve-page completion
+report with an intact text layer, the protocol carrying the reservation sentence
+verbatim, the invoice printing the 76.a note with no VAT row anywhere. The font
+fix holds on a warm serverless runtime, which is the only place it ever mattered.
+
+**A seed that lied about resetting**, found by doing exactly what the runbook
+tells the founder to do before every demo: walk the chain, then re-seed. The
+upsert put the project back to active, but the final page reads the ACTIVITY
+TRAIL to decide whether the handover was requested, so a leftover
+finalization_requested row left a freshly seeded active project insisting it had
+already been handed over. A completion report from the previous run reappeared on
+the card too, dated and downloadable, describing days the seed had just deleted.
+Only the closing events are cleared, never entry_submitted or
+material_check_completed, because those ARE the live feed the demo opens on.
+
+## Learned
+
+- A test can stop testing what it used to test without changing a line. The
+  parity test was correct on the day it was written and hollow the day the
+  translations landed. When the assumption under a test changes, the test needs
+  re-earning, not re-running.
+- The bug worth finding is in the SEQUENCE, not the step. Every step of the
+  finalization chain worked, and the seed worked; walking them in the order the
+  founder will walk them is what exposed the reset that was not one.
+- Driving a React form from injected JavaScript needs focusout, not blur. React
+  delegates onBlur through focusout, so a dispatched blur silently persists
+  nothing and looks exactly like a broken feature. Cost one wrong bug report to
+  myself before checking.
+
+## Failed, then fixed
+
+- Wrote scripts/sweep-plans.ts as a second entry point to the sweep, then deleted
+  it: the data module is server-only, so a tsx script cannot import it, and
+  duplicating the deletion path is worse than not having a second trigger.
+- The first production QA harness POSTed the magic-link confirm form directly.
+  Next server actions need their action id, so nothing happened and five checks
+  failed against a working app. Re-driven in a real browser.
+
+## Outstanding
+
+- **Founder action:** rotate the Supabase service-role key, updating Vercel AND
+  .env.local in the same sitting, since a stale local key silently breaks the
+  seed. It is the one step here nobody but the account holder can take.
+- **Founder action:** capture the landing screenshots from the seeded demo into
+  public/landing/. Each slot is already the right shape and renders as a framed
+  captioned panel until the file lands.
+- One wizard upload on production has not been driven from this session, because
+  a real file picker is needed. The parser is unchanged since the founder's own
+  production upload on 10.08, and it is the first beat of the runbook anyway.
