@@ -38,6 +38,12 @@ export async function sendEmail(input: {
    * attempt is visible; a refusal is an attempt with a known answer.
    */
   refuseReason?: string;
+  /**
+   * Files to attach. Used by the accountant share, which sends the invoice
+   * PDF itself: an accountant who has to click a link, sign in and download is
+   * an accountant who asks the subcontractor to email it instead.
+   */
+  attachments?: { filename: string; content: Buffer }[];
 }): Promise<void> {
   const to = input.to.trim();
 
@@ -60,7 +66,15 @@ export async function sendEmail(input: {
   try {
     const resend = new Resend(apiKey);
     const result = await Promise.race([
-      resend.emails.send({ from: FROM, to, subject: input.subject, html: input.html }),
+      resend.emails.send({
+        from: FROM,
+        to,
+        subject: input.subject,
+        html: input.html,
+        ...(input.attachments?.length
+          ? { attachments: input.attachments.map((a) => ({ filename: a.filename, content: a.content })) }
+          : {}),
+      }),
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("timeout")), SEND_TIMEOUT_MS),
       ),

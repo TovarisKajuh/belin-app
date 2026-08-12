@@ -12,6 +12,7 @@ import {
   startAcceptance,
 } from "@/lib/data/acceptances";
 import type { AcceptanceStepPayload } from "@/lib/acceptance-view";
+import { generateInvoice, shareToAccountant } from "@/lib/data/invoices";
 
 // Finalization actions. Session only, all of them: everything on this screen
 // either hands a job over, signs for it, or bills it.
@@ -127,5 +128,27 @@ export async function signAcceptanceAction(
   const actor = await resolveActorFromSession();
   if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
   await signAcceptance(actor, projectId, acceptanceId);
+  return { ok: true };
+}
+
+// The invoice. Office only on the subcontractor side: this is the document
+// that asks to be paid.
+
+export async function generateInvoiceAction(
+  projectId: string,
+): Promise<{ ok: true; warnings: string[] }> {
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
+  const result = await generateInvoice(actor, projectId);
+  return { ok: true, warnings: result.warnings };
+}
+
+export async function shareInvoiceAction(
+  projectId: string,
+  invoiceId: string,
+): Promise<{ ok: true }> {
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
+  await shareToAccountant(actor, projectId, invoiceId);
   return { ok: true };
 }

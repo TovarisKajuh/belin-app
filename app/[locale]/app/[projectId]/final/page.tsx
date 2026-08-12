@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { CommandBar } from "@/components/project/CommandBar";
 import { FinalHub } from "@/components/final/FinalHub";
 import { getAcceptance } from "@/lib/data/acceptances";
+import { getInvoice } from "@/lib/data/invoices";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { projectTopic } from "@/lib/realtime-shared";
 
@@ -62,6 +63,15 @@ export default async function FinalPage({
     .maybeSingle();
 
   const acceptance = await getAcceptance(actor, projectId);
+  const invoice = await getInvoice(actor, projectId);
+
+  // The accountant address belongs to the SUBCONTRACTOR, who issues the
+  // invoice, so it is read from the acting person's own organization.
+  const { data: ownOrg } = await createAdminClient()
+    .from("organizations")
+    .select("accountant_email")
+    .eq("id", actor.orgId)
+    .maybeSingle();
 
   // Prefilled, never enforced: whoever from the subcontractor is actually on
   // the roof signs, and that is often not the person in the company record.
@@ -108,6 +118,9 @@ export default async function FinalPage({
           report={report ? { id: report.id, createdAt: report.created_at } : null}
           acceptance={acceptance}
           defaultSubSignerName={defaultSubSignerName}
+          invoice={invoice}
+          accountantEmail={ownOrg?.accountant_email ?? null}
+          locale={core.language === "de" || core.language === "en" ? core.language : "sl"}
         />
       </main>
     </div>

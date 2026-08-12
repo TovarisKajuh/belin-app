@@ -9,6 +9,8 @@ import {
 import type { ProjectStatus } from "@/lib/project-status";
 import type { AcceptanceView } from "@/lib/acceptance-view";
 import { AcceptanceFlow } from "./AcceptanceFlow";
+import { InvoiceCard } from "./InvoiceCard";
+import type { InvoiceView } from "@/lib/invoice-view";
 
 // The handover screen: request, report, acceptance, invoice.
 //
@@ -27,6 +29,9 @@ export function FinalHub({
   report,
   acceptance,
   defaultSubSignerName,
+  invoice,
+  accountantEmail,
+  locale,
 }: {
   projectId: string;
   status: ProjectStatus;
@@ -37,6 +42,9 @@ export function FinalHub({
   report: { id: string; createdAt: string } | null;
   acceptance: AcceptanceView | null;
   defaultSubSignerName: string | null;
+  invoice: InvoiceView | null;
+  accountantEmail: string | null;
+  locale: "sl" | "de" | "en";
 }) {
   const t = useTranslations("final");
   const format = useFormatter();
@@ -202,10 +210,22 @@ export function FinalHub({
             <p className="fn-note">{t("afterHandover")}</p>
           </div>
         )}
-        <div className="b-card fn-card">
-          <span className="b-label">{t("invoiceCard")}</span>
-          <p className="fn-note">{t("afterAcceptance")}</p>
-        </div>
+        {/* Billing opens once the work has been accepted, or once an invoice
+            exists: invoicing for work nobody signed off is how disputes start. */}
+        {acceptance?.status === "signed" || invoice ? (
+          <InvoiceCard
+            projectId={projectId}
+            locale={locale}
+            invoice={invoice}
+            canManage={role === "sub" && isOffice}
+            accountantEmail={accountantEmail}
+          />
+        ) : (
+          <div className="b-card fn-card">
+            <span className="b-label">{t("invoiceCard")}</span>
+            <p className="fn-note">{t("afterAcceptance")}</p>
+          </div>
+        )}
       </div>
     </section>
   );

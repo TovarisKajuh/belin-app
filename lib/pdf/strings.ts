@@ -18,6 +18,7 @@ import type { NarocilnicaStrings } from "@/lib/pdf/narocilnica";
 import type { RegieberichtStrings } from "@/lib/pdf/regiebericht";
 import type { CompletionStrings } from "@/lib/pdf/completion";
 import type { AbnahmeStrings } from "@/lib/pdf/abnahme";
+import type { InvoiceStrings } from "@/lib/pdf/invoice";
 
 export type DocLocale = "sl" | "de" | "en";
 
@@ -153,5 +154,31 @@ export function abnahmeStrings(locale: DocLocale): AbnahmeStrings {
     signEpc: t("final.doc.signEpc"),
     signSub: t("final.doc.signSub"),
     generated: t("final.doc.generated"),
+  };
+}
+
+export function invoiceStrings(locale: DocLocale): InvoiceStrings {
+  const t = (key: string) => docString(locale, key);
+  return {
+    title: t("invoice.title"),
+    docNo: t("invoice.doc.docNo"),
+    supplier: t("invoice.doc.supplier"),
+    customer: t("invoice.doc.customer"),
+    vatId: t("invoice.doc.vatId"),
+    issueDate: t("invoice.doc.issueDate"),
+    dueDate: t("invoice.doc.dueDate"),
+    servicePeriod: t("invoice.doc.servicePeriod"),
+    site: t("invoice.doc.site"),
+    colDescription: t("invoice.doc.colDescription"),
+    colQty: t("invoice.doc.colQty"),
+    colUnitPrice: t("invoice.doc.colUnitPrice"),
+    colTotal: t("invoice.doc.colTotal"),
+    totalNet: t("invoice.doc.totalNet"),
+    vat: t("invoice.doc.vat"),
+    totalGross: t("invoice.doc.totalGross"),
+    iban: t("invoice.doc.iban"),
+    reverseChargeTitle: t("invoice.doc.reverseChargeTitle"),
+    generated: t("invoice.doc.generated"),
+    regieLine: t("invoice.doc.regieLine"),
   };
 }
