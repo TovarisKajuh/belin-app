@@ -218,6 +218,27 @@ export async function createVaultDocTarget(
  */
 export async function storeReportPdf(path: string, bytes: Buffer): Promise<string> {
   const db = createAdminClient();
+
+  // THE OBJECT IS REMOVED FIRST, AND THE REMOVAL IS WAITED FOR. Both halves
+  // are load bearing; see docs/known-issues.md entry 2.
+  //
+  // Supabase storage's `upsert: true` reports SUCCESS on an existing path and
+  // leaves the ORIGINAL bytes in place, and the delete that would clear the way
+  // is eventually consistent: uploading immediately after it races, and the
+  // upload then silently keeps the old file. Both were verified directly.
+  //
+  // Every document path in the app happens to be unique today (a naročilnica is
+  // sent once, a report carries a fresh document id), so nothing was broken.
+  // But a helper called "store" that silently keeps the old file is a trap
+  // primed for whoever regenerates anything, and the demo seed regenerating its
+  // documents walked straight into it.
+  await db.storage.from("reports").remove([path]);
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const probe = await db.storage.from("reports").download(path);
+    if (probe.error || !probe.data) break;
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+
   const { error } = await db.storage.from("reports").upload(path, bytes, {
     contentType: "application/pdf",
     upsert: true,

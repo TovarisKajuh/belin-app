@@ -12,10 +12,11 @@
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed": "node --env-file=.env.local scripts/seed-demo.mjs",
+    "seed": "node --env-file=.env.local scripts/seed-demo.mjs && npm run seed:documents",
     "gen:types": "node scripts/gen-types.mjs",
     "icons": "node scripts/generate-icons.mjs",
-    "k2:try": "tsx scripts/k2-try.ts"
+    "k2:try": "tsx scripts/k2-try.ts",
+    "seed:documents": "tsx --tsconfig tsconfig.scripts.json --env-file=.env.local scripts/seed-documents.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

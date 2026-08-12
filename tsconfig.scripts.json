@@ -1,0 +1,13 @@
+{
+  // Scripts run under tsx, outside Next's build. The app compiles with
+  // jsx "preserve" because Next transforms JSX itself; a script has nobody to
+  // do that for it, so it needs the automatic runtime or every PDF component
+  // fails at runtime with "React is not defined".
+  //
+  // Used by scripts/seed-documents.ts, which renders real documents through the
+  // same components the app uses.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  }
+}

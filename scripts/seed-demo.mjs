@@ -379,6 +379,240 @@ await upsert("project_tokens", [
   { id: TOKEN_START_SUB, project_id: PROJECT_START, role: "sub", token: "demo-sub-start-q7w4z8", label: "Crew, day one" },
 ]);
 
+
+// ============================================================
+// The commercial state of the demo.
+//
+// The founder's ruling (2026-08-12): the seed stages a SENT naročilnica on the
+// day-one project and a sent-then-ACCEPTED one on the running project, so the
+// demo needs no preparation clicks.
+//
+// The objection that produced the earlier draft still stands on the facts: a
+// purchase order with status sent and no stored PDF cannot be opened, and
+// acceptance re-hashes the stored file, so a null hash would refuse acceptance
+// live on stage. That is answered by construction rather than by avoidance:
+// scripts/seed-documents.ts renders these documents through the SAME code the
+// app uses and writes back the real path and the real sha256. Rows here are
+// therefore rows the app itself could have produced.
+//
+// If that step is skipped or fails, the seed says so loudly rather than leaving
+// a demo that breaks on the first click.
+// ============================================================
+
+const PO_CURRENT = "88888888-8888-4888-8888-888888888801";
+const PO_START = "88888888-8888-4888-8888-888888888802";
+const SHEET_APPROVED = "99999999-9999-4999-8999-999999999901";
+const SHEET_OPEN = "99999999-9999-4999-8999-999999999902";
+const CO_APPROVED = "aaaaaaaa-9999-4999-8999-999999999903";
+
+const daysAgoIso = (n) => new Date(Date.now() - n * 86400000).toISOString();
+
+// Both naročilnice carry a régie rate: without one, approved hours cannot be
+// billed and the invoice would warn instead of showing the number the demo is
+// about.
+await upsert("purchase_orders", [
+  {
+    id: PO_CURRENT,
+    project_id: PROJECT,
+    number: 1,
+    status: "accepted",
+    total_net: 118500,
+    regie_hourly_rate: 48,
+    payment_terms: "30 dni od izdaje računa",
+    deadline: plannedEnd,
+    sent_at: daysAgoIso(12),
+    accepted_at: daysAgoIso(11),
+    accepted_by_person: PERSON_SUB_ADMIN,
+    accepted_by_name: "Ana Novak",
+    created_by_person: PERSON_EPC_ADMIN,
+  },
+  {
+    id: PO_START,
+    project_id: PROJECT_START,
+    number: 1,
+    status: "sent",
+    total_net: 118500,
+    regie_hourly_rate: 48,
+    payment_terms: "30 dni od izdaje računa",
+    deadline: startPlannedEnd,
+    sent_at: daysAgoIso(1),
+    created_by_person: PERSON_EPC_ADMIN,
+  },
+]);
+
+await upsert(
+  "purchase_order_lines",
+  [
+    {
+      id: "88888888-8888-4888-8888-888888888811",
+      purchase_order_id: PO_CURRENT,
+      description: "Montaža FV sistema 245.7 kWp, Kranj",
+      qty: 1,
+      unit: "kos",
+      unit_price: 118500,
+      total: 118500,
+      sort_order: 0,
+    },
+    {
+      id: "88888888-8888-4888-8888-888888888812",
+      purchase_order_id: PO_START,
+      description: "Montaža FV sistema 245.7 kWp, Kranj",
+      qty: 1,
+      unit: "kos",
+      unit_price: 118500,
+      total: 118500,
+      sort_order: 0,
+    },
+  ],
+);
+
+// One sheet already approved, and one still running with two working days left
+// on the clock, so the countdown badge is live during the demo rather than a
+// screenshot of a state nobody can reach.
+await upsert("hour_sheets", [
+  {
+    id: SHEET_APPROVED,
+    project_id: PROJECT,
+    sub_org_id: SUB_ORG,
+    number: 1,
+    status: "approved",
+    submitted_at: daysAgoIso(8),
+    deadline_at: daysAgoIso(2),
+    decided_at: daysAgoIso(7),
+    decided_by_person: PERSON_EPC,
+  },
+  {
+    id: SHEET_OPEN,
+    project_id: PROJECT,
+    sub_org_id: SUB_ORG,
+    number: 2,
+    status: "submitted",
+    submitted_at: daysAgoIso(2),
+    deadline_at: new Date(Date.now() + 2 * 86400000).toISOString(),
+  },
+]);
+
+await upsert("hour_sheet_lines", [
+  {
+    id: "99999999-9999-4999-8999-999999999911",
+    sheet_id: SHEET_APPROVED,
+    work_date: isoDaysAgo(9),
+    hours: 8,
+    description: "Dodatno pritrjevanje zaradi drugačne kritine",
+    person_id: PERSON_SUB,
+  },
+  {
+    id: "99999999-9999-4999-8999-999999999912",
+    sheet_id: SHEET_APPROVED,
+    work_date: isoDaysAgo(8),
+    hours: 6,
+    description: "Nadaljevanje pritrjevanja, južni del",
+    person_id: PERSON_SUB,
+  },
+  {
+    id: "99999999-9999-4999-8999-999999999913",
+    sheet_id: SHEET_OPEN,
+    work_date: isoDaysAgo(3),
+    hours: 5,
+    description: "Čiščenje po neurju",
+    person_id: PERSON_SUB,
+  },
+]);
+
+await upsert("change_orders", [
+  {
+    id: CO_APPROVED,
+    project_id: PROJECT,
+    number: 1,
+    title: "Zamenjava dotrajanih letev pod kritino",
+    description: "Letve pod modulnimi vrstami 3 do 5 so bile trhle.",
+    amount: 1200,
+    status: "approved",
+    decided_at: daysAgoIso(6),
+    decided_by_person: PERSON_EPC,
+    created_by_person: PERSON_SUB,
+  },
+]);
+
+// Two incidents and one answered request: the running project should look like
+// a job that has actually been worked on, not a clean room.
+await db.from("incidents").delete().eq("project_id", PROJECT);
+const { data: seededIncidents } = await db
+  .from("incidents")
+  .insert([
+    {
+      project_id: PROJECT,
+      kind: "rain_stop",
+      note: "",
+      occurred_on: isoDaysAgo(4),
+      created_by_person: PERSON_SUB,
+    },
+    {
+      project_id: PROJECT,
+      kind: "obstruction",
+      note: "Dostop do strehe zaprt zaradi dostave drugega izvajalca.",
+      occurred_on: isoDaysAgo(2),
+      created_by_person: PERSON_SUB,
+    },
+  ])
+  .select("id");
+console.log(`incidents: ${(seededIncidents ?? []).length} row(s) inserted`);
+
+await db.from("requests").delete().eq("project_id", PROJECT);
+await db.from("requests").insert([
+  {
+    project_id: PROJECT,
+    type: "material",
+    text: "Zmanjkalo je 12 vijakov M10 za zaključne vrste.",
+    status: "resolved",
+    response_note: "Vijaki gredo jutri zjutraj s prvo dostavo.",
+    resolved_at: daysAgoIso(1),
+    created_by_person: PERSON_SUB,
+  },
+  {
+    project_id: PROJECT,
+    type: "plan",
+    text: "Potrebujemo shemo priklopa za razdelilnik R2.",
+    status: "open",
+    created_by_person: PERSON_SUB,
+  },
+]);
+console.log("requests: 2 row(s) inserted");
+
+// The subcontractor's compliance documents, including one expiring soon, so
+// the traffic light on the EPC dashboard is showing something real.
+await db.from("documents").delete().eq("org_id", SUB_ORG);
+await db.from("documents").insert([
+  {
+    org_id: SUB_ORG,
+    type: "a1",
+    title: "Potrdilo A1, Luka Zupan",
+    valid_until: isoPlusDays(isoDaysAgo(0), 120),
+    storage_path: "demo/a1.pdf",
+  },
+  {
+    org_id: SUB_ORG,
+    type: "freistellungsbescheinigung",
+    title: "Freistellungsbescheinigung 2026",
+    valid_until: isoPlusDays(isoDaysAgo(0), 18),
+    storage_path: "demo/freistellung.pdf",
+  },
+  {
+    org_id: SUB_ORG,
+    type: "insurance",
+    title: "Zavarovanje odgovornosti",
+    valid_until: isoPlusDays(isoDaysAgo(0), 200),
+    storage_path: "demo/insurance.pdf",
+  },
+]);
+console.log("documents: 3 row(s) inserted");
+
+// Documents that no longer describe anything: a leftover invoice or protocol
+// from a previous seed would contradict the freshly staged state.
+await db.from("invoices").delete().in("project_id", [PROJECT, PROJECT_START]);
+await db.from("acceptances").delete().in("project_id", [PROJECT, PROJECT_START]);
+await db.from("notifications").delete().in("project_id", [PROJECT, PROJECT_START]);
+
 console.log("Seed complete.");
 console.log(`Current project: ${plannedStart} .. ${plannedEnd}, ${dates.length} working days logged.`);
 console.log(`Day one project: ${startPlannedStart} .. ${startPlannedEnd}, nothing logged.`);
