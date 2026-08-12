@@ -1667,7 +1667,12 @@ export type Database = {
           p_items: Json
           p_epc_token: string
           p_sub_token: string | null
-          p_roofs?: Json
+          // NOT optional, deliberately. The database once carried a second,
+          // roofless overload of this function, and an omitted p_roofs would
+          // have silently resolved to it and created a project with no roofs.
+          // That overload was dropped in 20260812101000; requiring the argument
+          // here keeps the shape impossible from the TypeScript side too.
+          p_roofs: Json
         }
         Returns: string
       }
