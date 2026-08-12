@@ -3,6 +3,15 @@ import { resolveActorFromSession } from "@/lib/auth";
 import { requestFinalization } from "@/lib/data/projects";
 import { generateCompletionReport } from "@/lib/data/final-report";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  addDefect,
+  removeDefect,
+  saveAcceptanceStep,
+  saveSignature,
+  signAcceptance,
+  startAcceptance,
+} from "@/lib/data/acceptances";
+import type { AcceptanceStepPayload } from "@/lib/acceptance-view";
 
 // Finalization actions. Session only, all of them: everything on this screen
 // either hands a job over, signs for it, or bills it.
@@ -46,4 +55,77 @@ export async function generateCompletionReportAction(
 
   const result = await generateCompletionReport(actor, projectId);
   return { ok: true, documentId: result.documentId };
+}
+
+// The acceptance. Every step writes immediately, because this is conducted on
+// a roof with one device passed between two people: a flow that saved only at
+// the end would lose a completed inspection to a dropped connection.
+
+export async function startAcceptanceAction(
+  projectId: string,
+  kind: "final" | "partial",
+): Promise<{ ok: true; acceptanceId: string }> {
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
+  const acceptanceId = await startAcceptance(actor, projectId, kind);
+  return { ok: true, acceptanceId };
+}
+
+export async function saveAcceptanceStepAction(
+  projectId: string,
+  acceptanceId: string,
+  payload: AcceptanceStepPayload,
+): Promise<{ ok: true }> {
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
+  await saveAcceptanceStep(actor, projectId, acceptanceId, payload);
+  return { ok: true };
+}
+
+export async function addDefectAction(
+  projectId: string,
+  acceptanceId: string,
+  payload: { description: string; dueDate: string | null; agreement: "agreed" | "disputed" },
+): Promise<{ ok: true }> {
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
+  await addDefect(actor, projectId, acceptanceId, payload);
+  return { ok: true };
+}
+
+export async function removeDefectAction(
+  projectId: string,
+  defectId: string,
+): Promise<{ ok: true }> {
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
+  await removeDefect(actor, projectId, defectId);
+  return { ok: true };
+}
+
+/** The PNG arrives base64 encoded: a server action cannot take a Blob. */
+export async function saveSignatureAction(
+  projectId: string,
+  acceptanceId: string,
+  side: "epc" | "sub",
+  pngBase64: string,
+): Promise<{ ok: true }> {
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
+  const bytes = Buffer.from(pngBase64, "base64");
+  await saveSignature(actor, projectId, acceptanceId, side, bytes.buffer.slice(
+    bytes.byteOffset,
+    bytes.byteOffset + bytes.byteLength,
+  ) as ArrayBuffer);
+  return { ok: true };
+}
+
+export async function signAcceptanceAction(
+  projectId: string,
+  acceptanceId: string,
+): Promise<{ ok: true }> {
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
+  await signAcceptance(actor, projectId, acceptanceId);
+  return { ok: true };
 }

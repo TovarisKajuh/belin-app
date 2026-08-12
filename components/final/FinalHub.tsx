@@ -7,6 +7,8 @@ import {
   requestFinalizationAction,
 } from "@/app/[locale]/app/[projectId]/final/actions";
 import type { ProjectStatus } from "@/lib/project-status";
+import type { AcceptanceView } from "@/lib/acceptance-view";
+import { AcceptanceFlow } from "./AcceptanceFlow";
 
 // The handover screen: request, report, acceptance, invoice.
 //
@@ -23,6 +25,8 @@ export function FinalHub({
   isOffice,
   requestedAt,
   report,
+  acceptance,
+  defaultSubSignerName,
 }: {
   projectId: string;
   status: ProjectStatus;
@@ -31,6 +35,8 @@ export function FinalHub({
   requestedAt: string | null;
   /** The latest generated completion report, if one exists. */
   report: { id: string; createdAt: string } | null;
+  acceptance: AcceptanceView | null;
+  defaultSubSignerName: string | null;
 }) {
   const t = useTranslations("final");
   const format = useFormatter();
@@ -163,10 +169,39 @@ export function FinalHub({
             </button>
           </div>
         </div>
-        <div className="b-card fn-card">
-          <span className="b-label">{t("acceptanceCard")}</span>
-          <p className="fn-note">{inReview || finished ? t("soon") : t("afterHandover")}</p>
-        </div>
+        {/* The acceptance opens once the job has been handed over: inspecting
+            work nobody has declared finished is not an acceptance. */}
+        {inReview || finished || acceptance ? (
+          role === "epc" ? (
+            <AcceptanceFlow
+              projectId={projectId}
+              acceptance={acceptance}
+              defaultSubSignerName={defaultSubSignerName}
+            />
+          ) : (
+            <div className="b-card fn-card">
+              <span className="b-label">{t("acceptanceCard")}</span>
+              <p className="fn-note">
+                {acceptance?.status === "signed" ? t("acceptanceSignedShort") : t("acceptanceByClient")}
+              </p>
+              {acceptance?.status === "signed" ? (
+                <a
+                  className="hr-pdf"
+                  href={`/api/pdf/abnahme/${acceptance.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {t("downloadProtocol")}
+                </a>
+              ) : null}
+            </div>
+          )
+        ) : (
+          <div className="b-card fn-card">
+            <span className="b-label">{t("acceptanceCard")}</span>
+            <p className="fn-note">{t("afterHandover")}</p>
+          </div>
+        )}
         <div className="b-card fn-card">
           <span className="b-label">{t("invoiceCard")}</span>
           <p className="fn-note">{t("afterAcceptance")}</p>

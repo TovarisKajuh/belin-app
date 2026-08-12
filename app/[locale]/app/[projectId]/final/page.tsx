@@ -7,6 +7,7 @@ import { getProjectCore } from "@/lib/data/project-core";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CommandBar } from "@/components/project/CommandBar";
 import { FinalHub } from "@/components/final/FinalHub";
+import { getAcceptance } from "@/lib/data/acceptances";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { projectTopic } from "@/lib/realtime-shared";
 
@@ -60,6 +61,28 @@ export default async function FinalPage({
     .limit(1)
     .maybeSingle();
 
+  const acceptance = await getAcceptance(actor, projectId);
+
+  // Prefilled, never enforced: whoever from the subcontractor is actually on
+  // the roof signs, and that is often not the person in the company record.
+  const { data: project } = await createAdminClient()
+    .from("projects")
+    .select("sub_org_id")
+    .eq("id", projectId)
+    .maybeSingle();
+
+  let defaultSubSignerName: string | null = null;
+  if (project?.sub_org_id) {
+    const { data: subAdmin } = await createAdminClient()
+      .from("people")
+      .select("full_name")
+      .eq("org_id", project.sub_org_id)
+      .in("role", ["admin", "owner"])
+      .limit(1)
+      .maybeSingle();
+    defaultSubSignerName = subAdmin?.full_name ?? null;
+  }
+
   return (
     <div className="belin-dark">
       <div className="e-grain" aria-hidden />
@@ -83,6 +106,8 @@ export default async function FinalPage({
           isOffice={actor.role === "admin" || actor.role === "owner"}
           requestedAt={requested?.created_at ?? null}
           report={report ? { id: report.id, createdAt: report.created_at } : null}
+          acceptance={acceptance}
+          defaultSubSignerName={defaultSubSignerName}
         />
       </main>
     </div>

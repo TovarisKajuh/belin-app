@@ -17,6 +17,7 @@ import en from "@/messages/en.json";
 import type { NarocilnicaStrings } from "@/lib/pdf/narocilnica";
 import type { RegieberichtStrings } from "@/lib/pdf/regiebericht";
 import type { CompletionStrings } from "@/lib/pdf/completion";
+import type { AbnahmeStrings } from "@/lib/pdf/abnahme";
 
 export type DocLocale = "sl" | "de" | "en";
 
@@ -123,5 +124,34 @@ export function completionStrings(locale: DocLocale): CompletionStrings {
       people: t("final.dayDoc.people"),
       generated: t("final.dayDoc.generated"),
     },
+  };
+}
+
+export function abnahmeStrings(locale: DocLocale): AbnahmeStrings {
+  const t = (key: string) => docString(locale, key);
+  return {
+    title: t("final.doc.title2"),
+    project: t("final.doc.project"),
+    client: t("final.doc.client"),
+    contractor: t("final.doc.contractor"),
+    site: t("final.doc.site"),
+    kind: t("final.doc.kind"),
+    date: t("final.doc.date"),
+    attendees: t("final.doc.attendees"),
+    defects: t("final.doc.defects"),
+    colDefect: t("final.doc.colDefect"),
+    colDue: t("final.doc.colDue"),
+    colAgreement: t("final.doc.colAgreement"),
+    noDefects: t("final.doc.noDefects"),
+    declaration: t("final.doc.declaration"),
+    penaltyTitle: t("final.doc.penaltyTitle"),
+    // The reservation sentence itself is NOT a document string: it is the same
+    // legal text the checkbox promises, so both read from one key.
+    penaltySentence: t("final.penaltySentence"),
+    warranty: t("final.doc.warranty"),
+    note: t("final.doc.note"),
+    signEpc: t("final.doc.signEpc"),
+    signSub: t("final.doc.signSub"),
+    generated: t("final.doc.generated"),
   };
 }
