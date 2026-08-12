@@ -6,6 +6,7 @@ import { resolveActorFromSession } from "@/lib/auth";
 import { safeNext } from "@/lib/auth-core";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { MagicLinkForm } from "@/components/auth/MagicLinkForm";
+import { Story } from "@/components/landing/Story";
 
 // A rising-gold cell pattern, the same mark the command bar and the launch
 // animation use, drawn larger here.
@@ -76,7 +77,7 @@ export default async function Home({
             </ul>
           </section>
 
-          <section className="lp-card" aria-labelledby="lp-card-title">
+          <section className="lp-card" id="prijava" aria-labelledby="lp-card-title">
             <div className="lp-card-glow" aria-hidden />
             <h2 id="lp-card-title" className="lp-card-title">
               {t("signIn")}
@@ -89,7 +90,18 @@ export default async function Home({
           </section>
         </div>
 
-        <footer className="lp-foot">{t("footer")}</footer>
+      </div>
+
+      {/* The product story below the fold. The login card above stays exactly
+          where it was: a landing page that deploys with a dead sign-in is the
+          one unacceptable outcome, so nothing here touches it. */}
+      <Story locale={locale} />
+
+      <div className="lp-wrap">
+        <footer className="lp-foot">
+          <span>{t("footer")}</span>
+          <span className="lp-foot-i">{t("imprint")}</span>
+        </footer>
       </div>
     </main>
   );

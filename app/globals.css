@@ -2397,3 +2397,113 @@ button.gal-item {
   .belin-dark .pl-figure { grid-column: 1 / -1; justify-content: space-between; }
   .belin-dark .pf-spark { width: 100%; }
 }
+
+/* ==============================================================
+   Landing, below the fold. The job told in five moments, in the
+   order they happen on a project.
+
+   Gold is spent only on the section numbers and one aside per
+   section, so by the fifth screen it still means "look here".
+   Sections alternate side so the eye moves down the page rather
+   than scanning a single column.
+   ============================================================== */
+.lp .lp-sec { padding: 90px 0; border-top: 1px solid var(--e-line); }
+.lp .lp-sec-in {
+  max-width: 1180px; margin: 0 auto; padding: 0 26px;
+  display: grid; grid-template-columns: 1fr 1.05fr; gap: 58px; align-items: center;
+}
+.lp .lp-sec--flip .lp-sec-in > .lp-sec-text { order: 2; }
+.lp .lp-sec-in--column { grid-template-columns: 1fr; gap: 40px; }
+.lp .lp-sec-text--center { text-align: center; max-width: 720px; margin: 0 auto; }
+
+.lp .lp-num {
+  font-size: 11px; letter-spacing: .28em; font-weight: 700;
+  color: var(--e-gold); margin: 0 0 18px;
+}
+.lp .lp-h2 {
+  font-size: clamp(26px, 3.4vw, 40px); line-height: 1.12; letter-spacing: -.025em;
+  font-weight: 800; color: var(--e-ink); margin: 0 0 18px;
+}
+.lp .lp-body {
+  font-size: 16px; line-height: 1.65; color: var(--e-ink2); margin: 0; max-width: 54ch;
+}
+.lp .lp-sec-text--center .lp-body { margin: 0 auto; }
+/* One aside per section, and it is the only other gold on the screen. */
+.lp .lp-aside {
+  margin: 20px 0 0; padding-left: 15px; border-left: 2px solid var(--e-gold);
+  font-size: 14.5px; line-height: 1.55; color: var(--e-gold-2); font-weight: 600;
+}
+
+/* A screenshot, or the space one will occupy. The slot always reserves its
+   exact aspect ratio, so nothing on the page moves when the real image lands. */
+.lp .lp-shot {
+  position: relative; margin: 0; width: 100%; border-radius: 18px; overflow: hidden;
+  border: 1px solid var(--e-line); background: rgba(255,255,255,.02);
+}
+.lp .lp-shot-img { object-fit: cover; }
+.lp .lp-shot-slot {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  padding: 20px; text-align: center;
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,.02) 0 12px, transparent 12px 24px);
+}
+.lp .lp-shot-cap {
+  font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--e-muted); font-weight: 700; max-width: 24ch; line-height: 1.6;
+}
+.lp .lp-pair { display: grid; grid-template-columns: .62fr 1fr; gap: 16px; align-items: center; }
+.lp .lp-docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+.lp .lp-three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.lp .lp-card3 {
+  padding: 26px 24px; border-radius: 18px;
+  background: var(--e-surface); border: 1px solid var(--e-line);
+}
+.lp .lp-card3-t { margin: 0 0 10px; font-size: 17px; font-weight: 700; color: var(--e-ink); }
+.lp .lp-card3-b { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--e-ink2); }
+
+/* Reassurance, not a sales moment: plain text on a rule, deliberately undressed. */
+.lp .lp-strip { padding: 54px 0; border-top: 1px solid var(--e-line); background: rgba(255,255,255,.02); }
+.lp .lp-strip-in {
+  max-width: 1180px; margin: 0 auto; padding: 0 26px;
+  display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; align-items: start;
+}
+.lp .lp-strip-t { margin: 0; font-size: 19px; font-weight: 700; color: var(--e-ink); letter-spacing: -.01em; }
+.lp .lp-strip-l { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.lp .lp-strip-l li {
+  font-size: 14.5px; line-height: 1.6; color: var(--e-ink2);
+  padding-left: 18px; position: relative;
+}
+.lp .lp-strip-l li::before {
+  content: ""; position: absolute; left: 0; top: .62em;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--e-gold);
+}
+
+.lp .lp-cta { padding: 96px 0 40px; border-top: 1px solid var(--e-line); text-align: center; }
+.lp .lp-cta-in { max-width: 720px; margin: 0 auto; padding: 0 26px; }
+.lp .lp-cta-in .lp-body { margin: 0 auto; }
+.lp .lp-cta-row { display: flex; gap: 14px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+.lp .lp-cta-btn {
+  font-size: 15px; font-weight: 800; padding: 15px 30px; border-radius: 14px;
+  background: linear-gradient(180deg, var(--e-gold-2), var(--e-gold));
+  color: #0b1524; text-decoration: none;
+}
+.lp .lp-cta-mail {
+  font-size: 15px; font-weight: 600; padding: 15px 24px; border-radius: 14px;
+  color: var(--e-ink2); text-decoration: none;
+  background: var(--e-surface); border: 1px solid var(--e-line);
+}
+.lp .lp-cta-mail:hover { color: var(--e-ink); background: var(--e-surface-2); }
+
+.lp .lp-foot { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.lp .lp-foot-i { color: var(--e-muted); }
+
+@media (max-width: 900px) {
+  .lp .lp-sec { padding: 62px 0; }
+  .lp .lp-sec-in { grid-template-columns: 1fr; gap: 32px; }
+  .lp .lp-sec--flip .lp-sec-in > .lp-sec-text { order: 0; }
+  .lp .lp-three { grid-template-columns: 1fr; }
+  .lp .lp-strip-in { grid-template-columns: 1fr; gap: 22px; }
+  .lp .lp-docs { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .lp .lp-pair { grid-template-columns: .7fr 1fr; }
+}
