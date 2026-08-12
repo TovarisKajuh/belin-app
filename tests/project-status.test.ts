@@ -25,7 +25,11 @@ describe("statusTransitions", () => {
   });
 
   it("lets the sub request a review from active and withdraw it", () => {
-    expect(statusTransitions("sub", "active")).toEqual(["reviewing"]);
+    // Requesting a review left the shared status control: it is now its own
+    // office-only action, so the sub side offers nothing while a project is
+    // active. Two doors to the same state, only one of which notified the
+    // client, was the thing worth removing.
+    expect(statusTransitions("sub", "active")).toEqual([]);
     expect(statusTransitions("sub", "reviewing")).toEqual(["active"]);
   });
 
@@ -37,7 +41,10 @@ describe("statusTransitions", () => {
 
   it("canTransition guards illegal moves", () => {
     expect(canTransition("sub", "active", "finished")).toBe(false);
-    expect(canTransition("sub", "active", "reviewing")).toBe(true);
+    expect(canTransition("sub", "active", "reviewing")).toBe(false);
+    // Withdrawing your own request stays available: it forms no contract, and
+    // a crew who asked for review by mistake should be able to undo it.
+    expect(canTransition("sub", "reviewing", "active")).toBe(true);
     expect(canTransition("epc", "finished", "active")).toBe(false);
   });
 

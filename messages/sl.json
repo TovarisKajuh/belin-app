@@ -659,5 +659,24 @@
     "err": {
       "title": "Vpišite naziv dodatnega dela."
     }
+  },
+  "final": {
+    "title": "Zaključek projekta",
+    "handover": "Predaja",
+    "request": "Zaključi projekt",
+    "requestConfirm": "Naročnik bo obveščen, da je projekt pripravljen za prevzem. Predajo lahko do prevzema še umaknete.",
+    "requested": "Zaključek zahtevan {date}",
+    "requestedPlain": "Zaključek zahtevan",
+    "notRequested": "Projekt še ni predan v prevzem.",
+    "finished": "Projekt je zaključen.",
+    "cancel": "Prekliči",
+    "askOffice": "To dejanje opravi vodstvo podjetja v svojem računu.",
+    "conflict": "Stanje projekta se je medtem spremenilo. Osvežite stran.",
+    "reportCard": "Zaključno poročilo",
+    "acceptanceCard": "Prevzem",
+    "invoiceCard": "Račun",
+    "soon": "Na voljo kmalu.",
+    "afterHandover": "Na voljo po predaji v prevzem.",
+    "afterAcceptance": "Na voljo po opravljenem prevzemu."
   }
 }

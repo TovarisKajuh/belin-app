@@ -37,10 +37,16 @@ export function statusTransitions(role: PartyRole, current: ProjectStatus): Proj
         return [];
     }
   }
-  // sub: can only request a review and withdraw it.
+  // The sub side can only WITHDRAW a review from the shared status control.
+  //
+  // Requesting one used to live here too, but declaring a job finished and
+  // handing it over is the act that starts the acceptance, so it moved to its
+  // own office-only action (requestFinalization). Leaving it here as well would
+  // give the same state two doors, and only one of them would tell the client
+  // it had happened. Withdrawing stays: taking your own request back is not a
+  // contract-forming act, and a crew who requested review by mistake should be
+  // able to undo it from the roof.
   switch (current) {
-    case "active":
-      return ["reviewing"];
     case "reviewing":
       return ["active"];
     default:

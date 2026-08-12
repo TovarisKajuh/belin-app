@@ -2267,3 +2267,13 @@ button.gal-item {
 }
 .belin-dark .co-noamount { font-size: 13px; font-weight: 600; color: #ffb45c; }
 @media (max-width: 760px) { .belin-dark .co-form { grid-template-columns: 1fr; } }
+
+/* The handover screen. Four cards in the order the work actually happens, and
+   a card that is not its turn yet says what has to come first rather than
+   sitting greyed out with no explanation. */
+.belin-dark .fn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.belin-dark .fn-card { margin: 0; }
+.belin-dark .fn-state { margin: 10px 0 0; font-size: 14px; color: var(--e-ink2); font-weight: 600; }
+.belin-dark .fn-state.ok { color: var(--e-ok); }
+.belin-dark .fn-note { margin: 10px 0 0; font-size: 13px; color: var(--e-muted); line-height: 1.5; }
+@media (max-width: 760px) { .belin-dark .fn-grid { grid-template-columns: 1fr; } }

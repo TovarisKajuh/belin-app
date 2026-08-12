@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       acceptance_defects: {
         Row: {
+          agreement: string
           acceptance_id: string
           created_at: string
           description: string
@@ -27,6 +28,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          agreement?: string
           acceptance_id: string
           created_at?: string
           description: string
@@ -38,6 +40,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          agreement?: string
           acceptance_id?: string
           created_at?: string
           description?: string
@@ -60,6 +63,10 @@ export type Database = {
       }
       acceptances: {
         Row: {
+          attendees: string | null
+          declaration: string | null
+          penalty_reserved: boolean
+          warranty_start: string | null
           conducted_at: string | null
           created_at: string
           epc_signature_path: string | null
@@ -75,6 +82,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attendees?: string | null
+          declaration?: string | null
+          penalty_reserved?: boolean
+          warranty_start?: string | null
           conducted_at?: string | null
           created_at?: string
           epc_signature_path?: string | null
@@ -90,6 +101,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attendees?: string | null
+          declaration?: string | null
+          penalty_reserved?: boolean
+          warranty_start?: string | null
           conducted_at?: string | null
           created_at?: string
           epc_signature_path?: string | null
@@ -817,6 +832,102 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          accountant_email: string | null
+          created_at: string
+          created_by_person: string | null
+          customer: Json
+          due_date: string | null
+          iban: string | null
+          id: string
+          issue_date: string
+          lines: Json
+          number: string
+          pdf_path: string | null
+          project_id: string
+          reverse_charge_note: string | null
+          sent_to_accountant_at: string | null
+          service_end: string | null
+          service_start: string | null
+          status: string
+          sub_org_id: string
+          supplier: Json
+          total_gross: number
+          total_net: number
+          total_vat: number | null
+          vat_mode: string
+          vat_rate: number | null
+        }
+        Insert: {
+          accountant_email?: string | null
+          created_at?: string
+          created_by_person?: string | null
+          customer: Json
+          due_date?: string | null
+          iban?: string | null
+          id?: string
+          issue_date: string
+          lines: Json
+          number: string
+          pdf_path?: string | null
+          project_id: string
+          reverse_charge_note?: string | null
+          sent_to_accountant_at?: string | null
+          service_end?: string | null
+          service_start?: string | null
+          status?: string
+          sub_org_id: string
+          supplier: Json
+          total_gross: number
+          total_net: number
+          total_vat?: number | null
+          vat_mode: string
+          vat_rate?: number | null
+        }
+        Update: {
+          accountant_email?: string | null
+          created_at?: string
+          created_by_person?: string | null
+          customer?: Json
+          due_date?: string | null
+          iban?: string | null
+          id?: string
+          issue_date?: string
+          lines?: Json
+          number?: string
+          pdf_path?: string | null
+          project_id?: string
+          reverse_charge_note?: string | null
+          sent_to_accountant_at?: string | null
+          service_end?: string | null
+          service_start?: string | null
+          status?: string
+          sub_org_id?: string
+          supplier?: Json
+          total_gross?: number
+          total_net?: number
+          total_vat?: number | null
+          vat_mode?: string
+          vat_rate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_sub_org_id_fkey"
+            columns: ["sub_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
