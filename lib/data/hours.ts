@@ -25,6 +25,8 @@ import {
 // disputes rather than bugs.
 
 import type { HourLine, HourSheet, AddLinePayload } from "@/lib/hours-view";
+import { listChangeOrders } from "@/lib/data/change-orders";
+import type { ChangeOrderRow } from "@/lib/change-orders-view";
 
 export type { HourLine, HourSheet, AddLinePayload } from "@/lib/hours-view";
 
@@ -35,6 +37,7 @@ export interface HoursPageData {
   /** Only a signed-in office person decides; a link can draft and submit. */
   canDecide: boolean;
   sheets: HourSheet[];
+  orders: ChangeOrderRow[];
 }
 
 const CONFLICT = "hours.conflict";
@@ -66,6 +69,7 @@ export async function getHoursPageData(
     role: actor.role,
     canDecide,
     sheets: await listSheets(actor),
+    orders: await listChangeOrders(actor),
   };
 }
 

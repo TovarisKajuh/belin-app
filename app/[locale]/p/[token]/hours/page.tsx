@@ -5,7 +5,7 @@ import { resolveActorFromToken, requireProjectActor } from "@/lib/actor";
 import { getHoursPageData } from "@/lib/data/hours";
 import { getProjectCore } from "@/lib/data/project-core";
 import { CommandBar } from "@/components/project/CommandBar";
-import { SheetList } from "@/components/hours/SheetList";
+import { HoursTabs } from "@/components/hours/HoursTabs";
 
 // The crew's own hour sheets, reached from their link.
 //
@@ -15,10 +15,13 @@ import { SheetList } from "@/components/hours/SheetList";
 // a link actor again on the server.
 export default async function TokenHoursPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; token: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { locale, token } = await params;
+  const initialTab = (await searchParams).tab === "co" ? "co" : "hours";
   setRequestLocale(locale);
 
   const actor = await resolveActorFromToken(token);
@@ -28,6 +31,8 @@ export default async function TokenHoursPage({
   const core = await getProjectCore(projectActor);
   const data = await getHoursPageData(projectActor, false);
   if (!core || !data) notFound();
+
+  const docLocale = core.language === "de" || core.language === "en" ? core.language : "sl";
 
   return (
     <div className="belin-dark">
@@ -42,14 +47,17 @@ export default async function TokenHoursPage({
       />
 
       <main className="container">
-        <SheetList
+        <HoursTabs
           actionKey={token}
           projectId={actor.projectId}
+          locale={docLocale}
           country={data.country}
           role={data.role}
           canDecide={false}
           sheets={data.sheets}
-        />
+          orders={data.orders}
+          initialTab={initialTab}
+          />
 
         <p className="hr-back">
           <Link href={`/${locale}/p/${token}`}>&larr;</Link>

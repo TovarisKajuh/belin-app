@@ -4,6 +4,12 @@ import { resolveActorFromToken } from "@/lib/actor";
 import { requireProjectActor, type ProjectActor } from "@/lib/actor";
 import { isUuid } from "@/lib/actor-shared";
 import {
+  createChangeOrder,
+  decideChangeOrder,
+  type CreateChangeOrderPayload,
+} from "@/lib/data/change-orders";
+import { createChangeOrderPhotoTargets, type UploadTarget } from "@/lib/storage";
+import {
   addLine,
   createSheet,
   decideSheet,
@@ -86,5 +92,38 @@ export async function decideSheetAction(
   if (actor.role === "crew") throw new Error("common.askOffice");
 
   await decideSheet(await requireProjectActor(actor, projectId), sheetId, approve);
+  return { ok: true };
+}
+
+export async function requestChangeOrderPhotoTargets(
+  key: string,
+  projectId: string,
+  changeOrderClientId: string,
+  count: number
+): Promise<UploadTarget[]> {
+  const actor = await actorFor(key, projectId);
+  if (actor.role !== "sub") throw new Error("Forbidden.");
+  return createChangeOrderPhotoTargets(projectId, changeOrderClientId, count);
+}
+
+export async function createChangeOrderAction(
+  key: string,
+  projectId: string,
+  payload: CreateChangeOrderPayload
+): Promise<{ ok: true; id: string }> {
+  const id = await createChangeOrder(await actorFor(key, projectId), payload);
+  return { ok: true, id };
+}
+
+/** Session only, like every act that commits somebody to paying. */
+export async function decideChangeOrderAction(
+  projectId: string,
+  changeOrderId: string,
+  approve: boolean
+): Promise<{ ok: true }> {
+  if (!isUuid(projectId)) throw new Error("Invalid project id");
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person" || actor.role === "crew") throw new Error("common.askOffice");
+  await decideChangeOrder(await requireProjectActor(actor, projectId), changeOrderId, approve);
   return { ok: true };
 }

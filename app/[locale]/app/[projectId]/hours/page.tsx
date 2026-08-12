@@ -6,7 +6,7 @@ import { isUuid } from "@/lib/actor-shared";
 import { getHoursPageData } from "@/lib/data/hours";
 import { getProjectCore } from "@/lib/data/project-core";
 import { CommandBar } from "@/components/project/CommandBar";
-import { SheetList } from "@/components/hours/SheetList";
+import { HoursTabs } from "@/components/hours/HoursTabs";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { projectTopic } from "@/lib/realtime-shared";
 
@@ -14,10 +14,14 @@ import { projectTopic } from "@/lib/realtime-shared";
 // their link at /p/[token]/hours; what differs is only who may DECIDE.
 export default async function HoursPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; projectId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { locale, projectId } = await params;
+  // Deep link from the dashboard chips: ?tab=co opens the extras directly.
+  const initialTab = (await searchParams).tab === "co" ? "co" : "hours";
   setRequestLocale(locale);
 
   const actor = await resolveActorFromSession();
@@ -43,6 +47,9 @@ export default async function HoursPage({
   }
   if (!data || !core) notFound();
 
+  // Money is printed in the PROJECT language, like every document.
+  const docLocale = core.language === "de" || core.language === "en" ? core.language : "sl";
+
   return (
     <div className="belin-dark">
       <div className="e-grain" aria-hidden />
@@ -59,14 +66,17 @@ export default async function HoursPage({
       <LiveRefresh topic={projectTopic(projectId)} />
 
       <main className="container">
-        <SheetList
+        <HoursTabs
           actionKey={projectId}
           projectId={projectId}
+          locale={docLocale}
           country={data.country}
           role={data.role}
           canDecide={data.canDecide}
           sheets={data.sheets}
-        />
+          orders={data.orders}
+          initialTab={initialTab}
+          />
       </main>
     </div>
   );

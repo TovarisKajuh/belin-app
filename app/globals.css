@@ -2238,3 +2238,32 @@ button.gal-item {
   border-radius: 10px; background: var(--e-surface); border: 1px solid var(--e-line);
 }
 .belin-dark .hr-pdf:hover { background: var(--e-surface-2); color: var(--e-ink); }
+
+/* Hours and extras share one screen: both are "this costs more than agreed",
+   and an EPC should not have to remember two places to look for money they
+   have not approved yet. The count on a tab means an unopened tab still says
+   something is waiting. */
+.belin-dark .hr-tabs {
+  display: flex; gap: 6px; margin: 26px 0 -8px; padding: 5px;
+  background: var(--e-surface); border: 1px solid var(--e-line); border-radius: 14px;
+}
+.belin-dark .hr-tab {
+  flex: 1; font: inherit; font-size: 13.5px; font-weight: 700; padding: 12px 10px;
+  border-radius: 10px; background: transparent; border: none; color: var(--e-muted);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  touch-action: manipulation;
+}
+.belin-dark .hr-tab.on { background: var(--e-surface-2); color: var(--e-ink); }
+.belin-dark .hr-tab-n {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 100px;
+  background: var(--e-gold); color: #0b1524; font-size: 11px; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.belin-dark .co-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.belin-dark .co-hint { display: block; margin-top: 6px; font-size: 12px; color: var(--e-muted); }
+.belin-dark .co-amount {
+  margin: 10px 0 0; font-size: 17px; font-weight: 800; color: var(--e-gold);
+  font-variant-numeric: tabular-nums;
+}
+.belin-dark .co-noamount { font-size: 13px; font-weight: 600; color: #ffb45c; }
+@media (max-width: 760px) { .belin-dark .co-form { grid-template-columns: 1fr; } }

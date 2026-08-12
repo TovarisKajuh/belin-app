@@ -72,6 +72,28 @@ export async function createRequestPhotoTarget(
   return { path: data.path, token: data.token };
 }
 
+
+// Photos for one change order. Extra work is argued about with pictures more
+// than with words: the rotten batten, the wall that was not on the plan.
+export async function createChangeOrderPhotoTargets(
+  projectId: string,
+  changeOrderClientId: string,
+  count: number
+): Promise<UploadTarget[]> {
+  if (!isUuid(projectId)) throw new Error("Invalid project id");
+  if (!isUuid(changeOrderClientId)) throw new Error("Invalid change order id");
+
+  const db = createAdminClient();
+  const targets: UploadTarget[] = [];
+  for (let i = 0; i < clampCount(count); i++) {
+    const path = `${projectId}/co/${changeOrderClientId}/${i}-${randomUUID()}.jpg`;
+    const { data, error } = await db.storage.from("photos").createSignedUploadUrl(path);
+    if (error || !data) throw new Error("Could not create upload URL");
+    targets.push({ path: data.path, token: data.token });
+  }
+  return targets;
+}
+
 // Mint signed upload URLs for a material check's two document kinds. Paths are
 // bound to the check's own folder (project/material/clientId/...), which is
 // exactly the prefix the RPC validates, so a check can only reference its own
