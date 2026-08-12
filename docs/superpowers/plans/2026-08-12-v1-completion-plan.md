@@ -752,6 +752,7 @@ Founder decision 7: PROTECTED, do not cut to one hero section. Load the frontend
 - [ ] **Step 4:** Confirm no raw login token, invite token or verify URL is logged outside a NODE_ENV development guard (review `git grep -n "console.log" app lib components` by eye).
 - [ ] **Step 5:** Re-check the five PDF routes and every action added by this plan against the access matrix and the office-gate rules; record the checklist in the session log.
 - [ ] **Step 6:** Storage buckets still private; probe one signed URL expiry.
+- [ ] **Step 7:** Sweep abandoned plan uploads: delete plan_imports rows still at status review after 24 hours together with their file in the plans bucket. Carried over from the wizard debt of 2026-07-20; one deletion path, no new design. Verify by leaving an upload unfinished, running the sweep, and confirming both the row and the object are gone.
 - [ ] **Step 7:** Commit: "chore(security): demo login removed, key rotated, sweeps".
 
 ## Task 21: final QA, acceptance script, runbook
