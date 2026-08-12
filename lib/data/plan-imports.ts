@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import { randomBytes, randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { parseK2Pdf } from "@/lib/k2/k2-pdf";
@@ -54,6 +55,15 @@ export async function uploadAndParsePlan(
 ): Promise<{ ok: true; upload: PlanUpload } | { ok: false; error: PlanUploadError }> {
   if (!isPdf(file.name, file.mime)) return { ok: false, error: "bad_type" };
 
+  // Somebody is starting a wizard, which is the one moment we know abandoned
+  // ones exist. Deferred so a slow sweep never delays a 30 MB upload, and
+  // swallowed so a failed sweep never fails the upload: the next one retries.
+  try {
+    after(() => sweepAbandonedPlans().catch(() => {}));
+  } catch {
+    // Outside a request scope (a script), where there is nothing to defer to.
+  }
+
   if (file.bytes.byteLength === 0 || file.bytes.byteLength > MAX_PDF_BYTES) {
     return { ok: false, error: "too_large" };
   }
@@ -102,6 +112,64 @@ export async function uploadAndParsePlan(
       itemCount: parsed.items.length,
     },
   };
+}
+
+/** Rows younger than this are somebody's open wizard tab, not litter. */
+const ABANDONED_AFTER_HOURS = 24;
+
+/**
+ * Deletes plan uploads that never became a project, file first.
+ *
+ * Every abandoned upload is a customer's construction plan sitting in storage
+ * for no reason: an address, a roof layout and a bill of materials belonging to
+ * a third party who never agreed to us keeping it. So this is a retention rule
+ * before it is a housekeeping one.
+ *
+ * The object goes before the row, deliberately. If the delete succeeds and the
+ * process dies before the row goes, the next sweep tries again and Storage
+ * shrugs at a missing key. The other order would drop the only pointer to the
+ * file and leave it in the bucket forever, which is the exact failure this is
+ * meant to prevent.
+ *
+ * A row is abandoned when it never got a project AND is not committed. Both
+ * conditions, because either one alone would be a guess: create_project_from
+ * _review sets them together, and deleting the plan of a live project would
+ * take the file the project page links to.
+ *
+ * Called opportunistically when somebody starts a new upload rather than from a
+ * scheduler, following the same lazy pattern as the deemed-approval clock: this
+ * codebase runs no cron, and a sweep nobody triggers is a sweep that never runs.
+ *
+ * The sweep is global, not scoped to the uploader's org, precisely because of
+ * what that leaves uncovered: an EPC who abandons an upload and never returns
+ * would otherwise keep a customer's plan forever. Any active EPC now cleans up
+ * after every inactive one. The residual gap is a period with no uploads at all
+ * anywhere, which is recorded as debt rather than solved with a cron this
+ * codebase does not have.
+ */
+export async function sweepAbandonedPlans(): Promise<{ rows: number; files: number }> {
+  const cutoff = new Date(Date.now() - ABANDONED_AFTER_HOURS * 3600_000).toISOString();
+  const db = createAdminClient();
+
+  const { data: stale } = await db
+    .from("plan_imports")
+    .select("id, storage_path")
+    .is("project_id", null)
+    .neq("status", "committed")
+    .lt("created_at", cutoff);
+
+  if (!stale?.length) return { rows: 0, files: 0 };
+
+  const paths = stale.map((row) => row.storage_path).filter(Boolean);
+  const { data: removed } = await db.storage.from("plans").remove(paths);
+
+  const { data: deleted } = await db
+    .from("plan_imports")
+    .delete()
+    .in("id", stale.map((row) => row.id))
+    .select("id");
+
+  return { rows: deleted?.length ?? 0, files: removed?.length ?? 0 };
 }
 
 /**
