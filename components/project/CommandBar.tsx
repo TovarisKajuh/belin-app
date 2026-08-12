@@ -15,6 +15,7 @@ export async function CommandBar({
   status,
   role,
   locale,
+  active,
 }: {
   /** Null on a signed-in session; the link token otherwise. */
   token: string | null;
@@ -30,8 +31,15 @@ export async function CommandBar({
    * gets one screen, not a menu.
    */
   locale?: string;
+  /**
+   * Which office screen is open. Only signed-in people get the nav row: a
+   * project link opens exactly one screen and needs no menu, and the office
+   * screens it would point at refuse a link actor anyway.
+   */
+  active?: "overview" | "po";
 }) {
   const navLabel = locale ? (await getTranslations("projects"))("title") : null;
+  const nav = locale ? await getTranslations("nav") : null;
 
   return (
     <div className="e-bar">
@@ -53,6 +61,24 @@ export async function CommandBar({
           <ProjectStatusControl token={token} projectId={projectId} role={role} status={status} />
         </div>
       </div>
+
+      {/* The office nav. Token surfaces never render it: one screen, no menu. */}
+      {token === null && nav && locale ? (
+        <nav className="e-nav">
+          <Link
+            href={`/${locale}/app/${projectId}`}
+            className={`e-nav-l${active === "overview" ? " on" : ""}`}
+          >
+            {nav("overview")}
+          </Link>
+          <Link
+            href={`/${locale}/app/${projectId}/po`}
+            className={`e-nav-l${active === "po" ? " on" : ""}`}
+          >
+            {nav("po")}
+          </Link>
+        </nav>
+      ) : null}
     </div>
   );
 }

@@ -1849,3 +1849,124 @@ button.gal-item {
   grid-column: 1 / -1; font-size: 12px; color: var(--e-gold-2); font-weight: 600;
 }
 .belin-dark .rp-spec { margin-top: 6px; font-size: 12px; color: var(--e-muted); }
+
+/* ==============================================================
+   Naročilnica. The first surface in the product that carries money,
+   so the amount column is the only thing here rendered in gold and
+   in tabular figures: a column of numbers should be scannable down
+   the edge without reading a single description.
+   ============================================================== */
+.belin-dark .e-nav {
+  display: flex; gap: 4px; padding: 0 20px 2px;
+  max-width: 1180px; margin: 0 auto; overflow-x: auto;
+}
+.belin-dark .e-nav-l {
+  font-size: 12.5px; font-weight: 600; color: var(--e-muted);
+  text-decoration: none; padding: 9px 13px 11px;
+  border-bottom: 2px solid transparent; white-space: nowrap;
+}
+.belin-dark .e-nav-l:hover { color: var(--e-ink2); }
+.belin-dark .e-nav-l.on { color: var(--e-ink); border-bottom-color: var(--e-gold); }
+
+.belin-dark .po-card { padding: 18px 18px 14px; }
+
+.belin-dark .po-head,
+.belin-dark .po-row {
+  display: grid; grid-template-columns: 1fr 132px 116px 118px 34px;
+  gap: 10px; align-items: center;
+}
+.belin-dark .po-head {
+  font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--e-muted); font-weight: 700; padding-bottom: 8px;
+  border-bottom: 1px solid var(--e-line); margin-bottom: 12px;
+}
+.belin-dark .po-num-h { text-align: right; }
+.belin-dark .po-row { margin-bottom: 10px; }
+.belin-dark .po-qty { display: grid; grid-template-columns: 1fr 58px; gap: 6px; }
+.belin-dark .po-unit { text-align: center; padding-left: 6px; padding-right: 6px; }
+
+.belin-dark .po-num {
+  text-align: right; font-variant-numeric: tabular-nums;
+  font-weight: 700; color: var(--e-gold-2); font-size: 14px;
+}
+.belin-dark .po-x {
+  width: 34px; height: 34px; border-radius: 10px; font-size: 20px; line-height: 1;
+  background: transparent; border: 1px solid var(--e-line); color: var(--e-muted);
+}
+.belin-dark .po-x:disabled { opacity: .3; }
+.belin-dark .po-x:hover:not(:disabled) { color: #ff9f6b; border-color: rgba(255,159,107,.4); }
+
+.belin-dark .po-add {
+  margin-top: 4px; background: transparent; border: 1px dashed var(--e-line);
+  color: var(--e-muted); font: inherit; font-size: 13px; font-weight: 600;
+  padding: 11px 14px; border-radius: 12px; width: 100%;
+}
+.belin-dark .po-add:hover { color: var(--e-ink2); border-color: rgba(255,210,26,.35); }
+
+.belin-dark .po-total {
+  display: flex; justify-content: flex-end; align-items: baseline; gap: 14px;
+  margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--e-line);
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--e-muted); font-weight: 700;
+}
+.belin-dark .po-total b {
+  font-size: 23px; letter-spacing: -.01em; color: var(--e-gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.belin-dark .po-terms { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.belin-dark .po-f-wide { grid-column: 1 / -1; }
+.belin-dark .po-actions { display: flex; gap: 12px; align-items: center; margin-top: 4px; }
+.belin-dark .po-actions .b-btn { width: auto; min-width: 210px; }
+.belin-dark .po-ghost {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--e-ink2);
+  background: var(--e-surface); border: 1px solid var(--e-line);
+  padding: 15px 20px; border-radius: 14px; text-decoration: none;
+  display: inline-flex; align-items: center;
+}
+.belin-dark .po-ghost:hover { background: var(--e-surface-2); }
+
+.belin-dark .po-confirm { border-color: rgba(255,210,26,.3); }
+.belin-dark .po-confirm-t { margin: 0 0 14px; font-size: 14px; color: var(--e-ink2); line-height: 1.55; }
+.belin-dark .po-check {
+  display: flex; gap: 11px; align-items: flex-start; margin-bottom: 16px;
+  font-size: 14px; color: var(--e-ink); line-height: 1.5;
+}
+.belin-dark .po-check input { width: 22px; height: 22px; margin-top: 1px; accent-color: var(--e-gold); }
+.belin-dark .po-error { color: #ff9f6b; font-size: 13.5px; margin: 12px 0; font-weight: 600; }
+.belin-dark .po-meta { color: var(--e-muted); font-size: 13px; margin: 10px 0 0; }
+
+.belin-dark .po-view-top {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.belin-dark .po-view-top .po-ghost { padding: 9px 14px; font-size: 13px; }
+.belin-dark .po-view-row {
+  display: grid; grid-template-columns: 1fr 110px 130px; gap: 10px;
+  padding: 11px 0; border-bottom: 1px solid var(--e-line); align-items: baseline;
+}
+.belin-dark .po-view-desc { color: var(--e-ink); font-size: 14px; }
+.belin-dark .po-view-qty { color: var(--e-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+/* One thumb on a phone: the grid collapses to stacked fields with the amount
+   pinned to the right of its own row, so the money stays where the eye is. */
+@media (max-width: 760px) {
+  .belin-dark .po-head { display: none; }
+  .belin-dark .po-row {
+    grid-template-columns: 1fr 34px; gap: 8px;
+    padding: 13px; margin-bottom: 12px;
+    border: 1px solid var(--e-line); border-radius: 14px;
+    background: rgba(255,255,255,.02);
+  }
+  .belin-dark .po-row > .b-field:first-child { grid-column: 1 / -1; }
+  .belin-dark .po-qty { grid-column: 1 / 2; }
+  .belin-dark .po-row > .b-field:nth-of-type(4) { grid-column: 1 / 2; }
+  .belin-dark .po-num { grid-column: 1 / -1; text-align: right; }
+  .belin-dark .po-x { grid-row: 1; grid-column: 2; }
+  .belin-dark .po-terms { grid-template-columns: 1fr; }
+  .belin-dark .po-actions { flex-direction: column; align-items: stretch; }
+  .belin-dark .po-actions .b-btn { width: 100%; min-width: 0; }
+  .belin-dark .po-ghost { justify-content: center; }
+  .belin-dark .po-view-row { grid-template-columns: 1fr auto; }
+  .belin-dark .po-view-qty { grid-row: 2; }
+}

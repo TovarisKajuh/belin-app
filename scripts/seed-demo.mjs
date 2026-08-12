@@ -21,6 +21,10 @@ const PERSON_EPC = "66666666-6666-4666-8666-666666666601";
 const PERSON_SUB = "66666666-6666-4666-8666-666666666602";
 const PERSON_SUB_ADMIN = "66666666-6666-4666-8666-666666666603";
 const PERSON_FOUNDER = "66666666-6666-4666-8666-666666666604";
+// The EPC office. A Bauleiter runs the site but does not sign orders, so the
+// demo company needs the person who does: without an admin on the EPC side
+// nobody can price a naročilnica, which is most of what an EPC buys Belin for.
+const PERSON_EPC_ADMIN = "66666666-6666-4666-8666-666666666605";
 const TOKEN_EPC = "77777777-7777-4777-8777-777777777701";
 const TOKEN_SUB = "77777777-7777-4777-8777-777777777702";
 
@@ -116,6 +120,7 @@ if (founderEmail) {
 
 const people = [
   { id: PERSON_EPC, org_id: EPC_ORG, full_name: "Matej Kovač", role: "bauleiter", email: "matej@sonce-demo.si" },
+  { id: PERSON_EPC_ADMIN, org_id: EPC_ORG, full_name: "Nina Hribar", role: "admin", email: "nina@sonce-demo.si" },
   { id: PERSON_SUB, org_id: SUB_ORG, full_name: "Luka Zupan", role: "crew", email: "luka@avesol-demo.si" },
   { id: PERSON_SUB_ADMIN, org_id: SUB_ORG, full_name: "Ana Novak", role: "admin", email: "ana@avesol-demo.si" },
 ];

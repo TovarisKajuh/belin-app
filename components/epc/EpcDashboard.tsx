@@ -49,6 +49,7 @@ export async function EpcDashboard({
         status={core.status}
         role="epc"
         locale={locale}
+        active="overview"
       />
       <div className="e-wrap">
         {data.needsReview && sub && <AlertStrip subName={sub} />}

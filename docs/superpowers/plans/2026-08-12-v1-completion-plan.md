@@ -617,7 +617,7 @@ export const HOLIDAYS: Record<"si" | "de" | "at", string[]> = {
 - Create: `supabase/migrations/20260812110000_invoices_acceptance_fields.sql` (SQL above), `app/[locale]/app/[projectId]/final/page.tsx` (hub: report, acceptance, invoice cards, stubbed until their tasks land)
 - Modify: `lib/database.types.ts` (invoices, acceptance columns), `lib/data/projects.ts` (emitEvent finalization_requested fired on the active-to-reviewing transition inside updateProjectStatus), SubHome (finalization card with confirm sheet), CommandBar nav row (nav.final)
 
-DELIBERATE DEVIATION from the old plan: requestFinalization is NOT a new office-only action. The shipped status machine (DECISIONS 2026-07-17: the shared status control both parties see) already gives the sub side the active-to-reviewing transition, including on the crew token. Requesting review is not contract-forming (nothing binds; the EPC can send it back), so the machine stays as is; this task ADDS the notification to the existing transition and gives SubHome a first-class card for it. Log this reasoning in DECISIONS.md at execution.
+FOUNDER VETO, 2026-08-12: requesting finalization IS its own office-only action, not a fold into the shared status machine. `requestFinalization(actor, projectId)` lives in lib/data/projects.ts, is gated by requireOfficeActor on the SUB side (allowBauleiter false: this is the moment a subcontractor declares the job finished and hands it over), performs the active-to-reviewing move as ONE conditional update `where id = $1 and status = 'active'` RETURNING, and emits finalization_requested. The crew token surface does NOT offer it; a crew person who tries gets common.askOffice. The shared status control keeps its other transitions unchanged, but loses the sub-side active-to-reviewing move, which now belongs to this action alone (otherwise two paths reach the same state and only one of them notifies). Update lib/project-status.ts accordingly and adjust its tests.
 
 - [ ] **Step 1:** Apply M4' with probes: reverse_charge plus vat_rate insert expecting failure; second invoice for one project expecting failure; acceptance declaration "maybe" expecting failure; clean. Commit the file plus hand-mirrored types: "feat(schema): invoices and acceptance fields (M4')".
 - [ ] **Step 2:** Wire emitEvent finalization_requested into updateProjectStatus for the active-to-reviewing transition (and ONLY that transition), after the existing compare-and-swap succeeded, skipActivity true if the existing path already logs project_updated activity for it (VERIFY in code which it does; never double-log).
@@ -700,7 +700,14 @@ DELIBERATE DEVIATION from the old plan: requestFinalization is NOT a new office-
 
 FINAL fixed UUIDs: project `33333333-3333-4333-8333-333333333335`, scope items `44444444-4444-4444-8444-4444444444 21|22|23`, entries `55555555-5555-4555-8555-5555555555 60..`, tokens `demo-epc-final-m4t7x2`, `demo-sub-final-b9v5k3`. Reuse the existing demo orgs and people; do NOT create new companies.
 
-STAGING RULE (load-bearing, do not soften): the seed NEVER stages a purchase order past status draft, and NEVER inserts an invoice or a signed acceptance. Reason, verified against Task 3: a PO row with status sent but pdf_path null cannot be opened, and acceptPo re-hashes the stored PDF and would refuse a row whose pdf_sha256 is null. Rows that no code path could have produced are exactly the rows that break on stage. The runbook's prep ritual (Task 21) performs the real UI acts instead, which produces genuine PDFs, hashes and timestamps.
+STAGING RULE, REVISED BY FOUNDER VETO 2026-08-12: the seed DOES stage a sent naročilnica on START and a sent-then-accepted one on FINAL, so the demo needs no prep clicks. The original objection stands on the facts and is answered by construction rather than by writing rows no code path could produce: a PO with status sent and pdf_path null cannot be opened, and acceptPo re-hashes the stored PDF, so a null pdf_sha256 would refuse acceptance on stage.
+
+Therefore staging is a TWO PART operation and the second part is not optional:
+
+1. `scripts/seed-demo.mjs` writes the PO rows, lines, statuses and stamps as before.
+2. `scripts/seed-documents.ts` (run under tsx, invoked at the end of `npm run seed`) renders the real NarocilnicaDocument for every seeded PO through lib/pdf, uploads it to the reports bucket at the documented path, computes the sha256 of those exact bytes, and writes pdf_path and pdf_sha256 back. Accepted rows additionally carry accepted_by_person, accepted_by_name and accepted_at, all consistent with the document that now exists.
+
+The demo therefore opens with genuine PDFs and genuine hashes, and the acceptance a prospect sees on FINAL verifies against the stored file exactly as a real one does. If step 2 fails, the seed must FAIL LOUDLY rather than leave sent rows without documents.
 
 What the seed writes:
 - START: as today, plus a DRAFT PO with prefilled lines and a regie rate.
@@ -789,8 +796,8 @@ On the production URL, in Slovenian, phone viewport for every crew-facing step.
 12. PDF downloads are person-session only; no tokens in URLs; crew token surfaces show no PDF buttons.
 13. Emails to the fake `*-demo.si` seed addresses are refused at the sender; the founder's real address is the one deliverable demo inbox.
 14. One invoice per project in v1 (database-enforced). One accepted PO per project.
-15. Demo seeds stage nothing past a draft PO; the runbook's prep clicks produce the real PDFs, hashes and timestamps through the UI.
-16. AMENDED (new): requesting finalization stays on the existing shared status machine (sub side, including the crew token) rather than becoming an office-only action, because nothing binds at that moment and the EPC can send it back. Only signing the acceptance and generating the invoice are office-only.
+15. VETOED BY THE FOUNDER 2026-08-12: demo seeds DO stage sent and accepted naročilnice, so the demo needs no prep clicks. Made safe by seeding real documents: scripts/seed-documents.ts renders each seeded PO through the real PDF code, uploads it, and writes back pdf_path and the sha256 of those exact bytes, so a staged acceptance verifies against its stored file exactly like a real one. The seed fails loudly if that step fails.
+16. VETOED BY THE FOUNDER 2026-08-12: requesting finalization is its own office-only action on the sub side, not a fold into the shared status machine. The sub-side active-to-reviewing transition moves out of the status control so only one path reaches that state and it always notifies.
 17. AMENDED (new): reviewing hour sheets and change orders, and conducting an acceptance, allow the Bauleiter (`allowBauleiter: true`). Money-moving acts (org banking fields, PO create and send, invoice generation and share) stay admin and owner only.
 18. Landing legal footer is a one-line imprint plus mailto in v1; proper legal pages are post-v1.
 

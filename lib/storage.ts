@@ -141,3 +141,31 @@ export async function createVaultDocTarget(
   if (error || !data) throw new Error("Could not create upload URL");
   return { path: data.path, token: data.token };
 }
+
+/**
+ * Stores a generated PDF in the private reports bucket and returns its path.
+ *
+ * Server generated only: the bytes come from our own renderer, never from a
+ * request, so this takes a Buffer rather than minting an upload URL a client
+ * could use. upsert is on because regenerating a document (a redraft of a
+ * naročilnica before it is sent) must overwrite rather than accumulate
+ * orphans; once a document is sent or signed its row stops being editable, so
+ * nothing overwrites a document somebody has already accepted.
+ */
+export async function storeReportPdf(path: string, bytes: Buffer): Promise<string> {
+  const db = createAdminClient();
+  const { error } = await db.storage.from("reports").upload(path, bytes, {
+    contentType: "application/pdf",
+    upsert: true,
+  });
+  if (error) throw new Error(`Could not store the document: ${error.message}`);
+  return path;
+}
+
+/** A signed download URL for one generated document in the reports bucket. */
+export async function getSignedReportUrl(path: string, expiresIn = 300): Promise<string | null> {
+  const db = createAdminClient();
+  const { data, error } = await db.storage.from("reports").createSignedUrl(path, expiresIn);
+  if (error || !data) return null;
+  return data.signedUrl;
+}

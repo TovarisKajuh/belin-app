@@ -56,6 +56,7 @@ export async function SubHome({
         status={data.status}
         role="sub"
         locale={locale}
+        active="overview"
       />
 
       <div className="e-wrap">
