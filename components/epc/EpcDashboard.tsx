@@ -5,6 +5,8 @@ import { AlertStrip } from "@/components/epc/dashboard/AlertStrip";
 import { ProgressRing } from "@/components/epc/dashboard/ProgressRing";
 import { ProjectionPanel } from "@/components/epc/dashboard/ProjectionPanel";
 import { ScopeByPhase } from "@/components/epc/dashboard/ScopeByPhase";
+import { IncidentsPanel } from "./dashboard/IncidentsPanel";
+import { CompliancePanel } from "./dashboard/CompliancePanel";
 import { MaterialPanel } from "@/components/epc/dashboard/MaterialPanel";
 import { RoofPanel } from "@/components/epc/dashboard/RoofPanel";
 import { StatRow } from "@/components/epc/dashboard/StatRow";
@@ -108,6 +110,10 @@ export async function EpcDashboard({
 
         <RoofPanel roofs={data.roofs} />
         <MaterialPanel token={token} projectId={projectId} country={core.country} material={data.material} />
+
+        <IncidentsPanel incidents={data.incidents} />
+
+        <CompliancePanel docs={data.compliance} subName={sub} />
 
         <StatRow projection={proj} photoCount={data.photoCount} />
 

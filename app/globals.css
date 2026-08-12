@@ -2063,3 +2063,44 @@ button.gal-item {
   font: inherit; font-size: 15px; font-weight: 600; color: var(--e-muted);
   background: transparent; border: none; padding: 14px;
 }
+
+/* Incidents and compliance on the EPC dashboard. Kind is carried by colour,
+   because an obstruction is the EPC's problem to solve, rain is nobody's
+   fault, and an incident may need a phone call: three different reactions
+   that a reader should get before finishing the sentence. */
+.belin-dark .ip-empty, .belin-dark .cp-sub {
+  color: var(--e-muted); font-size: 13px; margin: 0 0 12px;
+}
+.belin-dark .ip-list, .belin-dark .cp-list { list-style: none; margin: 0; padding: 0; }
+.belin-dark .ip-row {
+  padding: 13px 15px; margin-bottom: 10px; border-radius: 14px;
+  background: var(--e-surface); border: 1px solid var(--e-line);
+  border-left-width: 3px;
+}
+.belin-dark .ip-row.k-rain_stop { border-left-color: #6bb8ff; }
+.belin-dark .ip-row.k-obstruction { border-left-color: #ffb45c; }
+.belin-dark .ip-row.k-incident { border-left-color: #ff7a6b; }
+.belin-dark .ip-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+}
+.belin-dark .ip-kind { font-size: 13px; font-weight: 700; color: var(--e-ink); }
+.belin-dark .ip-date { font-size: 12px; color: var(--e-muted); font-variant-numeric: tabular-nums; }
+.belin-dark .ip-note { margin: 7px 0 0; font-size: 13.5px; color: var(--e-ink2); line-height: 1.5; }
+.belin-dark .ip-who { margin: 5px 0 0; font-size: 11.5px; color: var(--e-muted); }
+.belin-dark .ip-thumbs { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.belin-dark .ip-thumb {
+  width: 58px; height: 58px; padding: 0; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--e-line); background: none; cursor: pointer;
+}
+.belin-dark .ip-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.belin-dark .cp-row {
+  display: grid; grid-template-columns: 10px 1fr auto; gap: 11px; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid var(--e-line);
+}
+.belin-dark .cp-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--e-ok); }
+.belin-dark .cp-dot.expiringSoon { background: #ffb45c; }
+.belin-dark .cp-dot.expired { background: #ff7a6b; }
+.belin-dark .cp-dot.missing, .belin-dark .cp-dot.none { background: #4a5464; }
+.belin-dark .cp-name { font-size: 13.5px; color: var(--e-ink); }
+.belin-dark .cp-state { font-size: 12px; color: var(--e-muted); text-align: right; }

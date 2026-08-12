@@ -157,7 +157,11 @@
       "title": "Strehe",
       "modules": " modulov",
       "total": "Skupaj {n} modulov"
-    }
+    },
+    "incidents": "Zapleti",
+    "noIncidents": "Ni zabeleženih zapletov.",
+    "compliance": "Dokumenti podizvajalca",
+    "docMissing": "Ni naloženo"
   },
   "status": {
     "draft": "Osnutek",
@@ -388,7 +392,8 @@
       "zko_notification": "Prijava ZKO",
       "insurance": "Zavarovanje",
       "other": "Drugo"
-    }
+    },
+    "noExpiry": "Brez roka"
   },
   "notify": {
     "pref": {

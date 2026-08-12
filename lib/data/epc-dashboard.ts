@@ -1,6 +1,9 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ProjectActor } from "@/lib/actor";
+import { listIncidents, type IncidentRow } from "@/lib/data/incidents";
+import { emitEventDeferred } from "@/lib/notify";
+import { expiryState, EXPIRY_WARN_DAYS, type ExpiryState, type VaultType } from "@/lib/vault-shared";
 import { getProjectCore, type ProjectCore, type ScopeItemStatus } from "@/lib/data/project-core";
 import { getSignedPhotoUrlMap } from "@/lib/storage";
 import { weatherCodeToKey } from "@/lib/weather-codes";
@@ -72,6 +75,18 @@ export interface EpcDashboardData {
   material: MaterialPanelData;
   /** One entry per roof from the plan; empty when the plan named none. */
   roofs: DashboardRoof[];
+  /** Site incidents from the last two weeks, newest first. */
+  incidents: IncidentRow[];
+  /** The subcontractor's compliance documents, as the EPC is allowed to see them. */
+  compliance: ComplianceDoc[];
+}
+
+export interface ComplianceDoc {
+  id: string;
+  type: VaultType;
+  title: string | null;
+  validUntil: string | null;
+  state: ExpiryState;
 }
 
 export interface DashboardRoof {
@@ -285,5 +300,83 @@ export async function getEpcDashboard(actor: ProjectActor): Promise<EpcDashboard
     needsReview: core.status === "reviewing",
     material,
     roofs,
+    incidents: await listIncidents(actor),
+    compliance: await loadCompliance(actor.projectId),
   };
+}
+
+/**
+ * The subcontractor's documents, read for the EPC.
+ *
+ * The storage paths are deliberately NOT signed here: this panel shows whether
+ * a certificate exists and whether it is still valid, which is what an EPC has
+ * a legitimate interest in. An A1 carries a named person's identity data, so
+ * opening the file itself stays with the company that uploaded it.
+ */
+async function loadCompliance(projectId: string): Promise<ComplianceDoc[]> {
+  const db = createAdminClient();
+
+  // The sub org is read from the project rather than passed in, so the only
+  // documents this can ever reach are the ones belonging to the company that
+  // is actually contracted on THIS project.
+  const { data: project } = await db
+    .from("projects")
+    .select("sub_org_id")
+    .eq("id", projectId)
+    .maybeSingle();
+  const subOrgId = project?.sub_org_id;
+  if (!subOrgId) return [];
+  const { data } = await db
+    .from("documents")
+    .select("id, type, title, valid_until")
+    .eq("org_id", subOrgId)
+    .order("valid_until", { ascending: true, nullsFirst: false });
+
+  const now = new Date();
+  const docs = (data ?? []).map((row) => ({
+    id: row.id,
+    type: row.type as VaultType,
+    title: row.title,
+    validUntil: row.valid_until,
+    state: expiryState(row.valid_until, now),
+  }));
+
+  await warnAboutExpiries(projectId, docs);
+  return docs;
+}
+
+/**
+ * Tells the subcontractor once, per document, per threshold, that a certificate
+ * is running out. The dashboard render is what notices, so the claim has to be
+ * atomic: inserting the document_reminders row IS the claim, and only the
+ * caller whose insert succeeds sends anything. Two people opening the dashboard
+ * in the same second therefore produce one warning, not two, and the unique
+ * index added in 20260812102000 is what makes that true rather than likely.
+ */
+async function warnAboutExpiries(projectId: string, docs: ComplianceDoc[]): Promise<void> {
+  const due = docs.filter((doc) => doc.state === "expiringSoon" || doc.state === "expired");
+  if (due.length === 0) return;
+
+  const db = createAdminClient();
+
+  for (const doc of due) {
+    const threshold = doc.state === "expired" ? 0 : EXPIRY_WARN_DAYS;
+    const { error } = await db
+      .from("document_reminders")
+      .insert({ document_id: doc.id, days_before: threshold });
+
+    // 23505: somebody already claimed this threshold. Nothing to do, and
+    // deliberately not an error: this is the common path.
+    if (error) continue;
+
+    await emitEventDeferred({
+      projectId,
+      kind: "document_expiring",
+      actorPerson: null,
+      payload: {
+        title: doc.title ?? "",
+        date: doc.validUntil ?? "",
+      },
+    });
+  }
 }
