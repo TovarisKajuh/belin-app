@@ -30,6 +30,30 @@ export async function createPhotoUploadTargets(
   return targets;
 }
 
+
+// Signed upload URLs for one incident's photos. Same shape as the daily report
+// targets, in its own path namespace so an incident's pictures cannot be
+// confused with a day's work photos when either is read back later. The client
+// id is UUID validated before it touches a path: it arrives from a phone.
+export async function createIncidentPhotoTargets(
+  projectId: string,
+  incidentClientId: string,
+  count: number
+): Promise<UploadTarget[]> {
+  if (!isUuid(projectId)) throw new Error("Invalid project id");
+  if (!isUuid(incidentClientId)) throw new Error("Invalid incident id");
+
+  const db = createAdminClient();
+  const targets: UploadTarget[] = [];
+  for (let i = 0; i < clampCount(count); i++) {
+    const path = `${projectId}/incident/${incidentClientId}/${i}-${randomUUID()}.jpg`;
+    const { data, error } = await db.storage.from("photos").createSignedUploadUrl(path);
+    if (error || !data) throw new Error("Could not create upload URL");
+    targets.push({ path: data.path, token: data.token });
+  }
+  return targets;
+}
+
 // Mint signed upload URLs for a material check's two document kinds. Paths are
 // bound to the check's own folder (project/material/clientId/...), which is
 // exactly the prefix the RPC validates, so a check can only reference its own

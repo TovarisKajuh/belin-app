@@ -5,6 +5,7 @@ import { LiveRefresh } from "@/components/LiveRefresh";
 import { projectTopic } from "@/lib/realtime-shared";
 import type { CrewHomeData } from "@/lib/data/reports";
 import type { MaterialState } from "@/lib/materials-shared";
+import { IncidentButton } from "@/components/crew/IncidentButton";
 
 // The subcontractor OFFICE view.
 //
@@ -62,6 +63,11 @@ export async function SubHome({
       <div className="e-wrap">
         <section className="e-sec e-reveal">
           <div className="e-eyebrow">{t("eyebrow")}</div>
+
+          {/* The office reports incidents too: a call from the crew often lands
+              here first, and the person taking it should not have to open the
+              crew link to write it down. */}
+          <IncidentButton token={null} projectId={projectId} />
 
           <div className="sh-grid">
             <div className="sh-card sh-card--wide">

@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { CrewReportForm } from "./CrewReportForm";
 import { MaterialCheck } from "./MaterialCheck";
+import { IncidentButton } from "./IncidentButton";
 import { CommandBar } from "@/components/project/CommandBar";
 import { TodayPosts } from "@/components/project/TodayPosts";
 import { LiveRefresh } from "@/components/LiveRefresh";
@@ -50,6 +51,11 @@ export async function CrewHome({
             <span className="b-progress-unit"> %</span>
           </div>
         </div>
+
+        {/* OUTSIDE the material gate, deliberately. Rain on day one, before
+            the delivery has even arrived, is exactly what this is for, and the
+            gate hides everything else until the first check exists. */}
+        <IncidentButton token={token} projectId={projectId} />
 
         {material.needsFirstCheck ? (
           // The gate: no report form and no today posts until the first check

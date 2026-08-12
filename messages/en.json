@@ -525,5 +525,28 @@
     "hours": "Ure in dodatna dela",
     "final": "Zaključek",
     "settings": "Nastavitve"
+  },
+  "incident": {
+    "cta": "Prijavi zaplet",
+    "title": "Kaj se je zgodilo?",
+    "kinds": {
+      "incident": "Zaplet",
+      "rain_stop": "Dež, prekinitev",
+      "obstruction": "Ovira"
+    },
+    "note": "Opis",
+    "notePlaceholder": "Na kratko opišite, kaj se je zgodilo",
+    "noteOptional": "Opis ni obvezen",
+    "photos": "Fotografije",
+    "submit": "Pošlji",
+    "sent": "Zabeleženo.",
+    "cancel": "Prekliči",
+    "obstructionHint": "Ovira pomeni, da naročnik ali tretja stran preprečuje delo. Naročnik bo obveščen takoj.",
+    "err": {
+      "kind": "Izberite vrsto zapleta.",
+      "note": "Pri zapletu je opis obvezen.",
+      "photos": "Preveč fotografij.",
+      "generic": "Ni bilo mogoče shraniti. Poskusite znova."
+    }
   }
 }

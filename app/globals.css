@@ -2012,3 +2012,54 @@ button.gal-item {
     left: 12px; right: 12px; width: auto;
   }
 }
+
+/* ==============================================================
+   Incident capture. One tap to open, one tap to choose, submit.
+   Everything is at least 52px tall: this gets used with gloves on,
+   in the rain, one handed, on a roof.
+   ============================================================== */
+.belin-dark .ic-cta {
+  width: 100%; font: inherit; font-size: 15px; font-weight: 700;
+  padding: 16px; margin-bottom: 16px; border-radius: 16px;
+  background: rgba(255,159,107,.10); border: 1px solid rgba(255,159,107,.3);
+  color: #ff9f6b; touch-action: manipulation;
+}
+.belin-dark .ic-cta:active { background: rgba(255,159,107,.18); }
+
+.belin-dark .ic-sheet {
+  position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end;
+  background: rgba(4,9,16,.72); backdrop-filter: blur(6px);
+}
+.belin-dark .ic-inner {
+  width: 100%; max-height: 92vh; overflow-y: auto;
+  background: #101a28; border-top: 1px solid var(--e-line);
+  border-radius: 22px 22px 0 0;
+  padding: 22px 18px calc(22px + env(safe-area-inset-bottom));
+}
+@media (min-width: 760px) {
+  .belin-dark .ic-sheet { align-items: center; justify-content: center; }
+  .belin-dark .ic-inner { max-width: 520px; border-radius: 22px; border: 1px solid var(--e-line); }
+}
+
+.belin-dark .ic-h { margin: 0 0 16px; font-size: 17px; font-weight: 700; color: var(--e-ink); }
+.belin-dark .ic-kinds { display: grid; gap: 10px; margin-bottom: 16px; }
+.belin-dark .ic-kind {
+  font: inherit; font-size: 16px; font-weight: 700; text-align: left;
+  padding: 18px; border-radius: 16px; color: var(--e-ink);
+  background: var(--e-surface); border: 1px solid var(--e-line);
+  touch-action: manipulation;
+}
+.belin-dark .ic-kind.on {
+  border-color: rgba(255,210,26,.55); background: rgba(255,210,26,.10); color: var(--e-gold-2);
+}
+.belin-dark .ic-hint {
+  margin: -6px 0 16px; font-size: 13px; line-height: 1.5; color: var(--e-muted);
+}
+.belin-dark .ic-note { margin-bottom: 16px; resize: vertical; }
+.belin-dark .ic-photos { margin-bottom: 16px; }
+.belin-dark .ic-error { color: #ff9f6b; font-size: 14px; font-weight: 600; margin: 0 0 14px; }
+.belin-dark .ic-actions { display: grid; gap: 10px; }
+.belin-dark .ic-cancel {
+  font: inherit; font-size: 15px; font-weight: 600; color: var(--e-muted);
+  background: transparent; border: none; padding: 14px;
+}

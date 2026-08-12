@@ -4,6 +4,7 @@ import { isUuid } from "@/lib/actor-shared";
 import {
   createPhotoUploadTargets,
   createMaterialDocTargets,
+  createIncidentPhotoTargets,
   type UploadTarget,
 } from "@/lib/storage";
 import { submitDailyReport, type SubmitReportPayload } from "@/lib/data/reports";
@@ -13,6 +14,7 @@ import {
   type SubmitMaterialCheckPayload,
 } from "@/lib/data/materials";
 import { updateProjectStatus } from "@/lib/data/projects";
+import { createIncident, type IncidentPayload } from "@/lib/data/incidents";
 import { notifyProject } from "@/lib/realtime-server";
 import type { ProjectStatus } from "@/lib/project-status";
 
@@ -92,4 +94,23 @@ export async function setProjectStatus(
   const result = await updateProjectStatus(actor, newStatus);
   if (result.ok) await notifyProject(actor.projectId);
   return result;
+}
+
+export async function requestIncidentPhotoTargets(
+  token: string,
+  incidentClientId: string,
+  count: number
+): Promise<UploadTarget[]> {
+  const actor = await requireSubActor(token);
+  if (!isUuid(incidentClientId)) throw new Error("Invalid incident id");
+  return createIncidentPhotoTargets(actor.projectId, incidentClientId, count);
+}
+
+export async function createIncidentAction(
+  token: string,
+  payload: IncidentPayload
+): Promise<{ ok: true; incidentId: string }> {
+  const actor = await requireSubActor(token);
+  const incidentId = await createIncident(actor, payload);
+  return { ok: true, incidentId };
 }
