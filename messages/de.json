@@ -315,7 +315,10 @@
     "fromSite": "Z gradbišča"
   },
   "app": {
-    "signedInAs": "Prijavljeni kot {name}"
+    "signedInAs": "Prijavljeni kot {name}",
+    "openHours": "{n, plural, one {# list ur} two {# lista ur} few {# listi ur} other {# listov ur}}",
+    "openRequests": "{n, plural, one {# zahteva} two {# zahtevi} few {# zahteve} other {# zahtev}}",
+    "incidents": "{n, plural, one {# zaplet} two {# zapleta} few {# zapleti} other {# zapletov}}"
   },
   "settings": {
     "title": "Nastavitve",
@@ -832,5 +835,11 @@
     },
     "cancel": "Prekliči",
     "byContractor": "Račun izda podizvajalec."
+  },
+  "portfolio": {
+    "active": "Aktivni projekti",
+    "kwp": "V izvedbi",
+    "openHours": "Odprte ure",
+    "openIncidents": "Zapleti ta teden"
   }
 }

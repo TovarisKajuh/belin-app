@@ -3,6 +3,9 @@ import Link from "next/link";
 import { BelinMark } from "@/components/BelinMark";
 import { NotificationBell } from "@/components/app/NotificationBell";
 import { getUnreadCount } from "@/lib/data/notifications";
+import { getPortfolio } from "@/lib/data/portfolio";
+import { PortfolioHeader } from "./PortfolioHeader";
+import { ProgressSparkline } from "./ProgressSparkline";
 import type { ProjectListRow } from "@/lib/data/projects-list";
 import type { PersonActor } from "@/lib/actor";
 
@@ -26,6 +29,9 @@ export async function ProjectList({
   // The inbox lives on the list, where a person lands after signing in: it is
   // the one screen that is not about a single project.
   const unread = await getUnreadCount(actor);
+  // One batched load for the whole portfolio: an EPC with twenty projects
+  // should not pay twenty round trips for a list screen.
+  const portfolio = await getPortfolio(actor);
 
   return (
     <div className="belin-dark">
@@ -61,23 +67,53 @@ export async function ProjectList({
           {projects.length === 0 ? (
             <p className="pl-empty">{t("empty")}</p>
           ) : (
-            <ul className="pl-list">
-              {projects.map((p) => {
-                const facts = [p.city, p.kwp !== null ? `${p.kwp} kWp` : null, p.subName]
-                  .filter(Boolean)
-                  .join(" · ");
+            <>
+              <PortfolioHeader data={portfolio} />
 
-                return (
-                  <li key={p.id} className="pl-item">
-                    <Link href={`/${locale}/app/${p.id}`} className="pl-link">
-                      <div className="pl-name">{p.name}</div>
-                      {facts && <div className="pl-facts">{facts}</div>}
-                      <div className={`pl-status s-${p.status}`}>{t(`status.${p.status}`)}</div>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+              <ul className="pl-list">
+                {portfolio.projects.map((p) => {
+                  const facts = [p.city, p.kwp !== null ? `${p.kwp} kWp` : null, p.subName]
+                    .filter(Boolean)
+                    .join(" · ");
+
+                  // What is waiting on somebody, said only when there is
+                  // something: a row of zeroes on every card would train the
+                  // reader to stop looking at the line that matters.
+                  const waiting = [
+                    p.openHours > 0 ? tApp("openHours", { n: p.openHours }) : null,
+                    p.openRequests > 0 ? tApp("openRequests", { n: p.openRequests }) : null,
+                    p.incidentsThisWeek > 0 ? tApp("incidents", { n: p.incidentsThisWeek }) : null,
+                  ].filter(Boolean);
+
+                  return (
+                    <li key={p.id} className="pl-item">
+                      <Link href={`/${locale}/app/${p.id}`} className="pl-link pl-link--rich">
+                        <div className="pl-main">
+                          <div className="pl-name">{p.name}</div>
+                          {facts && <div className="pl-facts">{facts}</div>}
+                          {waiting.length > 0 ? (
+                            <div className="pl-waiting">{waiting.join(" · ")}</div>
+                          ) : null}
+                        </div>
+
+                        <div className="pl-figure">
+                          <span className="pl-pct">
+                            {p.progressPercent}
+                            <span className="pl-pct-u"> %</span>
+                          </span>
+                          <ProgressSparkline
+                            points={p.trend}
+                            label={`${p.name}: ${p.progressPercent} %`}
+                          />
+                        </div>
+
+                        <div className={`pl-status s-${p.status}`}>{t(`status.${p.status}`)}</div>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
           )}
         </section>
       </div>

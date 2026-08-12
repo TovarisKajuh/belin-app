@@ -2342,3 +2342,58 @@ button.gal-item {
   background: rgba(255,180,92,.08); border: 1px solid rgba(255,180,92,.28);
 }
 .belin-dark .inv-confirm { margin-top: 12px; }
+
+/* ==============================================================
+   Portfolio. Four headline numbers as stat tiles, and one mark
+   per project: the progress trend, which is the only thing here
+   a number cannot say.
+   ============================================================== */
+.belin-dark .pf-strip {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px;
+}
+.belin-dark .pf-tile {
+  padding: 16px 18px; border-radius: 16px;
+  background: var(--e-surface); border: 1px solid var(--e-line);
+}
+.belin-dark .pf-tile-l {
+  display: block; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--e-muted); font-weight: 700; margin-bottom: 8px;
+}
+.belin-dark .pf-tile-v {
+  font-size: 28px; font-weight: 800; letter-spacing: -.02em; color: var(--e-ink);
+  font-variant-numeric: tabular-nums;
+}
+/* A zero stays quiet on purpose: shouting the normal state trains the reader
+   to ignore the number on the day it is not zero. */
+.belin-dark .pf-tile-v.alert { color: var(--e-gold); }
+.belin-dark .pf-tile-u { font-size: 13px; font-weight: 600; color: var(--e-muted); }
+
+.belin-dark .pl-link--rich {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 20px; align-items: center;
+}
+.belin-dark .pl-main { min-width: 0; }
+.belin-dark .pl-waiting { margin-top: 6px; font-size: 12px; color: var(--e-gold-2); font-weight: 600; }
+.belin-dark .pl-figure { display: flex; align-items: center; gap: 14px; }
+.belin-dark .pl-pct {
+  font-size: 20px; font-weight: 800; color: var(--e-ink);
+  font-variant-numeric: tabular-nums; letter-spacing: -.01em;
+}
+.belin-dark .pl-pct-u { font-size: 12px; font-weight: 600; color: var(--e-muted); }
+
+/* One series, so no legend: the card title names it. No axes, no gridlines, no
+   value labels; the percentage is already printed beside it, so the mark
+   carries shape alone. */
+.belin-dark .pf-spark { width: 120px; height: 30px; overflow: visible; }
+.belin-dark .pf-spark-l {
+  fill: none; stroke: var(--e-gold); stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.belin-dark .pf-spark-a { fill: rgba(255,210,26,.10); stroke: none; }
+
+@media (max-width: 860px) {
+  .belin-dark .pf-strip { grid-template-columns: 1fr 1fr; }
+  .belin-dark .pl-link--rich { grid-template-columns: 1fr auto; }
+  .belin-dark .pl-figure { grid-column: 1 / -1; justify-content: space-between; }
+  .belin-dark .pf-spark { width: 100%; }
+}
