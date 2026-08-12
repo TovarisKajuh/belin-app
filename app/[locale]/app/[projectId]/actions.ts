@@ -13,6 +13,7 @@ import {
   createPhotoUploadTargets,
   createMaterialDocTargets,
   createIncidentPhotoTargets,
+  createRequestPhotoTarget,
   type UploadTarget,
 } from "@/lib/storage";
 import { submitDailyReport, type SubmitReportPayload } from "@/lib/data/reports";
@@ -23,6 +24,13 @@ import {
 } from "@/lib/data/materials";
 import { updateProjectStatus } from "@/lib/data/projects";
 import { createIncident, type IncidentPayload } from "@/lib/data/incidents";
+import {
+  createRequest,
+  listRequests,
+  resolveRequest,
+  type CreateRequestPayload,
+  type RequestRow,
+} from "@/lib/data/requests";
 import { notifyProject } from "@/lib/realtime-server";
 import type { ProjectStatus } from "@/lib/project-status";
 
@@ -210,4 +218,38 @@ export async function createIncidentAction(
   const actor = await requireSubActor(projectId);
   const incidentId = await createIncident(actor, payload);
   return { ok: true, incidentId };
+}
+
+export async function requestRequestPhotoTarget(
+  projectId: string,
+  requestClientId: string
+): Promise<UploadTarget> {
+  const actor = await requireSubActor(projectId);
+  return createRequestPhotoTarget(actor.projectId, requestClientId);
+}
+
+export async function createRequestAction(
+  projectId: string,
+  payload: CreateRequestPayload
+): Promise<{ ok: true; requestId: string }> {
+  const actor = await requireSubActor(projectId);
+  const requestId = await createRequest(actor, payload);
+  return { ok: true, requestId };
+}
+
+export async function listRequestsAction(projectId: string): Promise<RequestRow[]> {
+  const actor = await requireSubActor(projectId);
+  return listRequests(actor);
+}
+
+// Resolving is office side and therefore session only: a crew link never
+// answers its own question.
+export async function resolveRequestAction(
+  projectId: string,
+  requestId: string,
+  note: string
+): Promise<{ ok: true }> {
+  const actor = await requireEpcActor(projectId);
+  await resolveRequest(actor, requestId, note);
+  return { ok: true };
 }

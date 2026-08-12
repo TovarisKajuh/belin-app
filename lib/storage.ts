@@ -54,6 +54,24 @@ export async function createIncidentPhotoTargets(
   return targets;
 }
 
+
+// One signed upload URL for a request photo. A single picture, because a crew
+// member asking for something is showing one thing: the empty pallet, the
+// wrong bracket, the drawing they cannot read.
+export async function createRequestPhotoTarget(
+  projectId: string,
+  requestClientId: string
+): Promise<UploadTarget> {
+  if (!isUuid(projectId)) throw new Error("Invalid project id");
+  if (!isUuid(requestClientId)) throw new Error("Invalid request id");
+
+  const db = createAdminClient();
+  const path = `${projectId}/request/${requestClientId}-${randomUUID()}.jpg`;
+  const { data, error } = await db.storage.from("photos").createSignedUploadUrl(path);
+  if (error || !data) throw new Error("Could not create upload URL");
+  return { path: data.path, token: data.token };
+}
+
 // Mint signed upload URLs for a material check's two document kinds. Paths are
 // bound to the check's own folder (project/material/clientId/...), which is
 // exactly the prefix the RPC validates, so a check can only reference its own

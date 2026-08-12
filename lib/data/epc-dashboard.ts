@@ -2,6 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ProjectActor } from "@/lib/actor";
 import { listIncidents, type IncidentRow } from "@/lib/data/incidents";
+import { listRequests, type RequestRow } from "@/lib/data/requests";
 import { emitEventDeferred } from "@/lib/notify";
 import { expiryState, EXPIRY_WARN_DAYS, type ExpiryState, type VaultType } from "@/lib/vault-shared";
 import { getProjectCore, type ProjectCore, type ScopeItemStatus } from "@/lib/data/project-core";
@@ -77,6 +78,8 @@ export interface EpcDashboardData {
   roofs: DashboardRoof[];
   /** Site incidents from the last two weeks, newest first. */
   incidents: IncidentRow[];
+  /** Open requests first: the crew is waiting on these. */
+  requests: RequestRow[];
   /** The subcontractor's compliance documents, as the EPC is allowed to see them. */
   compliance: ComplianceDoc[];
 }
@@ -301,6 +304,7 @@ export async function getEpcDashboard(actor: ProjectActor): Promise<EpcDashboard
     material,
     roofs,
     incidents: await listIncidents(actor),
+    requests: await listRequests(actor),
     compliance: await loadCompliance(actor.projectId),
   };
 }

@@ -6,6 +6,7 @@ import { ProgressRing } from "@/components/epc/dashboard/ProgressRing";
 import { ProjectionPanel } from "@/components/epc/dashboard/ProjectionPanel";
 import { ScopeByPhase } from "@/components/epc/dashboard/ScopeByPhase";
 import { IncidentsPanel } from "./dashboard/IncidentsPanel";
+import { RequestsPanel } from "./dashboard/RequestsPanel";
 import { CompliancePanel } from "./dashboard/CompliancePanel";
 import { MaterialPanel } from "@/components/epc/dashboard/MaterialPanel";
 import { RoofPanel } from "@/components/epc/dashboard/RoofPanel";
@@ -110,6 +111,12 @@ export async function EpcDashboard({
 
         <RoofPanel roofs={data.roofs} />
         <MaterialPanel token={token} projectId={projectId} country={core.country} material={data.material} />
+
+        <RequestsPanel
+          projectId={projectId}
+          requests={data.requests}
+          canResolve={token === null}
+        />
 
         <IncidentsPanel incidents={data.incidents} />
 

@@ -5,6 +5,7 @@ import {
   createPhotoUploadTargets,
   createMaterialDocTargets,
   createIncidentPhotoTargets,
+  createRequestPhotoTarget,
   type UploadTarget,
 } from "@/lib/storage";
 import { submitDailyReport, type SubmitReportPayload } from "@/lib/data/reports";
@@ -15,6 +16,12 @@ import {
 } from "@/lib/data/materials";
 import { updateProjectStatus } from "@/lib/data/projects";
 import { createIncident, type IncidentPayload } from "@/lib/data/incidents";
+import {
+  createRequest,
+  listRequests,
+  type CreateRequestPayload,
+  type RequestRow,
+} from "@/lib/data/requests";
 import { notifyProject } from "@/lib/realtime-server";
 import type { ProjectStatus } from "@/lib/project-status";
 
@@ -113,4 +120,26 @@ export async function createIncidentAction(
   const actor = await requireSubActor(token);
   const incidentId = await createIncident(actor, payload);
   return { ok: true, incidentId };
+}
+
+export async function requestRequestPhotoTarget(
+  token: string,
+  requestClientId: string
+): Promise<UploadTarget> {
+  const actor = await requireSubActor(token);
+  return createRequestPhotoTarget(actor.projectId, requestClientId);
+}
+
+export async function createRequestAction(
+  token: string,
+  payload: CreateRequestPayload
+): Promise<{ ok: true; requestId: string }> {
+  const actor = await requireSubActor(token);
+  const requestId = await createRequest(actor, payload);
+  return { ok: true, requestId };
+}
+
+export async function listRequestsAction(token: string): Promise<RequestRow[]> {
+  const actor = await requireSubActor(token);
+  return listRequests(actor);
 }

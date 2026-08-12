@@ -2104,3 +2104,55 @@ button.gal-item {
 .belin-dark .cp-dot.missing, .belin-dark .cp-dot.none { background: #4a5464; }
 .belin-dark .cp-name { font-size: 13.5px; color: var(--e-ink); }
 .belin-dark .cp-state { font-size: 12px; color: var(--e-muted); text-align: right; }
+
+/* Crew quick actions and requests. The two buttons sit side by side above the
+   report, because "something went wrong" and "I need something" are the two
+   things a crew member reaches for that are not the daily report itself. */
+.belin-dark .cr-quick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.belin-dark .cr-quick > * { margin-bottom: 16px; }
+.belin-dark .rq-cta {
+  width: 100%; font: inherit; font-size: 15px; font-weight: 700;
+  padding: 16px; border-radius: 16px;
+  background: var(--e-surface); border: 1px solid var(--e-line);
+  color: var(--e-ink); touch-action: manipulation;
+}
+.belin-dark .rq-cta:active { background: var(--e-surface-2); }
+
+.belin-dark .rq-types { display: grid; gap: 8px; margin-bottom: 14px; }
+.belin-dark .rq-type {
+  font: inherit; font-size: 15px; font-weight: 600; text-align: left;
+  padding: 15px 16px; border-radius: 14px; color: var(--e-ink);
+  background: var(--e-surface); border: 1px solid var(--e-line);
+  touch-action: manipulation;
+}
+.belin-dark .rq-type.on {
+  border-color: rgba(255,210,26,.55); background: rgba(255,210,26,.10); color: var(--e-gold-2);
+}
+.belin-dark .rq-mine { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--e-line); }
+.belin-dark .rq-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.belin-dark .rq-row {
+  padding: 11px 0; border-bottom: 1px solid var(--e-line);
+}
+.belin-dark .rq-t { margin: 0; font-size: 13.5px; color: var(--e-ink2); }
+.belin-dark .rq-row.done .rq-t { color: var(--e-muted); }
+.belin-dark .rq-answer { margin: 6px 0 0; font-size: 13.5px; color: var(--e-ink); line-height: 1.5; }
+.belin-dark .rq-tag {
+  display: inline-block; font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  font-weight: 800; color: var(--e-gold); margin-right: 6px;
+}
+
+.belin-dark .rp-row {
+  padding: 13px 15px; margin-bottom: 10px; border-radius: 14px;
+  background: var(--e-surface); border: 1px solid var(--e-line);
+}
+.belin-dark .rp-photo { display: block; margin-top: 10px; width: 78px; height: 78px; border-radius: 10px; overflow: hidden; }
+.belin-dark .rp-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.belin-dark .rp-open, .belin-dark .rp-send {
+  margin-top: 11px; font: inherit; font-size: 13px; font-weight: 700;
+  padding: 10px 16px; border-radius: 11px; cursor: pointer;
+  background: rgba(255,210,26,.12); border: 1px solid rgba(255,210,26,.35); color: var(--e-gold-2);
+}
+.belin-dark .rp-send:disabled { opacity: .45; }
+.belin-dark .rp-answer { display: flex; gap: 10px; margin-top: 11px; flex-wrap: wrap; }
+.belin-dark .rp-answer .b-field { flex: 1; min-width: 200px; }
+.belin-dark .rp-answer .rp-send { margin-top: 0; }

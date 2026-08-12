@@ -161,7 +161,11 @@
     "incidents": "Zapleti",
     "noIncidents": "Ni zabeleženih zapletov.",
     "compliance": "Dokumenti podizvajalca",
-    "docMissing": "Ni naloženo"
+    "docMissing": "Ni naloženo",
+    "requests": "Zahteve ekipe",
+    "noRequests": "Ni odprtih zahtev.",
+    "resolve": "Odgovori",
+    "responseNote": "Odgovor ekipi"
   },
   "status": {
     "draft": "Osnutek",
@@ -552,6 +556,27 @@
       "note": "Pri zapletu je opis obvezen.",
       "photos": "Preveč fotografij.",
       "generic": "Ni bilo mogoče shraniti. Poskusite znova."
+    }
+  },
+  "request": {
+    "cta": "Zahtevaj",
+    "text": "Kaj potrebujete?",
+    "placeholder": "Na kratko opišite, kaj potrebujete",
+    "photo": "Fotografija",
+    "types": {
+      "material": "Dodaten material",
+      "plan": "Načrt ali dokument",
+      "instruction": "Navodilo"
+    },
+    "submit": "Pošlji zahtevo",
+    "sent": "Poslano.",
+    "cancel": "Prekliči",
+    "yourRequests": "Vaše zahteve",
+    "resolvedTag": "Odgovor",
+    "err": {
+      "type": "Izberite vrsto zahteve.",
+      "text": "Napišite, kaj potrebujete.",
+      "generic": "Ni bilo mogoče poslati. Poskusite znova."
     }
   }
 }
