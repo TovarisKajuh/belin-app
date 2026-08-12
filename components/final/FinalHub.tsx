@@ -2,7 +2,10 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
-import { requestFinalizationAction } from "@/app/[locale]/app/[projectId]/final/actions";
+import {
+  generateCompletionReportAction,
+  requestFinalizationAction,
+} from "@/app/[locale]/app/[projectId]/final/actions";
 import type { ProjectStatus } from "@/lib/project-status";
 
 // The handover screen: request, report, acceptance, invoice.
@@ -19,18 +22,22 @@ export function FinalHub({
   role,
   isOffice,
   requestedAt,
+  report,
 }: {
   projectId: string;
   status: ProjectStatus;
   role: "epc" | "sub";
   isOffice: boolean;
   requestedAt: string | null;
+  /** The latest generated completion report, if one exists. */
+  report: { id: string; createdAt: string } | null;
 }) {
   const t = useTranslations("final");
   const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const inReview = status === "reviewing";
@@ -109,7 +116,52 @@ export function FinalHub({
             what it is waiting for rather than appearing broken. */}
         <div className="b-card fn-card">
           <span className="b-label">{t("reportCard")}</span>
-          <p className="fn-note">{t("soon")}</p>
+
+          {report ? (
+            <>
+              <p className="fn-state ok">
+                {t("generatedAt", {
+                  date: format.dateTime(new Date(report.createdAt), {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  }),
+                })}
+              </p>
+              <a
+                className="hr-pdf"
+                href={`/api/pdf/report/${report.id}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t("download")}
+              </a>
+            </>
+          ) : null}
+
+          <div className="hr-actions">
+            <button
+              type="button"
+              className="rp-open"
+              disabled={pending || generating}
+              onClick={() => {
+                setError(null);
+                setGenerating(true);
+                startTransition(async () => {
+                  try {
+                    await generateCompletionReportAction(projectId);
+                    router.refresh();
+                  } catch {
+                    setError(t("conflict"));
+                  } finally {
+                    setGenerating(false);
+                  }
+                });
+              }}
+            >
+              {generating ? t("generating") : t("generate")}
+            </button>
+          </div>
         </div>
         <div className="b-card fn-card">
           <span className="b-label">{t("acceptanceCard")}</span>

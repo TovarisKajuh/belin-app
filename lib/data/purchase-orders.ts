@@ -1,6 +1,5 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { renderToBuffer } from "@react-pdf/renderer";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireOfficeActor, requireProjectActor, type Actor } from "@/lib/actor";
 import { emitEventDeferred } from "@/lib/notify";
@@ -8,6 +7,7 @@ import { getSignedReportUrl, storeReportPdf } from "@/lib/storage";
 import { lineTotal, poTotals, round2, type PoLine } from "@/lib/po-shared";
 import { NarocilnicaDocument } from "@/lib/pdf/narocilnica";
 import { poStrings, type DocLocale } from "@/lib/pdf/strings";
+import { renderDocument } from "@/lib/pdf/theme";
 
 // The naročilnica, and the only place its status ever moves.
 //
@@ -460,7 +460,7 @@ export async function renderPoPdf(
     .filter((part) => part && part.trim().length > 0)
     .join(", ");
 
-  const buffer = await renderToBuffer(
+  const buffer = await renderDocument(
     NarocilnicaDocument({
       number: po.number,
       locale,

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { renderToBuffer } from "@react-pdf/renderer";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveActorFromSession } from "@/lib/auth";
 import { requireProjectActor } from "@/lib/actor";
@@ -8,6 +7,7 @@ import { effectiveStatus, type SheetStatus } from "@/lib/hours-shared";
 import { RegieberichtDocument } from "@/lib/pdf/regiebericht";
 import { regieStrings, sheetStatusLabel, type DocLocale } from "@/lib/pdf/strings";
 import { persistDeemed } from "@/lib/data/hours";
+import { renderDocument } from "@/lib/pdf/theme";
 
 // The Regiebericht is rendered ON DEMAND and never stored.
 //
@@ -85,7 +85,7 @@ export async function GET(
         }).format(new Date(value))
       : null;
 
-  const buffer = await renderToBuffer(
+  const buffer = await renderDocument(
     RegieberichtDocument({
       number: sheet.number,
       projectName: project?.name ?? "",

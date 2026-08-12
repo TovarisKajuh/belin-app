@@ -16,6 +16,7 @@ import de from "@/messages/de.json";
 import en from "@/messages/en.json";
 import type { NarocilnicaStrings } from "@/lib/pdf/narocilnica";
 import type { RegieberichtStrings } from "@/lib/pdf/regiebericht";
+import type { CompletionStrings } from "@/lib/pdf/completion";
 
 export type DocLocale = "sl" | "de" | "en";
 
@@ -77,4 +78,50 @@ export function regieStrings(locale: DocLocale): RegieberichtStrings {
 /** Status labels for documents, resolved in the project's language. */
 export function sheetStatusLabel(locale: DocLocale, status: string): string {
   return docString(locale, `hours.status.${status}`);
+}
+
+export function completionStrings(locale: DocLocale): CompletionStrings {
+  const t = (key: string) => docString(locale, key);
+  return {
+    title: t("final.doc.title"),
+    project: t("final.doc.project"),
+    client: t("final.doc.client"),
+    contractor: t("final.doc.contractor"),
+    site: t("final.doc.site"),
+    period: t("final.doc.period"),
+    power: t("final.doc.power"),
+    days: t("final.doc.days"),
+    totalHours: t("final.doc.totalHours"),
+    registers: t("final.doc.registers"),
+    hoursRegister: t("final.doc.hoursRegister"),
+    coRegister: t("final.doc.coRegister"),
+    incidentRegister: t("final.doc.incidentRegister"),
+    colNo: t("final.doc.colNo"),
+    colHours: t("final.doc.colHours"),
+    colStatus: t("final.doc.colStatus"),
+    colTitle: t("final.doc.colTitle"),
+    colAmount: t("final.doc.colAmount"),
+    colDate: t("final.doc.colDate"),
+    colKind: t("final.doc.colKind"),
+    colNote: t("final.doc.colNote"),
+    none: t("final.doc.none"),
+    generated: t("final.doc.generated"),
+    day: {
+      // Overwritten by the caller with the site-appropriate diary title.
+      title: t("final.diaryTitleSi"),
+      reportNo: t("final.dayDoc.reportNo"),
+      date: t("final.dayDoc.date"),
+      weather: t("final.dayDoc.weather"),
+      headcount: t("final.dayDoc.headcount"),
+      work: t("final.dayDoc.work"),
+      quantities: t("final.dayDoc.quantities"),
+      incidents: t("final.dayDoc.incidents"),
+      photos: t("final.dayDoc.photos"),
+      author: t("final.dayDoc.author"),
+      signature: t("final.dayDoc.signature"),
+      noWeather: t("final.dayDoc.noWeather"),
+      people: t("final.dayDoc.people"),
+      generated: t("final.dayDoc.generated"),
+    },
+  };
 }

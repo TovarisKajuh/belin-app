@@ -22,7 +22,7 @@
 // printed, signed and filed.
 
 import path from "node:path";
-import { Font, Image, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Font, Image, StyleSheet, Text, View, renderToBuffer } from "@react-pdf/renderer";
 // The Style type lives in @react-pdf/types, which the renderer re-exports only
 // as an internal namespace. Importing it here keeps the table cell helper
 // typed instead of widening its width and textAlign to plain strings.
@@ -30,14 +30,45 @@ import type { Style } from "@react-pdf/types";
 
 const interPath = path.join(process.cwd(), "public", "fonts", "InterVariable.ttf");
 
-Font.register({
-  family: "Inter",
-  fonts: [
-    { src: interPath, fontWeight: 400 },
-    { src: interPath, fontWeight: 700 },
-  ],
-});
-Font.registerHyphenationCallback((word) => [word]);
+/**
+ * Registers the document font, replacing any previous registration.
+ *
+ * THIS MUST RUN BEFORE EVERY renderToBuffer, through renderDocument below.
+ *
+ * @react-pdf keeps one parsed font per registered family and builds the PDF's
+ * glyph subset against it. That state is shared across renders in the same
+ * process, and once a later document introduces glyphs the first one did not
+ * use, the ToUnicode map it writes stops matching the glyphs it draws. The
+ * page still LOOKS perfect, and the text layer underneath is wrong: our own
+ * nine day completion report extracted as "Kraj" for "Kranj", with every "n"
+ * missing and full stops turned into control characters.
+ *
+ * That is not cosmetic here. These documents are evidence. Somebody searches
+ * them, copies a sentence into an email, or feeds them to a system that reads
+ * text, and a document that copies as something other than what it displays is
+ * worse than one that fails loudly.
+ *
+ * Deleting the family before re-registering forces a fresh font object, and
+ * therefore a fresh subset, for each document. Font.clear() cannot be used: it
+ * also wipes the built-in Helvetica the renderer needs internally, and
+ * Font.reset() nulls the font data without reloading it, which crashes the
+ * layout engine. Deleting our own key is the narrow version that works.
+ */
+export function registerDocumentFonts(): void {
+  const families = Font.getRegisteredFonts() as Record<string, unknown>;
+  delete families["Inter"];
+
+  Font.register({
+    family: "Inter",
+    fonts: [
+      { src: interPath, fontWeight: 400 },
+      { src: interPath, fontWeight: 700 },
+    ],
+  });
+  Font.registerHyphenationCallback((word) => [word]);
+}
+
+registerDocumentFonts();
 
 /** The paper palette. Print safe, deliberately not the app's dark tokens. */
 export const C = {
@@ -334,4 +365,18 @@ export function SignatureRow({ left, right }: { left: React.ReactNode; right: Re
       {right}
     </View>
   );
+}
+
+/**
+ * Render a document to a PDF buffer.
+ *
+ * EVERY caller must use this rather than renderToBuffer directly: the font
+ * re-registration above only protects documents that go through here, and a
+ * document rendered around it gets the corrupted text layer described there.
+ */
+export async function renderDocument(
+  document: Parameters<typeof renderToBuffer>[0],
+): Promise<Buffer> {
+  registerDocumentFonts();
+  return renderToBuffer(document);
 }

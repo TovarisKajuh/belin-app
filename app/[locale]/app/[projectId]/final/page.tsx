@@ -50,6 +50,16 @@ export default async function FinalPage({
     .limit(1)
     .maybeSingle();
 
+  const { data: report } = await createAdminClient()
+    .from("generated_documents")
+    .select("id, created_at, storage_path")
+    .eq("project_id", projectId)
+    .eq("kind", "completion_report")
+    .neq("storage_path", "pending")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   return (
     <div className="belin-dark">
       <div className="e-grain" aria-hidden />
@@ -72,6 +82,7 @@ export default async function FinalPage({
           role={role}
           isOffice={actor.role === "admin" || actor.role === "owner"}
           requestedAt={requested?.created_at ?? null}
+          report={report ? { id: report.id, createdAt: report.created_at } : null}
         />
       </main>
     </div>
