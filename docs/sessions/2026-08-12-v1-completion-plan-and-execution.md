@@ -32,8 +32,22 @@ Date: 2026-08-12. Model: Fable (planning), then execution in the same session at
 
 The migration ledger in the database and the files in supabase/migrations/ do not line up by name: the database has create_project_from_review_country_check and create_project_from_review_with_roofs, the repo has create_project_from_review_baseline. The schema itself is consistent with the code (types and tests are green), so this is a naming and record drift rather than a behaviour bug, but it is exactly the drift the 2026-07-20 rule was written to prevent and it deserves a deliberate reconciliation pass.
 
+## Continued in the same session, at the founder's instruction
+
+The founder answered three open questions before I continued: two vetoes (finalization becomes its own office-only action; the demo seed DOES stage sent and accepted naročilnice), screenshots for the landing to be captured with the Browser pane visible when Task 18 arrives, and the migration drift to be reconciled immediately.
+
+**Drift reconciliation, and it was not a naming problem.** create_project_from_review existed TWICE, as a seven argument version and the roofs-aware eight argument one, in the database AND in the repo, because "create or replace function" does not replace a function whose signature changed: it adds an overload beside it. Nothing called the stale body only because the wizard always sends p_roofs and PostgREST resolves overloads by argument name. One forgotten argument would have created a project with its material list intact and its roofs missing, returning a normal looking id with no error at all. The overload is dropped and p_roofs is now required in the types, so the shape is impossible from both ends.
+
+**Task 3, the naročilnica, complete and verified.** Data layer with five single conditional transitions, the document, the PDF route, the EPC builder, the sub office acceptance. Verified against the live database: priced from plan-prefilled data (245.7 kWp, Kranj), sent, a real PDF stored whose hash matches its stored bytes exactly, accepted by the sub admin through her own session in the same browser, both sides notified and logged. A real leak surfaced by probing rather than reading: the page served a crew LINK session, which would have shown the agreed contract price to anyone holding a forwarded link or watching the QR code at a demo. Non person actors are now refused.
+
+**Task 4, the bell, complete and verified.** Two bugs found by driving it: the panel hung off the left edge of a 375px screen because it was anchored to the bell rather than the viewport, and marking everything read rebuilt the page underneath the open panel so the list flickered away mid read. A missing translation surfaced the same way.
+
+**A seed gap closed on the way.** The demo EPC company had only a Bauleiter, and a Bauleiter does not sign orders, so nobody in the demo could price a naročilnica at all. Nina Hribar, admin at Sonce Energija, now exists for the same reason a real EPC has someone in that chair.
+
+**Also decided:** a sent naročilnica does not print its own hash, because a document cannot contain the hash of itself. The hash covers the exact sent bytes and lives on the row; the template keeps the field for the acceptance copy, which is a different document describing an accepted original.
+
 ## Next
 
-Task 3 continues: the purchase_orders data layer with the five conditional transitions, NarocilnicaDocument, the PDF route under the access matrix, PoBuilder for the EPC and PoView for the sub office with the sha256 hash binding on acceptance. Then Task 4 (bell) onwards. The plan file carries every interface, all copy and every verification step.
+Tasks 1 to 4 are done and verified, plus the drift reconciliation. Task 5 (crew incident capture) is next, then 6 (dashboard panels), 7 (requests), 8 to 11 (Regiestunden and change orders), 12 to 15 (finalization, completion report, acceptance, invoice), 16 (portfolio), 17 to 21 (seeds, landing, translations, security, QA). The two vetoes are folded into Tasks 12 and 17 of the plan file.
 
-Per the founder's own workflow (plan on Fable, execute on Opus), the remaining execution belongs in a fresh Opus session pointed at the plan file.
+Execution continued on Fable at the founder's explicit instruction rather than moving to Opus.
