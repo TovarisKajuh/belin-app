@@ -449,7 +449,9 @@
       "acceptance_signed": "Zapisnik o prevzemu je podpisan in shranjen.",
       "invoice_sent": "Račun {number} je poslan na {email}.",
       "document_expiring": "Dokument {title} poteče {date}."
-    }
+    },
+    "title": "Obvestila",
+    "empty": "Ni novih obvestil."
   },
   "share": {
     "copy": "Kopiraj povezavo",
