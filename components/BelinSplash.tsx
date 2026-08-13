@@ -126,6 +126,9 @@ export function BelinSplash({
 
   return (
     <div
+      // Targetable so tests and the screenshot pipeline can wait for the
+      // animation to finish rather than sleeping and hoping.
+      data-splash=""
       style={{
         position: "fixed",
         inset: 0,

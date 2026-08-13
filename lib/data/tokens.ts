@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ProjectActor } from "@/lib/actor";
+import { isShotMode } from "@/lib/shot-mode";
 
 // Dev-only: find the other party's active token for the same project so one
 // person can swap between the connected EPC and sub views while building.
@@ -18,6 +19,8 @@ export async function getSiblingToken(
   actor: ProjectActor
 ): Promise<{ token: string; role: "epc" | "sub" } | null> {
   if (process.env.DEMO_LOGIN !== "1") return null;
+  // And never in a product shot, where it would float over the corner.
+  if (await isShotMode()) return null;
 
   const otherRole = actor.role === "epc" ? "sub" : "epc";
   const db = createAdminClient();

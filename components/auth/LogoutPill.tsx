@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { isShotMode } from "@/lib/shot-mode";
 import { logoutAction } from "@/app/actions/auth";
 import { PendingButton } from "./PendingButton";
 
@@ -13,6 +14,9 @@ export async function LogoutPill({
   /** Lift clear of the crew screen's fixed submit bar. */
   raised?: boolean;
 }) {
+  // Developer chrome has no place in a product shot.
+  if (await isShotMode()) return null;
+
   const t = await getTranslations("auth");
 
   return (
