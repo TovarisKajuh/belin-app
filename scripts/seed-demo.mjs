@@ -456,7 +456,7 @@ await upsert("purchase_orders", [
     sent_at: daysAgoIso(12),
     accepted_at: daysAgoIso(11),
     accepted_by_person: PERSON_SUB_ADMIN,
-    accepted_by_name: "Ana Novak",
+    accepted_by_name: "Boštjan Novak",
     created_by_person: PERSON_EPC_ADMIN,
   },
   {
