@@ -1,17 +1,26 @@
 import { setRequestLocale } from "next-intl/server";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { resolveActorFromToken } from "@/lib/actor";
+import { resolveActorFromSession } from "@/lib/auth";
 import { getCrewHome } from "@/lib/data/reports";
-import { getMaterialState } from "@/lib/data/materials";
 import { getEpcDashboard } from "@/lib/data/epc-dashboard";
 import { getSiblingToken } from "@/lib/data/tokens";
-import { CrewHome } from "@/components/crew/CrewHome";
+import { listCrewRoster } from "@/lib/data/crew";
+import { CrewClaim } from "@/components/crew/CrewClaim";
 import { EpcDashboard } from "@/components/epc/EpcDashboard";
 import { DevSwapBar } from "@/components/dev/DevSwapBar";
 
-// Thin role router: resolve the actor once, then fetch and render the view its
-// role needs. The sub gets the mobile crew screen; the EPC gets the dark
-// dashboard. Each side has its own data read.
+// The project link, which is now two different doors depending on the side.
+//
+// The CREW link is no longer the app: it is how a phone joins the app, once.
+// Crew work every day, so their daily surface has to be an installed icon that
+// opens signed in, not a URL somebody has to keep finding. So this route asks
+// who is holding the phone, mints a real session, and hands off to /app/[id],
+// which is the same screen the crew have always used.
+//
+// The EPC link is untouched. It is a read-only wall dashboard, opened
+// occasionally, often on a screen nobody is signed in on, and it has no daily
+// ritual that a claim would improve.
 export default async function ProjectTokenPage({
   params,
 }: {
@@ -23,30 +32,48 @@ export default async function ProjectTokenPage({
   const actor = await resolveActorFromToken(token);
   if (!actor) notFound();
 
-  // Start the sibling lookup so it overlaps the main view fetch.
-  const siblingPromise = getSiblingToken(actor);
-
-  let view;
   if (actor.role === "sub") {
-    const [data, material] = await Promise.all([getCrewHome(actor), getMaterialState(actor)]);
-    if (!data || !material) notFound();
-    view = <CrewHome token={token} projectId={actor.projectId} data={data} material={material} />;
-  } else {
-    const data = await getEpcDashboard(actor);
-    if (!data) notFound();
-    view = <EpcDashboard token={token} projectId={actor.projectId} data={data} locale={locale} />;
+    // Already claimed on this device, and belonging to this project's
+    // subcontractor: go straight to work. This is what makes a bookmarked or
+    // re-scanned link harmless rather than a second claim screen.
+    const session = await resolveActorFromSession();
+    if (
+      session?.kind === "person" &&
+      session.role === "crew" &&
+      session.orgId === actor.orgId
+    ) {
+      redirect(`/${locale}/app/${actor.projectId}`);
+    }
+
+    const [roster, core] = await Promise.all([
+      listCrewRoster(actor.projectId),
+      getCrewHome(actor),
+    ]);
+    if (!core) notFound();
+
+    return (
+      <CrewClaim
+        locale={locale}
+        token={token}
+        roster={roster}
+        projectName={core.projectName}
+      />
+    );
   }
 
-  const sibling = await siblingPromise;
+  const data = await getEpcDashboard(actor);
+  if (!data) notFound();
+
+  const sibling = await getSiblingToken(actor);
   return (
     <>
-      {view}
+      <EpcDashboard token={token} projectId={actor.projectId} data={data} locale={locale} />
       {sibling && (
         <DevSwapBar
           locale={locale}
           siblingToken={sibling.token}
           targetRole={sibling.role}
-          raised={actor.role === "sub"}
+          raised={false}
         />
       )}
     </>

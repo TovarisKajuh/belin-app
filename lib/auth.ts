@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { after } from "next/server";
 import {
   resolveActorFromToken,
   resolvePersonActor,
@@ -137,13 +138,39 @@ export async function resolveActorFromSession(): Promise<SessionActor | null> {
     // window where a stale row is read and then judged.
     const { data, error } = await db
       .from("sessions")
-      .select("person_id")
+      .select("id, person_id, expires_at")
       .eq("token_hash", hashToken(raw))
       .eq("revoked", false)
       .gt("expires_at", new Date().toISOString())
       .maybeSingle();
 
     if (error || !data) return null;
+
+    // Rolling session: a device that is used keeps being signed in, and only an
+    // abandoned one ever expires. This matters most for crew, whose whole
+    // credential IS this session: a roofer being asked to claim his name again
+    // mid project because thirty days passed would read as the app forgetting
+    // him. Refreshed only in the second half of the window, so a phone in daily
+    // use writes this row once a fortnight rather than on every page load, and
+    // fire and forget, because a failed refresh must not fail the request.
+    const msLeft = new Date(data.expires_at).getTime() - Date.now();
+    if (msLeft < (SESSION_TTL_DAYS / 2) * 86400000) {
+      const renewed = new Date(Date.now() + SESSION_TTL_DAYS * 86400000).toISOString();
+      const sessionId = data.id;
+      // Deferred through after(), not a bare void: a Supabase query builder is
+      // LAZY, so an unawaited chain is a request that never leaves. The first
+      // version of this looked right, typechecked, and refreshed nothing.
+      const renew = async () => {
+        await db.from("sessions").update({ expires_at: renewed }).eq("id", sessionId);
+      };
+      try {
+        after(() => renew().catch(() => {}));
+      } catch {
+        // Outside a request scope (a script): do it inline rather than not at all.
+        await renew().catch(() => {});
+      }
+    }
+
     return resolvePersonActor(data.person_id);
   }
 

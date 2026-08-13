@@ -398,7 +398,15 @@
     "vaultSection": "Company documents",
     "inviteSubNoProjects": "Every project already has a subcontractor. Create a new project and invite them there.",
     "crewShareSubject": "Link for the crew",
-    "crewShareMessage": "Link for daily reporting on project {project}. You do not need an account."
+    "crewShareMessage": "Link for daily reporting on project {project}. You do not need an account.",
+    "crewRoster": "Ekipa na gradbišču",
+    "crewRosterNote": "Kdor je na seznamu, se na telefonu prijavi z enim dotikom. Odstranjen član takoj izgubi dostop na vseh napravah.",
+    "crewAdd": "Dodaj",
+    "crewAddPlaceholder": "Ime in priimek",
+    "crewAddError": "Vpišite ime in priimek.",
+    "crewDisabled": "Odstranjen",
+    "crewDisable": "Odstrani",
+    "crewEnable": "Vrni"
   },
   "invite": {
     "title": "Invitation to Belin",
@@ -885,5 +893,19 @@
     "pipeline": "In preparation",
     "pipelineSub": "not started yet",
     "waiting": "Waiting for you"
+  },
+  "claim": {
+    "title": "Kdo ste?",
+    "subtitle": "Izberite svoje ime. Telefon si vas zapomni in naslednjič se aplikacija odpre kar sama.",
+    "newLabel": "Vas ni na seznamu?",
+    "newLabelFirst": "Vpišite svoje ime",
+    "newPlaceholder": "Ime in priimek",
+    "join": "To sem jaz",
+    "errInvalid": "Povezava ni veljavna. Prosite vodjo za novo.",
+    "errName": "Vpišite ime in priimek.",
+    "pickProject": "Katero gradbišče?",
+    "installTitle": "Dodajte Belin na začetni zaslon",
+    "installBody": "Odpre se z eno potezo, brez iskanja povezave.",
+    "installDismiss": "Zapri"
   }
 }

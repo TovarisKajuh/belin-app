@@ -25,6 +25,7 @@ const SCOPE_DC = "44444444-4444-4444-8444-444444444403";
 const PERSON_EPC = "66666666-6666-4666-8666-666666666601";
 const PERSON_SUB = "66666666-6666-4666-8666-666666666602";
 const PERSON_SUB_ADMIN = "66666666-6666-4666-8666-666666666603";
+const PERSON_SUB_2 = "66666666-6666-4666-8666-666666666606";
 const PERSON_FOUNDER = "66666666-6666-4666-8666-666666666604";
 // The EPC office. A Bauleiter runs the site but does not sign orders, so the
 // demo company needs the person who does: without an admin on the EPC side
@@ -146,6 +147,10 @@ const people = [
   { id: PERSON_EPC, org_id: EPC_ORG, full_name: "Matej Kovač", role: "bauleiter", email: "matej@sonce-demo.si" },
   { id: PERSON_EPC_ADMIN, org_id: EPC_ORG, full_name: "Marko Golob", role: "admin", email: "marko@sonce-demo.si" },
   { id: PERSON_SUB, org_id: SUB_ORG, full_name: "Luka Zupan", role: "crew", email: "luka@avesol-demo.si" },
+  // A second name on the roster, so the claim screen is a real choice rather
+  // than one button. Crew carry no email: their credential is the device
+  // session they claim through the project link.
+  { id: PERSON_SUB_2, org_id: SUB_ORG, full_name: "Miha Oblak", role: "crew", email: null },
   { id: PERSON_SUB_ADMIN, org_id: SUB_ORG, full_name: "Boštjan Novak", role: "admin", email: "bostjan@avesol-demo.si" },
 ];
 if (founderEmail) {

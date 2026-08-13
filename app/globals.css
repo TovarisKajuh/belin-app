@@ -2486,6 +2486,59 @@ button.gal-item {
 }
 .belin-dark .pf-foot-i b { color: var(--e-ink); font-weight: 700; }
 
+/* The crew roster in Settings. A list of men, each with one button. */
+.belin-dark .cr-list { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 8px; }
+.belin-dark .cr-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 12px;
+  background: var(--e-surface); border: 1px solid var(--e-line);
+}
+.belin-dark .cr-row.off .cr-name { color: var(--e-muted); text-decoration: line-through; }
+.belin-dark .cr-name { flex: 1; font-size: 14.5px; font-weight: 600; }
+.belin-dark .cr-tag {
+  font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700;
+  color: var(--e-muted); border: 1px solid var(--e-line); border-radius: 999px; padding: 3px 9px;
+}
+.belin-dark .cr-toggle {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: 9px;
+  color: var(--e-ink2); background: transparent; border: 1px solid var(--e-line);
+  white-space: nowrap;
+}
+.belin-dark .cr-toggle:hover:not(:disabled) { background: var(--e-surface-2); color: var(--e-ink); }
+.belin-dark .cr-toggle:disabled { opacity: .5; }
+.belin-dark .cr-add { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; }
+
+/* The claim door. One screen, thumb-sized names, nothing else on it.
+   Seen once per device, in a van at seven in the morning. */
+.belin-dark.cl-wrap {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 28px 22px;
+}
+.belin-dark .cl-card { width: 100%; max-width: 420px; position: relative; z-index: 1; }
+.belin-dark .cl-project {
+  margin: 0 0 10px; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--e-muted); font-weight: 700;
+}
+.belin-dark .cl-title { margin: 0 0 8px; font-size: 28px; font-weight: 800; letter-spacing: -.02em; }
+.belin-dark .cl-sub { margin: 0 0 24px; color: var(--e-ink2); font-size: 14.5px; line-height: 1.55; }
+.belin-dark .cl-roster { display: grid; gap: 10px; margin-bottom: 26px; }
+.belin-dark .cl-name {
+  font: inherit; font-size: 16px; font-weight: 700; text-align: left;
+  min-height: 56px; padding: 16px; border-radius: 14px; color: var(--e-ink);
+  background: var(--e-surface); border: 1px solid var(--e-line);
+  touch-action: manipulation; transition: background .15s ease;
+}
+.belin-dark .cl-name:active { background: var(--e-surface-2); }
+.belin-dark .cl-name:disabled { opacity: .5; }
+.belin-dark .cl-new { display: grid; gap: 10px; }
+.belin-dark .cl-join {
+  font: inherit; font-size: 15px; font-weight: 700; min-height: 52px; padding: 15px;
+  border-radius: 14px; border: 0; color: #14100a;
+  background: linear-gradient(180deg, var(--e-gold-2), var(--e-gold));
+  touch-action: manipulation;
+}
+.belin-dark .cl-join:disabled { opacity: .4; }
+
 .belin-dark .pl-item { container-type: inline-size; }
 
 @container (max-width: 430px) {

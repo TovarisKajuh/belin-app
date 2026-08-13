@@ -2,12 +2,14 @@
 
 import { getTranslations } from "next-intl/server";
 import { after } from "next/server";
+import { revalidatePath } from "next/cache";
 import { resolveActorFromSession } from "@/lib/auth";
 import { requireOfficeActor } from "@/lib/actor";
 import { isUuid } from "@/lib/actor-shared";
 import { canCreateInvite, epcMemberRole, type InviteKind } from "@/lib/invites-shared";
 import { createInvite } from "@/lib/data/invites";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { addCrewMember, setCrewDisabled } from "@/lib/data/crew";
 import { sendEmail, renderEmail } from "@/lib/email";
 import { appBaseUrl } from "@/lib/app-url";
 import { createVaultDocTarget } from "@/lib/storage";
@@ -187,4 +189,51 @@ export async function createInviteAction(
   });
 
   return { sent: true, error: null };
+}
+
+export type CrewState = { error: "forbidden" | "name" | null };
+
+/**
+ * Add a crew member from the office.
+ *
+ * The boss does not need to hold the link to build his crew: he types the names
+ * once and the men tap themselves in on site. Re-adding a name he removed
+ * restores that person rather than creating a twin, because re-adding somebody
+ * plainly means wanting him back.
+ */
+export async function addCrewMemberAction(
+  _prev: CrewState,
+  formData: FormData,
+): Promise<CrewState> {
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person") return { error: "forbidden" };
+
+  const result = await addCrewMember(actor, String(formData.get("fullName") ?? ""));
+  if (!result.ok) return { error: result.error };
+
+  revalidatePath("/", "layout");
+  return { error: null };
+}
+
+/**
+ * Remove or restore one crew member. Removing revokes his sessions, so a man
+ * who leaves on Friday is out on Friday, on every device, and nobody else on
+ * the crew notices.
+ */
+export async function setCrewDisabledAction(
+  personId: string,
+  disabled: boolean,
+): Promise<CrewState> {
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person") return { error: "forbidden" };
+  if (!isUuid(personId)) return { error: "forbidden" };
+
+  try {
+    await setCrewDisabled(actor, personId, disabled);
+  } catch {
+    return { error: "forbidden" };
+  }
+
+  revalidatePath("/", "layout");
+  return { error: null };
 }

@@ -6,6 +6,8 @@ import { requireOfficeActor } from "@/lib/actor";
 import { listProjectsForPerson } from "@/lib/data/projects-list";
 import { ensureCrewLink } from "@/lib/data/invites";
 import { canIssueCrewLink } from "@/lib/invites-shared";
+import { listOrgCrew } from "@/lib/data/crew";
+import { CrewRoster } from "@/components/settings/CrewRoster";
 import { appBaseUrl } from "@/lib/app-url";
 import {
   getOrgSettings,
@@ -62,6 +64,10 @@ export default async function SettingsPage({
       )
     : [];
 
+  // The roster the crew claim their names from. Same gate as the link above it:
+  // whoever may hand out the link is whoever may decide who is on the crew.
+  const crew = canIssueCrewLink(person.orgType, person.role) ? await listOrgCrew(person) : [];
+
   return (
     <div className="belin-dark">
       <div className="e-grain" aria-hidden />
@@ -109,6 +115,12 @@ export default async function SettingsPage({
           <section className="e-sec e-reveal">
             <h2 className="e-sec-h">{t("peopleSection")}</h2>
             <InvitePanel locale={locale} />
+          </section>
+        )}
+
+        {crew.length >= 0 && canIssueCrewLink(person.orgType, person.role) && (
+          <section className="e-sec e-reveal">
+            <CrewRoster crew={crew} />
           </section>
         )}
 

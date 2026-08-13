@@ -10,6 +10,7 @@ import { EpcDashboard } from "@/components/epc/EpcDashboard";
 import { DevSwapBar } from "@/components/dev/DevSwapBar";
 import { LogoutPill } from "@/components/auth/LogoutPill";
 import { ProjectList } from "@/components/app/ProjectList";
+import { CrewProjectPicker } from "@/components/crew/CrewProjectPicker";
 import { listProjectsForPerson } from "@/lib/data/projects-list";
 import { ScenarioPill } from "@/components/auth/ScenarioPill";
 
@@ -31,6 +32,20 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
   // whichever side of each one their organization stands.
   if (actor.kind === "person") {
     const projects = await listProjectsForPerson(actor);
+
+    // A roofer does not have a portfolio, he has today's site. One project
+    // opens itself, which is the whole experience for most crew: tap the icon,
+    // you are on your job. Several ask which roof and nothing more.
+    if (actor.role === "crew") {
+      if (projects.length === 1) redirect(`/${locale}/app/${projects[0].id}`);
+      return (
+        <>
+          <CrewProjectPicker locale={locale} projects={projects} />
+          <LogoutPill locale={locale} />
+        </>
+      );
+    }
+
     return (
       <>
         <ProjectList locale={locale} actor={actor} projects={projects} />
