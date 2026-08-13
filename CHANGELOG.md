@@ -2,6 +2,15 @@
 
 Every change to this repository is logged here, newest first, with date, what and why, in the same commit as the change. Knowingly taken shortcuts are logged here as debt the moment they are taken.
 
+## 2026-08-13
+
+- ADDED THE LANGUAGE SWITCH INSIDE THE APP, not just on the landing page. The founder opened the dashboard, found it in English with Slovenian data in it, and had no way to change it. Nothing was mistranslated: it was simply the /en page, and every label on it was the correct English string. The real defect was that the switch existed only in the landing header, so anyone who arrived on a project link, or whose browser asked for English, was stuck in that language for the entire session with no control anywhere on screen.
+- GAVE IT TO THE CREW TOO. "One screen, not a menu" is about not burying a roofer's work behind navigation, not about denying them their own language, and a German speaking crew can be working for a Slovenian EPC. It swaps only the first path segment, so it keeps you exactly where you are, including on a token URL where the token is the rest of the path.
+- LANDED THE FIRST THREE LANDING SCREENSHOTS, captured by the founder from the seeded demo: the EPC dashboard, the K2 review step with a real Austrian plan read into it, and the crew screen photographed on a real phone on LTE, arriving from WhatsApp. That last one is kept exactly as shot, browser chrome and all, because it is evidence of the actual claim: no app, no install, a link in a message.
+- SERVED THEM AS WEBP AT 64 TO 82 KB instead of PNG at 1.1 to 1.3 MB, a seventeenfold saving on a page that has to open on weak rural LTE. Each slot now carries the screenshot's TRUE aspect ratio rather than a guessed one, so nothing is cropped.
+- REBUILT SECTION 02 AS A FULL WIDTH BLOCK. In the two column rhythm of the other sections the dashboard came out 371px wide, which is a smudge, and an unreadable screenshot proves nothing. Text above, both devices below, bottom aligned so they stand on a common line: the dashboard now renders 849px wide. On a phone they stack, since side by side gave a 118px phone next to a 181px dashboard. Verified at 1440 and at 375: no overflow at either, and nothing wider than the viewport.
+- DEBT: the three document screenshots (completion report, acceptance protocol, invoice) are still captions. Those slots keep their framed panels until the founder captures them.
+
 ## 2026-08-12
 
 - ADDED THE LANGUAGE SWITCH TO THE APP ITSELF, which until now existed only in the landing page header. Anyone who arrived on a project link, or whose browser simply asked for English, was locked into that language for the entire session with no control anywhere on screen. The founder hit this while preparing the landing screenshots: the EPC dashboard read as half translated, because every label was correct English while all the seeded data was Slovenian. Nothing was wrong with the catalogs; there was just no way back to Slovenian.

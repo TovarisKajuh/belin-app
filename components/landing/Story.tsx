@@ -32,25 +32,30 @@ export async function Story({ locale }: { locale: string }) {
             <p className="lp-aside">{t("dropAside")}</p>
           </div>
           <div className="lp-sec-media">
-            <Shot src="/landing/wizard-review.png" caption={t("dropShot")} />
+            <Shot src="/landing/wizard-review.webp" caption={t("dropShot")} ratio="1500 / 1354" priority />
           </div>
         </div>
       </section>
 
       {/* 02: the daily loop, the only section with two devices side by side,
-          because the whole point is that both sides see one job. */}
-      <section className="lp-sec lp-sec--flip">
-        <div className="lp-sec-in">
-          <div className="lp-sec-text">
+          because the whole point is that both sides see one job.
+          It runs FULL WIDTH rather than in the two-column rhythm of the others:
+          in a side column the dashboard came out 371px wide, which is a smudge,
+          and an unreadable screenshot proves nothing. This is the one place the
+          product itself has to be legible, so the text goes above it and the
+          shots get the whole page. */}
+      <section className="lp-sec lp-sec--wide">
+        <div className="lp-sec-in lp-sec-in--column">
+          <div className="lp-sec-text lp-sec-text--center">
             <p className="lp-num">{t("loopEyebrow")}</p>
             <h2 className="lp-h2">{t("loopTitle")}</h2>
             <p className="lp-body">{t("loopBody")}</p>
-            <p className="lp-aside">{t("loopAside")}</p>
           </div>
           <div className="lp-sec-media lp-pair">
-            <Shot src="/landing/crew-phone.png" caption={t("loopShotCrew")} ratio="9 / 16" />
-            <Shot src="/landing/epc-dashboard.png" caption={t("loopShotEpc")} ratio="16 / 11" />
+            <Shot src="/landing/crew-phone.webp" caption={t("loopShotCrew")} ratio="738 / 1600" />
+            <Shot src="/landing/epc-dashboard.webp" caption={t("loopShotEpc")} ratio="1800 / 881" />
           </div>
+          <p className="lp-aside lp-aside--center">{t("loopAside")}</p>
         </div>
       </section>
 

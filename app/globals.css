@@ -2474,7 +2474,20 @@ button.gal-item {
   font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
   color: var(--e-muted); font-weight: 700; max-width: 24ch; line-height: 1.6;
 }
-.lp .lp-pair { display: grid; grid-template-columns: .62fr 1fr; gap: 16px; align-items: center; }
+/* The phone beside the dashboard. The real screenshots are a tall 1:2.17 and a
+   wide 2:1, so an even split would leave the dashboard a thin strip next to a
+   towering phone. The phone gets the narrow column and the dashboard the room
+   its shape actually wants. */
+/* The phone beside the dashboard, full width. The real screenshots are a tall
+   1:2.17 and a wide 2:1, so an even split would leave the dashboard a thin
+   strip next to a towering phone: the phone takes the narrow column and the
+   dashboard gets the room its shape wants. Aligned to the bottom so the two
+   devices sit on a common line rather than floating at different heights. */
+.lp .lp-pair { display: grid; grid-template-columns: .30fr 1fr; gap: 24px; align-items: end; }
+.lp .lp-aside--center {
+  border-left: 0; border-top: 2px solid var(--e-gold);
+  padding: 14px 0 0; margin: 4px auto 0; text-align: center; max-width: 46ch;
+}
 .lp .lp-docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
 .lp .lp-three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
@@ -2528,5 +2541,10 @@ button.gal-item {
   .lp .lp-three { grid-template-columns: 1fr; }
   .lp .lp-strip-in { grid-template-columns: 1fr; gap: 22px; }
   .lp .lp-docs { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .lp .lp-pair { grid-template-columns: .7fr 1fr; }
+  /* Stacked on a phone. Side by side at 375px gave a 118px phone next to a
+     181px dashboard, two thumbnails and no legibility. The phone is capped so
+     it does not tower over the page, and the dashboard takes the full width it
+     needs to read as a dashboard at all. */
+  .lp .lp-pair { grid-template-columns: 1fr; gap: 20px; justify-items: center; }
+  .lp .lp-pair > .lp-shot:first-child { max-width: 250px; }
 }
