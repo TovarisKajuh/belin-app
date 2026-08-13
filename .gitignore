@@ -30,3 +30,8 @@ assets/marketing/hero/
 
 # Throwaway verification scripts and screenshots for the current session.
 .tmp-qa/
+
+# Raw video takes and the ffmpeg work directory. Both regenerate from
+# `npm run marketing:video`; the finished mp4s beside them ARE committed.
+assets/marketing/video/takes/
+assets/marketing/video/.work/

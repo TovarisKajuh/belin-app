@@ -20,10 +20,21 @@ const SIZE = { width: 1200, height: 630 };
 /** The variable font, embedded so the capture cannot race a network fetch. */
 const INTER = readFileSync("node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2");
 
+// The same claim the hero makes, word for word. A share card that promises one
+// thing and a page that opens with another is the cheapest way to look sloppy.
 const COPY = {
-  sl: { eyebrow: "SOLARNA GRADBIŠČA", title: "Vsak dan na strehi, dokumentiran." },
-  de: { eyebrow: "SOLARBAUSTELLEN", title: "Jeder Tag auf dem Dach, dokumentiert." },
-  en: { eyebrow: "SOLAR SITES", title: "Every day on the roof, documented." },
+  sl: {
+    eyebrow: "SOLARNA GRADBIŠČA",
+    title: "Vaš projekt na enem mestu: od predaje do izvedbe in zaključka.",
+  },
+  de: {
+    eyebrow: "SOLARBAUSTELLEN",
+    title: "Ihr Projekt an einem Ort: von der Übergabe über die Ausführung bis zum Abschluss.",
+  },
+  en: {
+    eyebrow: "SOLAR SITES",
+    title: "Your project in one place: from handover through execution to closing.",
+  },
 };
 
 function cardHtml({ eyebrow, title }, laptop, phone) {
@@ -54,8 +65,9 @@ function cardHtml({ eyebrow, title }, laptop, phone) {
     color: #ffd21a;
   }
   h1 {
-    margin-top: 22px; max-width: 12ch;
-    font-size: 68px; line-height: 1.04; font-weight: 800; letter-spacing: -.028em;
+    margin-top: 22px; max-width: 15ch;
+    font-size: 52px; line-height: 1.1; font-weight: 800; letter-spacing: -.024em;
+    text-wrap: balance;
   }
   .url { position: absolute; left: 64px; bottom: 58px; font-size: 20px; color: #8f8a7e; font-weight: 600; }
   /* The devices sit off the right edge on purpose: cropped hardware reads as a

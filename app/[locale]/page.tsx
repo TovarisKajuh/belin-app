@@ -67,7 +67,22 @@ export default async function Home({
         <div className="lp-grid">
           <section className="lp-hero">
             <p className="lp-eyebrow">{t("eyebrow")}</p>
-            <h1 className="lp-title">{t("title")}</h1>
+            {/* The headline is a sentence in two halves, a claim and its span,
+                so it is set as two: the promise in full ink, what it covers
+                underneath in the softer one. Split on the colon the copy
+                already contains in all three languages, and falling back to one
+                plain line if a future wording has none. */}
+            {(() => {
+              const title = t("title");
+              const at = title.indexOf(":");
+              if (at < 0) return <h1 className="lp-title">{title}</h1>;
+              return (
+                <h1 className="lp-title">
+                  {title.slice(0, at + 1)}
+                  <span className="lp-title-2">{title.slice(at + 1).trim()}</span>
+                </h1>
+              );
+            })()}
             <p className="lp-sub">{t("subtitle")}</p>
 
             <ul className="lp-points">

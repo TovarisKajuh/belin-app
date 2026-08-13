@@ -1122,8 +1122,8 @@ button.gal-item {
 
 /* two-column body: the pitch, and the product it is describing */
 .lp-grid {
-  flex: 1; display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
-  gap: 48px; align-items: center; padding: 56px 0 64px;
+  flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr);
+  gap: 44px; align-items: center; padding: 56px 0 64px;
 }
 
 /* ---- the device stage -----------------------------------------------------
@@ -1164,9 +1164,13 @@ button.gal-item {
   color: var(--e-gold); margin: 0 0 20px;
 }
 .lp-title {
-  margin: 0; font-size: clamp(34px, 5.2vw, 58px); line-height: 1.06;
-  font-weight: 800; letter-spacing: -.026em; text-wrap: balance;
+  margin: 0; font-size: clamp(30px, 3.9vw, 46px); line-height: 1.1;
+  font-weight: 800; letter-spacing: -.024em; text-wrap: balance;
 }
+/* The half after the colon: same size, softer ink, its own line. It is the
+   span of the claim rather than the claim, and setting both halves at full
+   strength made a five line wall of white at the top of the page. */
+.lp-title-2 { display: block; margin-top: .12em; color: var(--e-ink2); font-weight: 700; }
 .lp-sub {
   margin: 22px 0 0; max-width: 47ch; font-size: 16px; line-height: 1.6; color: var(--e-ink2);
 }

@@ -23,7 +23,10 @@
     "marketing:all": "npm run seed && npm run marketing:shoot && npm run marketing:flow && npm run marketing:pdfs && npm run marketing:mockups && npm run marketing:og && npm run seed",
     "marketing:mockups": "node scripts/marketing/mockups.mjs",
     "marketing:cutout": "node scripts/marketing/cutout.mjs",
-    "marketing:og": "node scripts/marketing/og.mjs"
+    "marketing:og": "node scripts/marketing/og.mjs",
+    "marketing:video:takes": "node scripts/marketing/video-takes.mjs",
+    "marketing:video:cut": "node scripts/marketing/video-cut.mjs",
+    "marketing:video": "npm run marketing:video:takes && npm run marketing:video:cut"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
@@ -44,6 +47,7 @@
     "@types/node": "^22.14.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "ffmpeg-static": "^5.3.0",
     "pdfjs-dist": "^6.2.108",
     "playwright": "^1.62.1",
     "sharp": "^0.34.0",
