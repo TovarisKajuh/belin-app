@@ -1224,6 +1224,7 @@ export type Database = {
         Row: {
           auth_user_id: string | null
           created_at: string
+          disabled_at: string | null
           email: string | null
           full_name: string
           id: string
@@ -1236,6 +1237,7 @@ export type Database = {
         Insert: {
           auth_user_id?: string | null
           created_at?: string
+          disabled_at?: string | null
           email?: string | null
           full_name: string
           id?: string
@@ -1248,6 +1250,7 @@ export type Database = {
         Update: {
           auth_user_id?: string | null
           created_at?: string
+          disabled_at?: string | null
           email?: string | null
           full_name?: string
           id?: string
@@ -1801,6 +1804,7 @@ export type Database = {
           p_client_id: string
           p_quantities: Json
           p_photo_paths: string[] | null
+          p_person: string | null
         }
         Returns: string
       }

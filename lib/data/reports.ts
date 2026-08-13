@@ -146,6 +146,10 @@ export async function submitDailyReport(actor: ProjectActor, payload: SubmitRepo
       qty: q.qty,
     })) as unknown as Json,
     p_photo_paths: payload.photoPaths,
+    // Who held the phone. A claimed crew session puts a real name on the report,
+    // which is what the day pages of the completion report and the EPC's
+    // notification print instead of an anonymous "the crew".
+    p_person: actor.personId,
   });
 
   if (error || !data) throw new Error("Could not save the report");
