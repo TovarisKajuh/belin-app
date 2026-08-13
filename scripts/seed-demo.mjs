@@ -49,6 +49,58 @@ const SCOPE_START_DC = "44444444-4444-4444-8444-444444444413";
 const TOKEN_START_EPC = "77777777-7777-4777-8777-777777777703";
 const TOKEN_START_SUB = "77777777-7777-4777-8777-777777777704";
 
+// ---------------------------------------------------------------------------
+// THE TRIPWIRE
+//
+// One database serves local development, the demo and production, which is
+// fine while the only rows in it are these fixed demo UUIDs. It stops being
+// fine the day a real EPC has real projects in there: this script deletes and
+// rewrites, the runbook asks the founder to run it before every demo, and it
+// is two words long. Nothing else in the repo would stop it.
+//
+// So it refuses to run at all once an organization it does not recognise
+// exists, and says which one. The escape hatch is deliberately ugly to type
+// and impossible to run by accident or by habit.
+//
+// The real fix is a separate Supabase project for the demo. This is the guard
+// that has to hold until then.
+// ---------------------------------------------------------------------------
+// The founder's OWN account, created through the invite flow on 2026-08-10 and
+// carrying the Planung Engelmeier project he made while testing the K2 parser.
+// Allowlisted by id rather than by a rule, because a guard that cries wolf on
+// every run is a guard somebody deletes. Every delete in this script is scoped
+// to the demo project and org ids below, so this org is not at risk today; the
+// point of the check is the day that stops being true, or the day the first
+// real EPC has rows in here.
+const FOUNDER_OWN_ORG = "cebcb3df-cf6a-4367-82a6-fd22278cb1da";
+
+const DEMO_ORGS = [EPC_ORG, SUB_ORG, SUB_ORG_2, SUB_ORG_3, FOUNDER_ORG];
+const KNOWN_ORGS = [...DEMO_ORGS, FOUNDER_OWN_ORG];
+
+const { data: strangers, error: strangerError } = await db
+  .from("organizations")
+  .select("id, name")
+  .not("id", "in", `(${KNOWN_ORGS.join(",")})`);
+
+if (strangerError) {
+  console.error(`Refusing to seed: could not check for real organizations (${strangerError.message}).`);
+  process.exit(1);
+}
+
+if (strangers?.length && !process.argv.includes("--yes-destroy-real-data")) {
+  console.error("");
+  console.error("REFUSING TO SEED. This database holds organizations that are not the demo:");
+  for (const org of strangers) console.error(`  ${org.name}  (${org.id})`);
+  console.error("");
+  console.error("Seeding deletes and rewrites data. If those are real customers, running");
+  console.error("this would destroy their projects, reports, hours and documents.");
+  console.error("");
+  console.error("If you are certain this database is disposable, run:");
+  console.error("  npm run seed -- --yes-destroy-real-data");
+  console.error("");
+  process.exit(1);
+}
+
 async function upsert(table, rows, onConflict = "id") {
   const { error } = await db.from(table).upsert(rows, { onConflict });
   if (error) {
