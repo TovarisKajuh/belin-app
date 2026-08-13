@@ -2704,7 +2704,20 @@ button.gal-item {
   border-left: 0; border-top: 2px solid var(--e-gold);
   padding: 14px 0 0; margin: 4px auto 0; text-align: center; max-width: 46ch;
 }
-.lp .lp-docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+/* The three closing documents, fanned like sheets on a desk.
+   The widths and the two overlaps are chosen to total exactly 100 percent
+   (36 + 40 + 36 minus two 6 percent overlaps), so the row fills its column and
+   can never push the page sideways. The middle sheet is the largest, sits on
+   top and rides a little higher: it is the one carrying the signatures.
+   Each image already contains its own shadow, baked at capture time on the
+   rotated silhouette, so nothing here draws one. */
+.lp .lp-papers {
+  width: 100%; display: flex; align-items: flex-end; justify-content: center;
+}
+.lp .lp-papers img { width: 36%; height: auto; position: relative; z-index: 1; }
+.lp .lp-papers img:nth-child(2) {
+  width: 40%; margin: 0 -6%; z-index: 2; transform: translateY(-5%);
+}
 
 .lp .lp-three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .lp .lp-card3 {
@@ -2756,7 +2769,21 @@ button.gal-item {
   .lp .lp-sec--flip .lp-sec-in > .lp-sec-text { order: 0; }
   .lp .lp-three { grid-template-columns: 1fr; }
   .lp .lp-strip-in { grid-template-columns: 1fr; gap: 22px; }
-  .lp .lp-docs { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  /* On a phone the fan would put three sheets in 335px, about 120px each, where
+     nothing on the page is legible and the point of showing real documents is
+     lost. They become a swipeable row instead: one sheet at a time, nearly full
+     width, with the next one peeking to say there are more. */
+  .lp .lp-papers {
+    margin: 0 -20px; display: flex; align-items: flex-end;
+    justify-content: flex-start; gap: 14px;
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    padding: 0 20px 4px; scrollbar-width: none;
+  }
+  .lp .lp-papers::-webkit-scrollbar { display: none; }
+  .lp .lp-papers img,
+  .lp .lp-papers img:nth-child(2) {
+    width: 78%; flex: none; margin: 0; transform: none; scroll-snap-align: center;
+  }
   /* Stacked on a phone. Side by side at 375px gave a 118px phone next to a
      181px dashboard, two thumbnails and no legibility. The phone is capped so
      it does not tower over the page, and the dashboard takes the full width it

@@ -72,6 +72,84 @@ function deviceHtml(dataUri, device, { rotateY, rotateX, rotateZ, scale }) {
 <div class="stage"><div class="device"><div class="screen"><img src="${dataUri}"></div></div></div>`;
 }
 
+/** How much of an A4 page survives the crop. Measured, not chosen by eye: the
+ *  acceptance protocol's signatures sit at 58 percent of page height and the
+ *  invoice's reverse-charge clause at 48 percent, so 65 percent keeps the proof
+ *  in every one of the three while cutting the empty half no document fills. */
+const PAPER_KEEP = 0.65;
+
+/**
+ * Builds the HTML for one angled SHEET OF PAPER.
+ *
+ * Same trick as the devices, three differences. The sheet is white rather than a
+ * dark body, so it needs no bezel. It fades out at the bottom instead of ending
+ * on a hard edge, because a cropped page with a straight cut reads as a mistake
+ * while a fade reads as a page continuing past the frame. And the shadow is a
+ * `drop-shadow` FILTER on the wrapper rather than a `box-shadow` on the sheet,
+ * because box-shadow draws the box, ignoring the fade, and would print a hard
+ * rectangle under the very edge the fade exists to soften.
+ */
+function paperHtml(dataUri, width, height, { rotateY, rotateZ, rotateX = 3, scale = 1 }) {
+  return `<!doctype html>
+<style>
+  html, body { margin: 0; background: transparent; }
+  .stage {
+    width: ${Math.round(width * 1.9)}px;
+    height: ${Math.round(height * 1.5)}px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .shade { filter: drop-shadow(26px 34px 44px rgba(0,0,0,.55)) drop-shadow(4px 8px 12px rgba(0,0,0,.35)); }
+  .tilt {
+    transform: perspective(1600px)
+      rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale});
+  }
+  .sheet {
+    width: ${width}px; height: ${height}px; background: #fff;
+    border-radius: 3px; overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0 80%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0 80%, transparent 100%);
+  }
+  .sheet img { width: 100%; height: auto; display: block; }
+</style>
+<div class="stage"><div class="shade"><div class="tilt"><div class="sheet">
+  <img src="${dataUri}">
+</div></div></div></div>`;
+}
+
+async function renderPaper(browser, sourcePng, angle, name, width = 900) {
+  const meta = await sharp(sourcePng).metadata();
+  // Cropped BEFORE the capture, so the fade is applied to the sheet that will
+  // actually be shown rather than to a full page scaled down inside it.
+  const cropped = await sharp(sourcePng)
+    .extract({ left: 0, top: 0, width: meta.width, height: Math.round(meta.height * PAPER_KEEP) })
+    .png()
+    .toBuffer();
+
+  const height = Math.round((width * Math.round(meta.height * PAPER_KEEP)) / meta.width);
+  const dataUri = `data:image/png;base64,${cropped.toString("base64")}`;
+
+  const page = await browser.newPage({ deviceScaleFactor: 2 });
+  await page.setContent(paperHtml(dataUri, width, height, angle));
+  const buffer = await page.locator(".stage").screenshot({ type: "png", omitBackground: true });
+  const trimmed = await sharp(buffer).trim({ threshold: 1 }).png().toBuffer();
+  writeFileSync(`${OUT}/${name}.png`, trimmed);
+
+  // The serving copy, straight away rather than in a second script: a master
+  // with no WebP beside it is an asset the page cannot use, and the two drifting
+  // apart is how a landing page ends up showing last week's document.
+  mkdirSync("public/landing", { recursive: true });
+  const web = await sharp(trimmed)
+    .resize({ width: 920, withoutEnlargement: true })
+    .webp({ quality: 84, alphaQuality: 92, effort: 6 })
+    .toFile(`public/landing/${name}.webp`);
+
+  const out = await sharp(trimmed).metadata();
+  console.log(
+    `paper  ${name.padEnd(24)} ${out.width}x${out.height} -> ${web.width}x${web.height} ${(web.size / 1024).toFixed(0)} KB`,
+  );
+  await page.close();
+}
+
 async function renderMockup(browser, sourcePng, device, angle, name) {
   const dataUri = `data:image/png;base64,${readFileSync(sourcePng).toString("base64")}`;
   const page = await browser.newPage({ deviceScaleFactor: 2 });
@@ -150,6 +228,29 @@ async function main() {
       continue;
     }
     await renderMockup(browser, src, device, angle, name);
+  }
+
+  // The three closing documents, as sheets on a desk. Order is chronological
+  // and the middle position is the one the eye lands on first, which is why the
+  // acceptance protocol is in it: it is the only one of the three carrying
+  // signatures, and signed paper is the strongest single image this product has.
+  // The outer two mirror each other exactly so the row reads as one object.
+  const papers = [
+    // Signs matter and were got wrong first time: a positive rotateY brings the
+    // sheet's RIGHT edge toward the viewer, so the left sheet takes the positive
+    // value to face the middle. With them reversed the three splayed outward and
+    // read as three separate objects instead of one fanned set.
+    ["assets/marketing/docs/completion-cover.png", { rotateY: 9, rotateZ: -1.2 }, "doc-report"],
+    ["assets/marketing/docs/abnahme.png", { rotateY: 0, rotateZ: 0, rotateX: 4, scale: 1.06 }, "doc-abnahme"],
+    ["assets/marketing/docs/invoice.png", { rotateY: -9, rotateZ: 1.2 }, "doc-invoice"],
+  ];
+
+  for (const [src, angle, name] of papers) {
+    if (!existsSync(src)) {
+      console.log(`skip ${name}: ${src} not rendered yet`);
+      continue;
+    }
+    await renderPaper(browser, src, angle, name);
   }
 
   await browser.close();
