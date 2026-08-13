@@ -10,6 +10,22 @@
 
 **Tech Stack:** Playwright (present), pdfjs-dist (new devDependency), ffmpeg-static (new devDependency, video phase only), sharp (present), @react-pdf/renderer (present).
 
+## Status, end of 2026-08-13
+
+DONE: Task 1 (screenshot pipeline), Task 2 (completion report cover), Task 3
+(PDF pages to images), Task 4 (machine-driven demo flow), plus two founder
+additions not in the original plan: angled device mockups via CSS 3D capture,
+and flood-fill background removal. All committed and pushed.
+
+NEXT: Task 5 (landing page, the "pretty af" pass), Task 6 (pitch PDF brochure),
+Task 7 (demo video), Task 8 (close out). Assets are ready and regenerate with
+`npm run marketing:all`.
+
+Commands: `marketing:shoot`, `marketing:flow`, `marketing:pdfs`,
+`marketing:mockups`, `marketing:all`.
+
+---
+
 ## Global Constraints
 
 - Never use em dashes or en dashes in any produced text, including inside generated images' captions, the brochure, and video title cards.
