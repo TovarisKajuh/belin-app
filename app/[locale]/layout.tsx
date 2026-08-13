@@ -22,17 +22,17 @@ import "../globals.css";
  */
 const SHARE = {
   sl: {
-    title: "Belin, vsak dan na strehi dokumentiran",
+    title: "Belin, vaš projekt na enem mestu",
     description:
       "Belin povezuje EPC izvajalce in njihove podizvajalce. Dnevna poročila s fotografijami, izračunan napredek, režijske ure in dodatna dela, vse na enem mestu.",
   },
   de: {
-    title: "Belin, jeder Tag auf dem Dach dokumentiert",
+    title: "Belin, Ihr Projekt an einem Ort",
     description:
       "Belin verbindet EPC-Unternehmen und ihre Montagepartner. Tagesberichte mit Fotos, berechneter Fortschritt, Regiestunden und Nachträge, alles an einem Ort.",
   },
   en: {
-    title: "Belin, every day on the roof documented",
+    title: "Belin, your project in one place",
     description:
       "Belin connects solar EPCs and their installation subcontractors. Daily reports with photos, calculated progress, extra hours and change orders, all in one place.",
   },
