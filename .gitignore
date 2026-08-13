@@ -27,3 +27,6 @@ screenshots/
 # reads except the WebP step is not worth carrying in the history forever. The
 # source exports ARE committed: those exist nowhere else.
 assets/marketing/hero/
+
+# Throwaway verification scripts and screenshots for the current session.
+.tmp-qa/
