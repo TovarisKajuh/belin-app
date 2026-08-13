@@ -3,14 +3,87 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { appBaseUrl } from "@/lib/app-url";
 import { SplashGate } from "@/components/SplashGate";
 import "@fontsource-variable/inter";
 import "@fontsource/jetbrains-mono";
 import "../globals.css";
 
-export const metadata: Metadata = {
-  title: "Belin",
-  description: "Collaboration between solar EPCs and their installation subcontractors.",
+/**
+ * What a shared link looks like before anyone has clicked it.
+ *
+ * This product spreads by one person pasting a URL into WhatsApp, so the
+ * preview card is not decoration: without it a share is a bare blue link. The
+ * copy is per locale because the card is per locale, and it is written here
+ * rather than pulled from the message catalog on purpose. Metadata is
+ * generated at build time for a static page, the strings are three lines, and
+ * a catalog lookup here would make the share card depend on request context
+ * that the crawler never provides.
+ */
+const SHARE = {
+  sl: {
+    title: "Belin, vsak dan na strehi dokumentiran",
+    description:
+      "Belin povezuje EPC izvajalce in njihove podizvajalce. Dnevna poročila s fotografijami, izračunan napredek, režijske ure in dodatna dela, vse na enem mestu.",
+  },
+  de: {
+    title: "Belin, jeder Tag auf dem Dach dokumentiert",
+    description:
+      "Belin verbindet EPC-Unternehmen und ihre Montagepartner. Tagesberichte mit Fotos, berechneter Fortschritt, Regiestunden und Nachträge, alles an einem Ort.",
+  },
+  en: {
+    title: "Belin, every day on the roof documented",
+    description:
+      "Belin connects solar EPCs and their installation subcontractors. Daily reports with photos, calculated progress, extra hours and change orders, all in one place.",
+  },
+} as const;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const share = SHARE[locale as keyof typeof SHARE] ?? SHARE.sl;
+  // Absolute URLs are required for og:image, and the base comes from the same
+  // helper the emailed links use: never from the request's Host header.
+  const base = appBaseUrl();
+
+  return {
+    ...BASE,
+    title: share.title,
+    description: share.description,
+    ...(base ? { metadataBase: new URL(base) } : {}),
+    alternates: {
+      canonical: `/${locale}`,
+      languages: Object.fromEntries(routing.locales.map((l) => [l, `/${l}`])),
+    },
+    openGraph: {
+      type: "website",
+      siteName: "Belin",
+      locale,
+      url: `/${locale}`,
+      title: share.title,
+      description: share.description,
+      images: [{ url: `/og/belin-${locale}.jpg`, width: 1200, height: 630, alt: share.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: share.title,
+      description: share.description,
+      images: [`/og/belin-${locale}.jpg`],
+    },
+  };
+}
+
+/**
+ * Everything that does not depend on the language.
+ *
+ * NOT exported: Next refuses a file that exports both `metadata` and
+ * `generateMetadata`, and the share card has to vary by locale, so the static
+ * half becomes a plain constant that the generated half spreads.
+ */
+const BASE: Metadata = {
   icons: {
     apple: "/icons/apple-touch-icon.png",
   },
