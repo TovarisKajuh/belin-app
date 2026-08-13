@@ -126,11 +126,16 @@ export async function resolvePersonActor(personId: string): Promise<PersonActor 
   const db = createAdminClient();
   const { data, error } = await db
     .from("people")
-    .select("id, org_id, full_name, email, role, organizations (type)")
+    .select("id, org_id, full_name, email, role, disabled_at, organizations (type)")
     .eq("id", personId)
     .maybeSingle();
 
   if (error || !data || !data.organizations) return null;
+
+  // A removed crew member stops existing here, which is what makes the boss's
+  // remove button mean anything: his session dies on the next navigation
+  // rather than at the end of its thirty days.
+  if (data.disabled_at) return null;
 
   const orgType = data.organizations.type as "epc" | "sub";
   if (orgType !== "epc" && orgType !== "sub") return null;
