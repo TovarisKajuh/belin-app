@@ -2422,6 +2422,19 @@ button.gal-item {
 
 @media (max-width: 860px) {
   .belin-dark .pf-strip { grid-template-columns: 1fr 1fr; }
+}
+
+/* The card lays itself out from ITS OWN width, not the window's.
+   This was a viewport media query, which is the wrong measurement and produced
+   a real break: at 1440px the list puts three cards across, each 361px wide,
+   and the three column card needs about 450. The window was wide, so the query
+   never fired, the figure column took its 192px, and the title column collapsed
+   to NINE pixels, wrapping "245.7 kWp" one word per line down a 454px tall
+   card. A container query asks the only question that matters here: does this
+   card, right now, have room for a row. */
+.belin-dark .pl-item { container-type: inline-size; }
+
+@container (max-width: 430px) {
   .belin-dark .pl-link--rich { grid-template-columns: 1fr auto; }
   .belin-dark .pl-figure { grid-column: 1 / -1; justify-content: space-between; }
   .belin-dark .pf-spark { width: 100%; }
