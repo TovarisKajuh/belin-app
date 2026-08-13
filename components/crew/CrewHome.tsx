@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { CrewReportForm } from "./CrewReportForm";
 import { MaterialCheck } from "./MaterialCheck";
 import { IncidentButton } from "./IncidentButton";
+import { InstallHint } from "./InstallHint";
 import { RequestButton } from "./RequestButton";
 import { CommandBar } from "@/components/project/CommandBar";
 import { TodayPosts } from "@/components/project/TodayPosts";
@@ -52,6 +53,11 @@ export async function CrewHome({
             <span className="b-progress-unit"> %</span>
           </div>
         </div>
+
+        {/* Shown until the app is on the home screen, then never again. A
+            permanent session is only half of "it is an app": the other half is
+            not having to find it. */}
+        <InstallHint />
 
         {/* OUTSIDE the material gate, deliberately. Rain on day one, before
             the delivery has even arrived, is exactly what this is for, and the
