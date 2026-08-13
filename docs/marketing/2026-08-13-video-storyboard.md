@@ -59,6 +59,47 @@ Everything is scripted. No screen recording by hand, no editor.
 
 Regenerate with `npm run marketing:video`.
 
+## Ad 2: the document speaks (founder's idea, 2026-08-13)
+
+Not a demo. A single artifact, held long enough to be read, then one line.
+
+| t | what | audio |
+|---|---|---|
+| 0 to 5 | the completion report, alone, filling the frame, slowly pushing in. Nothing else. No logo, no caption, no music. | silence |
+| 5 to 12 | the sheet holds, then the mark and getbelin.com fade in | "To poročilo je podizvajalec ustvaril za svojega naročnika, z Belinom." |
+| 12 to 14 | end card | "Belin. getbelin.com" |
+
+Why it is a good idea: it inverts the demo. A feature tour asks the viewer to
+imagine the outcome; this shows the outcome first and explains it after. Five
+seconds of silence in a feed full of noise is a pattern interrupt, and the
+report is the most credible object this company owns, because a prospect
+recognises the document he already chases people for.
+
+**It must still work muted**, which is the one thing that has to be got right.
+Most of the feed will never hear the voice, so the line has to be burned in as
+type at the same moment it is spoken, not offered as an accessibility subtitle.
+The silence then reads as deliberate rather than broken.
+
+Open questions, to settle before it is built:
+
+1. **Whose voice.** The founder's own, in Slovenian, is more credible than any
+   synthetic one for fifteen words and costs one phone recording. German is the
+   real question: a synthetic German voice on an ad aimed at German EPCs will be
+   heard as synthetic, so that version wants a native speaker or no voice at
+   all.
+2. **Which document.** The completion report reads as the fullest, but the
+   acceptance protocol carries two signatures, which is the harder thing to
+   fake. Worth cutting both and choosing by eye.
+3. **The closing line in Slovenian.** "Get Belin" is a good English tag and does
+   not translate: "Vzemi Belin" is wrong. Either keep the English as a brand
+   line or end on "Belin. getbelin.com" and let the mark do the work.
+4. **Length.** 14 seconds as scripted. Feed formats reward under 15, so this fits
+   without compression.
+
+Buildable on the existing pipeline: the document is already a transparent PNG
+from the paper renderer, the push-in is the same zoompan the paper scene uses,
+and the only new machinery is one audio track laid over the timeline.
+
 ## How this is usually done, and why not that way
 
 For the record, since the question came up.
