@@ -406,7 +406,9 @@
     "crewAddError": "Vpišite ime in priimek.",
     "crewDisabled": "Odstranjen",
     "crewDisable": "Odstrani",
-    "crewEnable": "Vrni"
+    "crewEnable": "Vrni",
+    "crewAddEmail": "E-poštni naslov (neobvezno)",
+    "crewNoEmail": "brez e-pošte"
   },
   "invite": {
     "title": "Einladung zu Belin",
@@ -895,13 +897,18 @@
     "waiting": "Wartet auf Sie"
   },
   "claim": {
-    "title": "Kdo ste?",
-    "subtitle": "Izberite svoje ime. Telefon si vas zapomni in naslednjič se aplikacija odpre kar sama.",
-    "newLabel": "Vas ni na seznamu?",
-    "newLabelFirst": "Vpišite svoje ime",
+    "title": "Prijava na gradbišče",
+    "subtitle": "Vpišite se enkrat. Telefon si vas zapomni in naslednjič se aplikacija odpre kar sama.",
+    "nameLabel": "Ime in priimek",
     "newPlaceholder": "Ime in priimek",
-    "join": "To sem jaz",
+    "emailLabel": "E-poštni naslov",
+    "emailPlaceholder": "vase.ime@primer.si",
+    "join": "Pošlji povezavo",
+    "joining": "Pošiljam ...",
+    "sentTitle": "Preverite e-pošto",
+    "sentBody": "Poslali smo vam povezavo. Odprite jo na tem telefonu in ostali boste prijavljeni.",
     "errInvalid": "Povezava ni veljavna. Prosite vodjo za novo.",
+    "errEmail": "Vpišite veljaven e-poštni naslov.",
     "errName": "Vpišite ime in priimek.",
     "pickProject": "Katero gradbišče?",
     "installTitle": "Dodajte Belin na začetni zaslon",

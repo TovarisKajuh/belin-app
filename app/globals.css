@@ -2521,7 +2521,13 @@ button.gal-item {
 }
 .belin-dark .cr-toggle:hover:not(:disabled) { background: var(--e-surface-2); color: var(--e-ink); }
 .belin-dark .cr-toggle:disabled { opacity: .5; }
-.belin-dark .cr-add { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; }
+.belin-dark .cr-add { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: start; }
+.belin-dark .cr-name { display: grid; gap: 2px; }
+.belin-dark .cr-mail { font-style: normal; font-size: 12px; font-weight: 500; color: var(--e-muted); }
+.belin-dark .cr-mail--none { color: var(--e-warn, #d9a441); }
+@media (max-width: 620px) {
+  .belin-dark .cr-add { grid-template-columns: 1fr; }
+}
 
 /* The claim door. One screen, thumb-sized names, nothing else on it.
    Seen once per device, in a van at seven in the morning. */

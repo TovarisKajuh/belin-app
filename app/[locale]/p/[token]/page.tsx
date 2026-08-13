@@ -5,7 +5,6 @@ import { resolveActorFromSession } from "@/lib/auth";
 import { getCrewHome } from "@/lib/data/reports";
 import { getEpcDashboard } from "@/lib/data/epc-dashboard";
 import { getSiblingToken } from "@/lib/data/tokens";
-import { listCrewRoster } from "@/lib/data/crew";
 import { CrewClaim } from "@/components/crew/CrewClaim";
 import { EpcDashboard } from "@/components/epc/EpcDashboard";
 import { DevSwapBar } from "@/components/dev/DevSwapBar";
@@ -45,20 +44,10 @@ export default async function ProjectTokenPage({
       redirect(`/${locale}/app/${actor.projectId}`);
     }
 
-    const [roster, core] = await Promise.all([
-      listCrewRoster(actor.projectId),
-      getCrewHome(actor),
-    ]);
+    const core = await getCrewHome(actor);
     if (!core) notFound();
 
-    return (
-      <CrewClaim
-        locale={locale}
-        token={token}
-        roster={roster}
-        projectName={core.projectName}
-      />
-    );
+    return <CrewClaim locale={locale} token={token} projectName={core.projectName} />;
   }
 
   const data = await getEpcDashboard(actor);

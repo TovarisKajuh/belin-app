@@ -18,7 +18,7 @@ import { normalizeCrewName } from "@/lib/crew-shared";
 export function CrewRoster({
   crew,
 }: {
-  crew: { id: string; fullName: string; disabledAt: string | null }[];
+  crew: { id: string; fullName: string; email: string | null; disabledAt: string | null }[];
 }) {
   const t = useTranslations("settings");
   const [state, addAction] = useActionState<CrewState, FormData>(addCrewMemberAction, {
@@ -41,7 +41,18 @@ export function CrewRoster({
         <ul className="cr-list">
           {crew.map((person) => (
             <li key={person.id} className={`cr-row${person.disabledAt ? " off" : ""}`}>
-              <span className="cr-name">{person.fullName}</span>
+              <span className="cr-name">
+                {person.fullName}
+                {/* No address means no way in yet: he can still be added by his
+                    boss and claim himself later through the site link, but the
+                    boss should be able to see which of his men are actually
+                    set up. */}
+                {person.email ? (
+                  <em className="cr-mail">{person.email}</em>
+                ) : (
+                  <em className="cr-mail cr-mail--none">{t("crewNoEmail")}</em>
+                )}
+              </span>
               {person.disabledAt && <span className="cr-tag">{t("crewDisabled")}</span>}
               <button
                 type="button"
@@ -63,6 +74,13 @@ export function CrewRoster({
           value={name}
           placeholder={t("crewAddPlaceholder")}
           onChange={(event) => setName(event.target.value)}
+        />
+        <input
+          className="b-field"
+          name="email"
+          type="email"
+          inputMode="email"
+          placeholder={t("crewAddEmail")}
         />
         <button type="submit" className="rp-send" disabled={normalizeCrewName(name) === null}>
           {t("crewAdd")}

@@ -208,7 +208,11 @@ export async function addCrewMemberAction(
   const actor = await resolveActorFromSession();
   if (!actor || actor.kind !== "person") return { error: "forbidden" };
 
-  const result = await addCrewMember(actor, String(formData.get("fullName") ?? ""));
+  const result = await addCrewMember(
+    actor,
+    String(formData.get("fullName") ?? ""),
+    String(formData.get("email") ?? ""),
+  );
   if (!result.ok) return { error: result.error };
 
   revalidatePath("/", "layout");

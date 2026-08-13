@@ -104,13 +104,13 @@ export async function claimCrewIdentity(
 /** The boss's roster: every crew person of his own company, disabled included. */
 export async function listOrgCrew(
   actor: PersonActor,
-): Promise<{ id: string; fullName: string; disabledAt: string | null }[]> {
+): Promise<{ id: string; fullName: string; email: string | null; disabledAt: string | null }[]> {
   if (!canIssueCrewLink(actor.orgType, actor.role)) throw new Error("Forbidden");
 
   const db = createAdminClient();
   const { data } = await db
     .from("people")
-    .select("id, full_name, disabled_at")
+    .select("id, full_name, email, disabled_at")
     .eq("org_id", actor.orgId)
     .eq("role", "crew")
     .order("full_name");
@@ -118,6 +118,7 @@ export async function listOrgCrew(
   return (data ?? []).map((person) => ({
     id: person.id,
     fullName: person.full_name,
+    email: person.email,
     disabledAt: person.disabled_at,
   }));
 }
@@ -154,15 +155,87 @@ export async function setCrewDisabled(
   }
 }
 
+/**
+ * Finds or creates the crew person behind an email address on a project, so a
+ * magic link can be sent to it.
+ *
+ * The link proves you are on the site; the email proves you are you. Neither
+ * alone is enough, and that combination is what killed the impersonation hole:
+ * with a name list, anybody holding a forwarded link could file a report as
+ * Luka. Nobody can receive Luka's mail but Luka.
+ *
+ * An address already in the company signs that person in rather than making a
+ * second one, which also means the boss can add his crew in advance and the men
+ * just log in.
+ */
+export async function findOrCreateCrewByEmail(
+  rawToken: string,
+  rawEmail: string,
+  fullName: string,
+): Promise<
+  { ok: true; personId: string; projectId: string } | { ok: false; error: "invalid" | "email" | "name" }
+> {
+  const email = rawEmail.trim().toLowerCase();
+  // Deliberately loose: the address either receives the link or it does not,
+  // and a regex that rejects a real address is worse than one that lets a
+  // typo through to an email that never arrives.
+  if (!email.includes("@") || email.length < 5) return { ok: false, error: "email" };
+
+  const db = createAdminClient();
+  const { data: tokenRow } = await db
+    .from("project_tokens")
+    .select("project_id, role, revoked")
+    .eq("token", rawToken)
+    .maybeSingle();
+  if (!tokenRow || tokenRow.revoked || tokenRow.role !== "sub") {
+    return { ok: false, error: "invalid" };
+  }
+
+  const { data: project } = await db
+    .from("projects")
+    .select("sub_org_id")
+    .eq("id", tokenRow.project_id)
+    .maybeSingle();
+  if (!project?.sub_org_id) return { ok: false, error: "invalid" };
+
+  // Already a person anywhere in the product: that is who they are. One address
+  // is one person, so this never creates a twin, and a man whose boss already
+  // added him just receives his link.
+  const { data: existing } = await db
+    .from("people")
+    .select("id, org_id, disabled_at")
+    .ilike("email", email)
+    .maybeSingle();
+
+  if (existing) {
+    if (existing.disabled_at) return { ok: false, error: "invalid" };
+    return { ok: true, personId: existing.id, projectId: tokenRow.project_id };
+  }
+
+  const name = normalizeCrewName(fullName);
+  if (!name) return { ok: false, error: "name" };
+
+  const { data: person, error } = await db
+    .from("people")
+    .insert({ org_id: project.sub_org_id, full_name: name, email, role: "crew" })
+    .select("id")
+    .single();
+  if (error || !person) return { ok: false, error: "invalid" };
+
+  return { ok: true, personId: person.id, projectId: tokenRow.project_id };
+}
+
 /** Adds a crew member from the office, without anyone having to hold a link. */
 export async function addCrewMember(
   actor: PersonActor,
   rawName: string,
+  rawEmail?: string,
 ): Promise<{ ok: true } | { ok: false; error: "forbidden" | "name" }> {
   if (!canIssueCrewLink(actor.orgType, actor.role)) return { ok: false, error: "forbidden" };
 
   const name = normalizeCrewName(rawName);
   if (!name) return { ok: false, error: "name" };
+  const email = rawEmail?.trim().toLowerCase() || null;
 
   const db = createAdminClient();
   const { data: existing } = await db
@@ -184,7 +257,7 @@ export async function addCrewMember(
 
   const { error } = await db
     .from("people")
-    .insert({ org_id: actor.orgId, full_name: name, role: "crew" });
+    .insert({ org_id: actor.orgId, full_name: name, email, role: "crew" });
   if (error) return { ok: false, error: "forbidden" };
   return { ok: true };
 }

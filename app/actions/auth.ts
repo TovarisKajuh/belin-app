@@ -74,9 +74,15 @@ export async function requestMagicLink(
     .ilike("email", email)
     .maybeSingle();
 
-  // Crew never receives a login link. Crew reaches the site through the project
-  // link on their phone, and a crew account must not open the office surfaces.
-  if (!person || person.role === "crew" || !person.email) return { sent: true };
+  // Crew receive a login link like everybody else.
+  //
+  // They used to be refused here, on the theory that a link on the phone was
+  // enough. It was not: crew use this app every working day, and an anonymous
+  // link means anyone holding it can file a report under any name. One verified
+  // way in for every person in the product, office or roof, is both safer and
+  // one system instead of two. What still separates them is what they can
+  // REACH once inside, which is the office gate's job, not the login's.
+  if (!person || !person.email) return { sent: true };
 
   // Rate limit: a stranger typing somebody's address repeatedly must not be
   // able to fill their inbox.
