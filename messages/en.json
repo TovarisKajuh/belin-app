@@ -772,7 +772,15 @@
       "note": "Notes",
       "signEpc": "For the client",
       "signSub": "For the contractor",
-      "title2": "Acceptance protocol"
+      "title2": "Acceptance protocol",
+      "photos": "Fotografij",
+      "incidents": "Zapletov",
+      "summary": "Povzetek",
+      "sheetsCount": "Listi režijskih ur",
+      "extrasCount": "Dodatna dela",
+      "incidentsCount": "Zapleti",
+      "dayList": "Potek del po dnevih",
+      "crew": "Ekipa"
     },
     "dayDoc": {
       "reportNo": "No.",

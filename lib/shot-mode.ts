@@ -16,6 +16,14 @@ import { cookies } from "next/headers";
  * logout button.
  */
 export async function isShotMode(): Promise<boolean> {
-  const jar = await cookies();
-  return jar.get("belin-shot")?.value === "1";
+  try {
+    const jar = await cookies();
+    return jar.get("belin-shot")?.value === "1";
+  } catch {
+    // Outside a request scope: a script, or a unit test calling a data function
+    // directly. There is no browser to take a screenshot for, so the honest
+    // answer is no, and throwing here would make a display concern able to
+    // break a caller that has nothing to do with screenshots.
+    return false;
+  }
 }

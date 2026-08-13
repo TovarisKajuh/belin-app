@@ -772,7 +772,15 @@
       "note": "Opombe",
       "signEpc": "Za naročnika",
       "signSub": "Za izvajalca",
-      "title2": "Zapisnik o prevzemu"
+      "title2": "Zapisnik o prevzemu",
+      "photos": "Fotografij",
+      "incidents": "Zapletov",
+      "summary": "Povzetek",
+      "sheetsCount": "Listi režijskih ur",
+      "extrasCount": "Dodatna dela",
+      "incidentsCount": "Zapleti",
+      "dayList": "Potek del po dnevih",
+      "crew": "Ekipa"
     },
     "dayDoc": {
       "reportNo": "št.",

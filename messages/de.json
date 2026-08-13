@@ -772,7 +772,15 @@
       "note": "Anmerkungen",
       "signEpc": "Für den Auftraggeber",
       "signSub": "Für den Auftragnehmer",
-      "title2": "Abnahmeprotokoll"
+      "title2": "Abnahmeprotokoll",
+      "photos": "Fotografij",
+      "incidents": "Zapletov",
+      "summary": "Povzetek",
+      "sheetsCount": "Listi režijskih ur",
+      "extrasCount": "Dodatna dela",
+      "incidentsCount": "Zapleti",
+      "dayList": "Potek del po dnevih",
+      "crew": "Ekipa"
     },
     "dayDoc": {
       "reportNo": "Nr.",

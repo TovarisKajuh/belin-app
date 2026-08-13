@@ -1,0 +1,27 @@
+<!doctype html>
+<meta charset="utf-8" />
+<style>
+  html, body { margin: 0; background: #fff; }
+  canvas { display: block; }
+</style>
+<canvas id="page"></canvas>
+<script type="module">
+  // A one-page pdfjs viewer, driven by Playwright.
+  //
+  // The documents on the landing page and in the brochure are photographs of
+  // the REAL PDFs the product renders, not HTML lookalikes. This is what turns
+  // one into an image: bytes in, canvas out, screenshot the canvas.
+  import * as pdfjs from "/pdfjs/pdf.mjs";
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.mjs";
+
+  window.renderPdfPage = async (bytes, pageNumber, scale) => {
+    const doc = await pdfjs.getDocument({ data: new Uint8Array(bytes) }).promise;
+    const page = await doc.getPage(pageNumber);
+    const viewport = page.getViewport({ scale });
+    const canvas = document.getElementById("page");
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+    return { width: canvas.width, height: canvas.height, pages: doc.numPages };
+  };
+</script>

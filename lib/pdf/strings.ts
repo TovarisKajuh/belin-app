@@ -108,6 +108,14 @@ export function completionStrings(locale: DocLocale): CompletionStrings {
     colNote: t("final.doc.colNote"),
     none: t("final.doc.none"),
     generated: t("final.doc.generated"),
+    photos: t("final.doc.photos"),
+    incidents: t("final.doc.incidents"),
+    summary: t("final.doc.summary"),
+    sheetsCount: t("final.doc.sheetsCount"),
+    extrasCount: t("final.doc.extrasCount"),
+    incidentsCount: t("final.doc.incidentsCount"),
+    dayList: t("final.doc.dayList"),
+    crew: t("final.doc.crew"),
     day: {
       // Overwritten by the caller with the site-appropriate diary title.
       title: t("final.diaryTitleSi"),

@@ -12,7 +12,7 @@
 // only the summary.
 
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { C, FlexTable, Footer, Header, LabelValue, styles } from "@/lib/pdf/theme";
+import { C, FlexTable, Footer, Header, LabelValue, StatTile, styles } from "@/lib/pdf/theme";
 import { DayReportPage, type DayReportData, type DayReportStrings } from "@/lib/pdf/day-report";
 
 export interface CompletionStrings {
@@ -39,6 +39,14 @@ export interface CompletionStrings {
   colNote: string;
   none: string;
   generated: string;
+  photos: string;
+  incidents: string;
+  summary: string;
+  sheetsCount: string;
+  extrasCount: string;
+  incidentsCount: string;
+  dayList: string;
+  crew: string;
   day: DayReportStrings;
 }
 
@@ -61,6 +69,12 @@ export interface CompletionInput {
 export function CompletionDocument(input: CompletionInput) {
   const { s } = input;
 
+  const photoCount = input.days.reduce((sum, day) => sum + day.photos.length, 0);
+  // Extras carry their amount as an already formatted string, so the summary
+  // states how many were priced rather than inventing a total from text.
+  const priced = input.coRegister.filter((row) => row.amount && row.amount.trim() !== "");
+  const approvedExtras = priced.length > 0 ? priced.map((row) => row.amount).join(", ") : "";
+
   return (
     <Document title={`${s.title} ${input.projectName}`}>
       <Page size="A4" style={styles.page}>
@@ -73,9 +87,65 @@ export function CompletionDocument(input: CompletionInput) {
           <LabelValue label={s.site} value={input.siteAddress ?? ""} />
           {input.periodLabel ? <LabelValue label={s.period} value={input.periodLabel} /> : null}
           {input.powerLabel ? <LabelValue label={s.power} value={input.powerLabel} /> : null}
-          <LabelValue label={s.days} value={input.dayCount} />
-          <LabelValue label={s.totalHours} value={input.totalHours} />
         </View>
+
+        {/* The four numbers somebody opens this document to find, as figures
+            rather than as another row of the list above. A cover that is only a
+            meta list makes the reader turn the page to learn anything, and this
+            is the page that gets filed, mailed and printed on its own. */}
+        <View style={styles.statBand}>
+          <StatTile label={s.days} value={input.dayCount} />
+          <StatTile label={s.totalHours} value={input.totalHours} />
+          <StatTile label={s.photos} value={photoCount} />
+          <StatTile label={s.incidents} value={input.incidentRegister.length} />
+        </View>
+
+        {/* What the registers at the back add up to. The detail is still there,
+            three pages later; this is the line a client checks against their
+            own file before deciding whether to read further. */}
+        <Text style={styles.sectionTitle}>{s.summary}</Text>
+        <FlexTable
+          columns={[
+            { label: "", widthPct: 62 },
+            { label: "", widthPct: 38, align: "right" },
+          ]}
+          rows={[
+            [s.sheetsCount, `${input.hoursRegister.length} · ${input.totalHours} h`],
+            [
+              s.extrasCount,
+              input.coRegister.length === 0
+                ? String(input.coRegister.length)
+                : `${input.coRegister.length} · ${approvedExtras}`,
+            ],
+            [s.incidentsCount, String(input.incidentRegister.length)],
+          ]}
+          emptyLabel={s.none}
+        />
+
+        {/* The shape of the job on one page: which days carried work, how many
+            men, and what they did. A reader who never turns the page still
+            learns whether this was ten steady days or four frantic ones, and a
+            reader who does turn it knows where to look. */}
+        <Text style={styles.sectionTitle}>{s.dayList}</Text>
+        <FlexTable
+          columns={[
+            { label: s.colNo, widthPct: 8 },
+            { label: s.colDate, widthPct: 16 },
+            { label: s.crew, widthPct: 10, align: "right" },
+            { label: s.colNote, widthPct: 66 },
+          ]}
+          rows={input.days.map((day) => [
+            day.reportNo,
+            day.dateLabel,
+            day.headcount ?? "",
+            day.entries
+              .map((entry) => entry.note)
+              .filter(Boolean)
+              .join(" ")
+              .slice(0, 90),
+          ])}
+          emptyLabel={s.none}
+        />
 
         <Footer generatedLabel={s.generated} />
       </Page>

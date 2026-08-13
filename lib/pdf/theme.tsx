@@ -124,6 +124,33 @@ export const styles = StyleSheet.create({
     letterSpacing: 1.2,
     color: C.ink,
   },
+  // The cover's figure band: four numbers across, each in its own quiet box.
+  statBand: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 18,
+    marginBottom: 4,
+  },
+  statTile: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: C.line,
+    borderRadius: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  statLabel: {
+    fontSize: 7.5,
+    letterSpacing: 0.7,
+    textTransform: "uppercase",
+    color: C.muted,
+    marginBottom: 5,
+  },
+  statValue: {
+    fontSize: 19,
+    fontWeight: 700,
+    color: C.ink,
+  },
   sectionTitle: {
     fontSize: 10,
     fontWeight: 700,
@@ -286,6 +313,16 @@ export function LabelValue({
  * survive page breaks: `wrap` false on a row keeps it whole, and the header
  * repeats with `fixed`.
  */
+/** One figure on the completion report cover. */
+export function StatTile({ label, value }: { label: string; value: string | number }) {
+  return (
+    <View style={styles.statTile}>
+      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={styles.statValue}>{value}</Text>
+    </View>
+  );
+}
+
 export function FlexTable({
   columns,
   rows,
