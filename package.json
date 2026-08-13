@@ -21,7 +21,8 @@
     "marketing:flow": "node scripts/marketing/run-demo-flow.mjs",
     "marketing:pdfs": "node scripts/marketing/pdf-shots.mjs",
     "marketing:all": "npm run seed && npm run marketing:shoot && npm run marketing:flow && npm run marketing:pdfs && npm run seed",
-    "marketing:mockups": "node scripts/marketing/mockups.mjs"
+    "marketing:mockups": "node scripts/marketing/mockups.mjs",
+    "marketing:cutout": "node scripts/marketing/cutout.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

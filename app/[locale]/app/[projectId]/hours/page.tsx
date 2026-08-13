@@ -26,7 +26,7 @@ export default async function HoursPage({
 
   const actor = await resolveActorFromSession();
   if (!actor) {
-    redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app/${projectId}/hours`)}`);
+    redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/app/${projectId}/hours`)}`);
   }
   if (!isUuid(projectId)) notFound();
 

@@ -24,7 +24,7 @@ export default async function FinalPage({
 
   const actor = await resolveActorFromSession();
   if (!actor) {
-    redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app/${projectId}/final`)}`);
+    redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/app/${projectId}/final`)}`);
   }
   if (actor.kind !== "person" || actor.role === "crew") notFound();
   if (!isUuid(projectId)) notFound();

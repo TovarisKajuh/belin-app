@@ -26,7 +26,7 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
   const actor = await resolveActorFromSession();
   // Not signed in: go to the login form, carrying where they were headed so
   // the emailed link lands on the page they actually wanted.
-  if (!actor) redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app`)}`);
+  if (!actor) redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/app`)}`);
 
   // A person session lands here after the magic link: their projects, on
   // whichever side of each one their organization stands.

@@ -33,7 +33,7 @@ export default async function SettingsPage({
   setRequestLocale(locale);
 
   const actor = await resolveActorFromSession();
-  if (!actor) redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app/settings`)}`);
+  if (!actor) redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/app/settings`)}`);
 
   let person;
   try {

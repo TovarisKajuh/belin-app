@@ -31,7 +31,7 @@ export default async function ProjectPage({
   setRequestLocale(locale);
 
   const actor = await resolveActorFromSession();
-  if (!actor) redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app/${projectId}`)}`);
+  if (!actor) redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/app/${projectId}`)}`);
   if (!isUuid(projectId)) notFound();
 
   let project;

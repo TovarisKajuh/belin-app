@@ -1,16 +1,12 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { routing } from "@/i18n/routing";
 import { resolveActorFromSession } from "@/lib/auth";
 import { safeNext } from "@/lib/auth-core";
-import { LoginForm } from "@/components/auth/LoginForm";
-import { MagicLinkForm } from "@/components/auth/MagicLinkForm";
 import { Story } from "@/components/landing/Story";
-
-// A rising-gold cell pattern, the same mark the command bar and the launch
-// animation use, drawn larger here.
-const MARK = [0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1];
+import { Wordmark } from "@/components/landing/Wordmark";
 
 const POINTS = ["point1", "point2", "point3"] as const;
 
@@ -32,8 +28,15 @@ export default async function Home({
   // all and still costs no database round trip.
   if (await resolveActorFromSession()) redirect(`/${locale}/app`);
 
+  // A guarded route now sends signed-out visitors to /login directly, so `next`
+  // reaching the landing page is an older link or a hand-typed URL. It is still
+  // carried through the header button rather than dropped, because losing it
+  // means signing in and landing somewhere you did not ask for.
   const { next } = await searchParams;
-  const demoLogin = process.env.DEMO_LOGIN === "1";
+  const safe = safeNext(next) ?? "";
+  const signInHref = safe
+    ? `/${locale}/login?next=${encodeURIComponent(safe)}`
+    : `/${locale}/login`;
 
   const t = await getTranslations("landing");
 
@@ -43,22 +46,22 @@ export default async function Home({
 
       <div className="lp-wrap">
         <header className="lp-top">
-          <div className="lp-brand">
-            <span className="lp-mark" aria-hidden>
-              {MARK.map((v, i) => (
-                <i key={i} className={v ? "g" : undefined} />
-              ))}
-            </span>
-            <span className="lp-wm">BELIN</span>
-          </div>
+          <Wordmark />
 
-          <nav className="lp-locales" aria-label={t("languageLabel")}>
-            {routing.locales.map((l) => (
-              <Link key={l} href={`/${l}`} aria-current={l === locale ? "page" : undefined}>
-                {l}
-              </Link>
-            ))}
-          </nav>
+          <div className="lp-top-r">
+            <nav className="lp-locales" aria-label={t("languageLabel")}>
+              {routing.locales.map((l) => (
+                <Link key={l} href={`/${l}`} aria-current={l === locale ? "page" : undefined}>
+                  {l}
+                </Link>
+              ))}
+            </nav>
+
+            {/* The only way in, and the only button above the fold. */}
+            <Link href={signInHref} className="lp-enter">
+              {t("useApp")}
+            </Link>
+          </div>
         </header>
 
         <div className="lp-grid">
@@ -77,24 +80,35 @@ export default async function Home({
             </ul>
           </section>
 
-          <section className="lp-card" id="prijava" aria-labelledby="lp-card-title">
-            <div className="lp-card-glow" aria-hidden />
-            <h2 id="lp-card-title" className="lp-card-title">
-              {t("signIn")}
-            </h2>
-            <p className="lp-card-sub">{t("signInSub")}</p>
-            <MagicLinkForm locale={locale} next={safeNext(next) ?? ""} />
-            {/* The demo password path is opt IN and fail closed: it appears only
-                when DEMO_LOGIN is exactly "1". Task J4 deletes it outright. */}
-            {demoLogin && <LoginForm locale={locale} />}
+          {/* Both sides of the product, in one picture: the office on a desk,
+              the roof in a hand. The two screens are real, shot from the seeded
+              demo by the marketing pipeline, not drawn. */}
+          <section className="lp-stage" aria-hidden={false}>
+            <span className="lp-stage-glow" aria-hidden />
+            <Image
+              src="/landing/hero-laptop.webp"
+              alt={t("heroLaptopAlt")}
+              width={1800}
+              height={1082}
+              sizes="(max-width: 900px) 96vw, 62vw"
+              priority
+              className="lp-stage-laptop"
+            />
+            <Image
+              src="/landing/hero-phone.webp"
+              alt={t("heroPhoneAlt")}
+              width={1100}
+              height={888}
+              sizes="(max-width: 900px) 42vw, 24vw"
+              priority
+              className="lp-stage-phone"
+            />
           </section>
         </div>
 
       </div>
 
-      {/* The product story below the fold. The login card above stays exactly
-          where it was: a landing page that deploys with a dead sign-in is the
-          one unacceptable outcome, so nothing here touches it. */}
+      {/* The product story below the fold. */}
       <Story locale={locale} />
 
       <div className="lp-wrap">

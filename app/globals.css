@@ -1078,7 +1078,12 @@ button.gal-item {
    the page they see after signing in.
    ========================================================================== */
 
-.lp { display: flex; flex-direction: column; }
+/* The hero devices and their glow deliberately reach past the text column into
+   the gutter, and on a phone past the page padding. `clip` lets them do that
+   without ever handing the page a horizontal scrollbar, which is the one thing
+   a bleed must not cost. Not `hidden`: that would force the vertical axis to
+   scroll inside this element instead of the page. */
+.lp { display: flex; flex-direction: column; overflow-x: clip; }
 .lp-wrap {
   position: relative; z-index: 1; width: 100%; max-width: 1120px;
   margin: 0 auto; padding: 26px 26px 40px;
@@ -1087,7 +1092,21 @@ button.gal-item {
 
 /* header */
 .lp-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.lp-top-r { display: flex; align-items: center; gap: 10px; }
 .lp-brand { display: flex; align-items: center; gap: 13px; }
+.lp-brand-link { text-decoration: none; color: inherit; }
+
+/* the way in, and the only button above the fold */
+.lp-enter {
+  display: inline-flex; align-items: center; white-space: nowrap;
+  padding: 10px 18px; border-radius: 999px; text-decoration: none;
+  background: linear-gradient(180deg, var(--e-gold-2), var(--e-gold));
+  color: #14100a; font-size: 13.5px; font-weight: 700; letter-spacing: .01em;
+  box-shadow: 0 10px 26px -12px var(--e-glow);
+  transition: transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .16s;
+}
+.lp-enter:hover { transform: translateY(-1px); box-shadow: 0 15px 32px -12px var(--e-glow); }
+.lp-enter:active { transform: translateY(0); }
 .lp-mark { display: grid; grid-template-columns: repeat(3, 7px); grid-auto-rows: 7px; gap: 2.5px; flex: none; }
 .lp-mark i { background: #2c2a25; display: block; border-radius: 1px; }
 .lp-mark i.g { background: var(--e-gold); box-shadow: 0 0 12px var(--e-glow-2); }
@@ -1101,10 +1120,43 @@ button.gal-item {
 .lp-locales a:hover { color: var(--e-ink2); background: var(--e-surface); }
 .lp-locales a[aria-current="page"] { color: #0b1524; background: var(--e-gold); }
 
-/* two-column body */
+/* two-column body: the pitch, and the product it is describing */
 .lp-grid {
-  flex: 1; display: grid; grid-template-columns: 1.15fr .85fr;
-  gap: 60px; align-items: center; padding: 56px 0;
+  flex: 1; display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+  gap: 48px; align-items: center; padding: 56px 0 64px;
+}
+
+/* ---- the device stage -----------------------------------------------------
+   Two transparent PNG mockups, laid out as one object: the laptop is the
+   subject, the phone stands in front of its left corner. Both are cut out, so
+   the shadow has to be drawn here rather than baked into the file, and
+   drop-shadow (not box-shadow) is what follows a silhouette instead of a box.
+
+   The stage BLEEDS into the right gutter. Inside the 1120px column the laptop
+   renders about 520px wide, and the last time a dashboard was shown at that
+   size on this page the verdict was that it is a smudge. The bleed is
+   whatever room the viewport has spare, capped, and never negative, so it
+   simply stops growing on a narrow window rather than pushing the page sideways.
+*/
+.lp-stage {
+  --bleed: clamp(0px, calc((100vw - 1120px) / 2), 190px);
+  position: relative; isolation: isolate;
+  margin-right: calc(-1 * var(--bleed));
+}
+.lp-stage-glow {
+  position: absolute; z-index: -1; inset: -18% -12% -26%;
+  background:
+    radial-gradient(46% 42% at 62% 34%, rgba(255,210,26,.15), transparent 70%),
+    radial-gradient(52% 46% at 26% 76%, rgba(43,120,180,.20), transparent 72%);
+  filter: blur(6px); pointer-events: none;
+}
+.lp-stage-laptop {
+  display: block; width: 100%; height: auto;
+  filter: drop-shadow(0 44px 60px rgba(0,0,0,.60)) drop-shadow(0 10px 18px rgba(0,0,0,.35));
+}
+.lp-stage-phone {
+  position: absolute; left: -4%; bottom: -13%; width: 31%; height: auto;
+  filter: drop-shadow(0 30px 44px rgba(0,0,0,.62)) drop-shadow(0 6px 12px rgba(0,0,0,.40));
 }
 
 .lp-eyebrow {
@@ -1206,11 +1258,29 @@ button.gal-item {
 
 @media (max-width: 900px) {
   .lp-wrap { padding: 20px 20px 32px; }
-  .lp-grid { grid-template-columns: 1fr; gap: 38px; padding: 34px 0; align-items: stretch; }
-  /* On a phone the point of this page is signing in, so the card leads. */
-  .lp-card { order: -1; padding: 26px 22px 24px; }
+  .lp-grid { grid-template-columns: 1fr; gap: 34px; padding: 30px 0 34px; align-items: stretch; }
+  .lp-card { padding: 26px 22px 24px; }
   .lp-sub { max-width: none; }
   .lp-points { margin-top: 26px; }
+
+  /* The devices take the full width of the screen, gutters included: at 375px
+     every pixel spent on a margin comes straight out of the only picture of
+     the product on the page. */
+  .lp-stage { margin: 0 -20px; padding-bottom: 30px; }
+  .lp-stage-phone { left: 2%; bottom: 0; width: 34%; }
+
+  .lp-top-r { gap: 8px; }
+  .lp-locales { gap: 2px; }
+  .lp-locales a { padding: 6px 8px; }
+  .lp-enter { padding: 9px 14px; font-size: 12.5px; }
+}
+
+/* Below this the header cannot hold the wordmark, the three languages AND the
+   button on one line, and all three have to be there: the mark alone is still
+   the logo, so the word is what gives way. Measured, not guessed: at 375px the
+   three of them want 408px of a 335px line. */
+@media (max-width: 560px) {
+  .lp-wm { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

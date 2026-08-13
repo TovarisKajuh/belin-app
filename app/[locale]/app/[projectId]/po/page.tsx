@@ -24,7 +24,7 @@ export default async function PoPage({
 
   const actor = await resolveActorFromSession();
   if (!actor) {
-    redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app/${projectId}/po`)}`);
+    redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/app/${projectId}/po`)}`);
   }
   // A PROJECT LINK IS REFUSED HERE, even though it opens the project's other
   // screens. The crew link is a shared secret: it gets forwarded into WhatsApp

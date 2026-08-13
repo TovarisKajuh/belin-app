@@ -30,7 +30,7 @@ export default async function NewProjectPage({
     }
   }
   if (!actor) {
-    redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app/new`)}`);
+    redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/app/new`)}`);
   }
 
   const [subs, country] = await Promise.all([listKnownSubs(actor), orgCountry(actor.orgId)]);

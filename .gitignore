@@ -21,3 +21,9 @@ Thumbs.db
 # The founder's raw screenshot captures. The processed, web-sized versions
 # that the landing page actually serves live in public/landing/.
 screenshots/
+
+# Intermediate cutout masters. Derived from assets/marketing/source/ by
+# `npm run marketing:cutout` in about two seconds, and 8 MB of PNG that nothing
+# reads except the WebP step is not worth carrying in the history forever. The
+# source exports ARE committed: those exist nowhere else.
+assets/marketing/hero/

@@ -118,7 +118,7 @@ export async function Story({ locale }: { locale: string }) {
           <h2 className="lp-h2">{t("ctaTitle")}</h2>
           <p className="lp-body">{t("ctaBody")}</p>
           <div className="lp-cta-row">
-            <Link href={`/${locale}#prijava`} className="lp-cta-btn">
+            <Link href={`/${locale}/login`} className="lp-cta-btn">
               {t("ctaButton")}
             </Link>
             <a href="mailto:info@getbelin.com" className="lp-cta-mail">

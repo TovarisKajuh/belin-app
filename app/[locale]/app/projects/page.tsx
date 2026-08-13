@@ -19,7 +19,7 @@ export default async function ProjectsPage({
 
   const actor = await resolveTokenActorFromSession();
   if (!actor || actor.role !== "epc") {
-    redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app/projects`)}`);
+    redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/app/projects`)}`);
   }
 
   const [projects, t, tLanding] = await Promise.all([
