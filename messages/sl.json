@@ -332,7 +332,11 @@
       "reviewing": "V pregledu",
       "finished": "Zaključeno",
       "cancelled": "Preklicano"
-    }
+    },
+    "scheduleAhead": "{n, plural, one {# delovni dan rezerve} two {# delovna dneva rezerve} few {# delovni dnevi rezerve} other {# delovnih dni rezerve}}",
+    "scheduleBehind": "{n, plural, one {# delovni dan zamude} two {# delovna dneva zamude} few {# delovni dnevi zamude} other {# delovnih dni zamude}}",
+    "scheduleOnTime": "Točno v roku",
+    "scheduleUnknown": "Ni podatka o roku"
   },
   "sub": {
     "eyebrow": "Pregled projekta",

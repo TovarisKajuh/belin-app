@@ -4,6 +4,7 @@ import type { OrgActor } from "@/lib/actor";
 import { isUuid } from "@/lib/actor-shared";
 import { projectProgress } from "@/lib/progress";
 import { effectiveStatus, type SheetStatus } from "@/lib/hours-shared";
+import { computeProjection, scheduleVarianceDays } from "@/lib/projection-shared";
 
 // The portfolio: every project the organization is a party to, with the four
 // numbers somebody actually opens this screen to find.
@@ -26,8 +27,13 @@ export interface PortfolioProject {
   kwp: number | null;
   subName: string | null;
   progressPercent: number;
-  /** Cumulative progress per reported day, oldest first, for the sparkline. */
+  /** Cumulative progress per reported day, oldest first. */
   trend: number[];
+  /**
+   * Working days of buffer (positive) or overrun (negative) against the promised
+   * finish. Null when the project has no deadline or nothing to judge yet.
+   */
+  scheduleDays: number | null;
   openHours: number;
   openRequests: number;
   incidentsThisWeek: number;
@@ -57,7 +63,7 @@ export async function getPortfolio(actor: OrgActor): Promise<PortfolioData> {
   const { data: projects } = await db
     .from("projects")
     .select(
-      "id, name, status, address_city, kwp, created_at, organizations!projects_sub_org_id_fkey (name)",
+      "id, name, status, address_city, kwp, created_at, planned_start, planned_end, organizations!projects_sub_org_id_fkey (name)",
     )
     .or(`epc_org_id.eq.${actor.orgId},sub_org_id.eq.${actor.orgId}`)
     .order("created_at", { ascending: false });
@@ -171,6 +177,24 @@ export async function getPortfolio(actor: OrgActor): Promise<PortfolioData> {
       );
     });
 
+    // Where this project lands against the day it was promised for: a forecast
+    // while it runs, a fact once it is delivered.
+    const today = new Date().toISOString().slice(0, 10);
+    const lastReportedDate = dates.length ? dates[dates.length - 1] : null;
+    const projection = computeProjection({
+      history: dates.map((date, i) => ({ date, cumulativePercent: trend[i] })),
+      currentPercent: progressPercent,
+      today,
+      plannedStart: project.planned_start,
+      plannedEnd: project.planned_end,
+    });
+    const scheduleDays = scheduleVarianceDays({
+      status: project.status,
+      plannedEnd: project.planned_end,
+      lastReportedDate,
+      projectedDaysVsDeadline: projection.daysVsDeadline,
+    });
+
     return {
       id: project.id,
       name: project.name,
@@ -180,6 +204,7 @@ export async function getPortfolio(actor: OrgActor): Promise<PortfolioData> {
       subName: (project.organizations as { name: string } | null)?.name ?? null,
       progressPercent,
       trend,
+      scheduleDays,
       openHours: openHoursByProject.get(project.id) ?? 0,
       openRequests: requestsByProject.get(project.id) ?? 0,
       incidentsThisWeek: incidentsByProject.get(project.id) ?? 0,

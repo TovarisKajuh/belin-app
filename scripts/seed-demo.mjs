@@ -625,14 +625,19 @@ console.log("documents: 3 row(s) inserted");
 // 100 percent because its quantities reach its targets, and its sparkline has
 // the shape its own history gave it. Nothing here tells the screen what to say.
 const PAST = [
+  // `slip` is working days between the promised finish and the real one:
+  // positive delivered early, negative ran over. Deliberately all different.
+  // Seeding every project to land exactly on its deadline made the schedule
+  // mark read "Točno v roku" on all four, which is the same wall of identical
+  // marks the sparkline produced, one layer further down.
   { n: 1, name: "Logistični center Naklo", city: "Naklo", street: "Cesta na Okroglo 7", zip: "4202",
-    kwp: 96.6, modules: 214, endedDaysAgo: 24, days: 6, roof: "Trapezna pločevina" },
+    kwp: 96.6, modules: 214, endedDaysAgo: 24, days: 6, roof: "Trapezna pločevina", slip: 2 },
   { n: 2, name: "Poslovna cona Komenda", city: "Komenda", street: "Pod hribom 41", zip: "1218",
-    kwp: 180.4, modules: 401, endedDaysAgo: 58, days: 9, roof: "Ravna streha" },
+    kwp: 180.4, modules: 401, endedDaysAgo: 58, days: 9, roof: "Ravna streha", slip: -4 },
   { n: 3, name: "Hala Trimo Trebnje", city: "Trebnje", street: "Prijateljeva cesta 12", zip: "8210",
-    kwp: 320.0, modules: 711, endedDaysAgo: 96, days: 14, roof: "Ravna streha" },
+    kwp: 320.0, modules: 711, endedDaysAgo: 96, days: 14, roof: "Ravna streha", slip: 7 },
   { n: 4, name: "Streha Gorenje Velenje", city: "Velenje", street: "Partizanska cesta 12", zip: "3320",
-    kwp: 412.8, modules: 917, endedDaysAgo: 151, days: 16, roof: "Trapezna pločevina" },
+    kwp: 412.8, modules: 917, endedDaysAgo: 151, days: 16, roof: "Trapezna pločevina", slip: -1 },
 ];
 
 const NOT_STARTED = { n: 5, name: "PSE Lidl Domžale", city: "Domžale",
@@ -656,6 +661,17 @@ function workingDaysEnding(endedDaysAgo, count) {
  * Splits a target across days so the LAST day lands exactly on it. A delivered
  * project reading 99.7 percent because of rounding is one nobody believes.
  */
+function addWorkingDaysIso(iso, n) {
+  const step = n >= 0 ? 1 : -1;
+  let left = Math.abs(n);
+  let cur = iso;
+  while (left > 0) {
+    cur = isoPlusDays(cur, step);
+    if (isWeekday(cur)) left--;
+  }
+  return cur;
+}
+
 function split(target, days) {
   const step = Math.floor(target / days);
   const parts = Array(days).fill(step);
@@ -676,7 +692,8 @@ for (const p of PAST) {
     address_street: p.street, address_zip: p.zip, address_city: p.city,
     kwp: p.kwp, module_count: p.modules, module_type: "Trina Vertex S+ 450 W",
     mounting_system: "K2 Dome 6.10", roof_type: p.roof, hourly_work_approved: true,
-    planned_start: dayList[0], planned_end: dayList[dayList.length - 1],
+    planned_start: dayList[0],
+    planned_end: addWorkingDaysIso(dayList[dayList.length - 1], p.slip),
   });
 
   const items = [

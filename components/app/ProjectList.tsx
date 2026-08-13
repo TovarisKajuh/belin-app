@@ -6,7 +6,7 @@ import { NotificationBell } from "@/components/app/NotificationBell";
 import { getUnreadCount } from "@/lib/data/notifications";
 import { getPortfolio } from "@/lib/data/portfolio";
 import { PortfolioHeader } from "./PortfolioHeader";
-import { ProgressSparkline } from "./ProgressSparkline";
+import { ScheduleBar } from "./ScheduleBar";
 import type { ProjectListRow } from "@/lib/data/projects-list";
 import type { PersonActor } from "@/lib/actor";
 
@@ -28,6 +28,15 @@ export async function ProjectList({
   const tSettings = await getTranslations("settings");
   const tLanding = await getTranslations("landing");
   const isEpc = actor.orgType === "epc";
+
+  // Ahead, behind, or exactly on the promised day. Three sentences rather than a
+  // signed number, because "-2" on a card is a puzzle and "2 delovna dneva
+  // zamude" is a fact. Slovenian needs all four plural forms here.
+  const scheduleLabel = (days: number | null) => {
+    if (days === null) return t("scheduleUnknown");
+    if (days === 0) return t("scheduleOnTime");
+    return days > 0 ? t("scheduleAhead", { n: days }) : t("scheduleBehind", { n: -days });
+  };
   // The inbox lives on the list, where a person lands after signing in: it is
   // the one screen that is not about a single project.
   const unread = await getUnreadCount(actor);
@@ -104,10 +113,7 @@ export async function ProjectList({
                             {p.progressPercent}
                             <span className="pl-pct-u"> %</span>
                           </span>
-                          <ProgressSparkline
-                            points={p.trend}
-                            label={`${p.name}: ${p.progressPercent} %`}
-                          />
+                          <ScheduleBar days={p.scheduleDays} label={scheduleLabel(p.scheduleDays)} />
                         </div>
 
                         <div className={`pl-status s-${p.status}`}>{t(`status.${p.status}`)}</div>

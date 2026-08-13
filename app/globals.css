@@ -2409,16 +2409,34 @@ button.gal-item {
 }
 .belin-dark .pl-pct-u { font-size: 12px; font-weight: 600; color: var(--e-muted); }
 
-/* One series, so no legend: the card title names it. No axes, no gridlines, no
-   value labels; the percentage is already printed beside it, so the mark
-   carries shape alone. */
-.belin-dark .pf-spark { width: 120px; height: 30px; overflow: visible; }
-.belin-dark .pf-spark-l {
-  fill: none; stroke: var(--e-gold); stroke-width: 2;
-  stroke-linecap: round; stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
+/* Schedule variance: buffer right of the zero line, overrun left, one shared
+   scale on every card so the cards are comparable at a glance.
+
+   The pair is blue and orange, NOT green and red. Green and red is the one
+   diverging pair a colourblind reader cannot separate: the validator scored it
+   deltaE 5.3 under deutan, against 24.3 for these two. Both sit inside the dark
+   mode lightness band and clear 3:1 against the surface. The number is printed
+   beside the bar in ordinary ink, so colour never carries the meaning alone. */
+.belin-dark {
+  --e-ahead: #4692e0;
+  --e-behind: #d9762f;
 }
-.belin-dark .pf-spark-a { fill: rgba(255,210,26,.10); stroke: none; }
+.belin-dark .sb { display: flex; flex-direction: column; gap: 7px; min-width: 128px; }
+.belin-dark .sb-track {
+  position: relative; height: 8px; border-radius: 999px;
+  background: rgba(255,255,255,.05);
+}
+.belin-dark .sb-fill { position: absolute; top: 0; height: 8px; }
+/* Rounded on the data end, square against the baseline, so the bar reads as
+   growing away from zero rather than floating. */
+.belin-dark .sb-fill.ahead { background: var(--e-ahead); border-radius: 0 999px 999px 0; }
+.belin-dark .sb-fill.behind { background: var(--e-behind); border-radius: 999px 0 0 999px; }
+.belin-dark .sb-zero {
+  position: absolute; left: 50%; top: -2px; width: 1px; height: 12px;
+  background: rgba(255,255,255,.28); transform: translateX(-.5px);
+}
+.belin-dark .sb-label { font-size: 11.5px; font-weight: 600; color: var(--e-ink2); white-space: nowrap; }
+
 
 @media (max-width: 860px) {
   .belin-dark .pf-strip { grid-template-columns: 1fr 1fr; }
@@ -2437,8 +2455,7 @@ button.gal-item {
 @container (max-width: 430px) {
   .belin-dark .pl-link--rich { grid-template-columns: 1fr auto; }
   .belin-dark .pl-figure { grid-column: 1 / -1; justify-content: space-between; }
-  .belin-dark .pf-spark { width: 100%; }
-}
+  }
 
 /* ==============================================================
    Landing, below the fold. The job told in five moments, in the

@@ -103,3 +103,41 @@ export function computeProjection(input: ProjectionInput): Projection {
 
   return { ratePctPerDay, projectedFinish, workingDaysElapsed, workingDaysTotal, daysVsDeadline };
 }
+
+/**
+ * Working days between a project's finish and the date it was promised for.
+ * Positive is buffer, negative is overrun, in the same sign convention as
+ * daysVsDeadline so the two can share one mark on screen.
+ *
+ * This is the one number that means the same thing on a project that is running
+ * and on one that was delivered two months ago. Cumulative progress does not:
+ * every finished project is at 100 percent, so a progress line on a delivered
+ * job is a shape with no information in it, and a wall of them is worse than
+ * nothing because it looks like data.
+ *
+ * A running project is judged on where its current pace lands it; a delivered
+ * one on where it actually landed. Same question, same units, different tense.
+ */
+export function scheduleVarianceDays(input: {
+  status: string;
+  plannedEnd: string | null;
+  /** The last day work was reported. Null when nothing was ever reported. */
+  lastReportedDate: string | null;
+  /** Projection for a project still running, from computeProjection. */
+  projectedDaysVsDeadline: number | null;
+}): number | null {
+  const { status, plannedEnd, lastReportedDate, projectedDaysVsDeadline } = input;
+  if (!plannedEnd) return null;
+
+  // Delivered: the answer is a fact, not a forecast.
+  if (status === "finished") {
+    if (!lastReportedDate) return null;
+    return lastReportedDate <= plannedEnd
+      ? Math.max(0, businessDaysBetween(lastReportedDate, plannedEnd) - 1)
+      : -Math.max(0, businessDaysBetween(plannedEnd, lastReportedDate) - 1);
+  }
+
+  // Never started, or started and never reported: there is no pace to project
+  // from, and inventing one would put a confident mark on a blank project.
+  return projectedDaysVsDeadline;
+}

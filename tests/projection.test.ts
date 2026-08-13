@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { businessDaysBetween, computeProjection } from "@/lib/projection-shared";
+import { businessDaysBetween, computeProjection , scheduleVarianceDays } from "@/lib/projection-shared";
 
 describe("businessDaysBetween", () => {
   it("counts Mon-Fri inclusive of both ends", () => {
@@ -81,5 +81,59 @@ describe("computeProjection", () => {
     expect(p.workingDaysTotal).toBeNull();
     expect(p.daysVsDeadline).toBeNull();
     expect(p.projectedFinish).not.toBeNull();
+  });
+});
+
+// The portfolio card's mark. It has to mean the same thing on a project that is
+// running and on one delivered months ago, which cumulative progress cannot do:
+// every finished project sits at 100 percent, so a progress line on a delivered
+// job carries no information and a wall of them carries none loudly.
+describe("scheduleVarianceDays", () => {
+  const base = {
+    status: "finished",
+    plannedEnd: "2026-08-14", // a Friday
+    lastReportedDate: null as string | null,
+    projectedDaysVsDeadline: null as number | null,
+  };
+
+  it("counts a delivered project's buffer in working days", () => {
+    // Finished Tuesday 11th against a Friday 14th deadline: Wed, Thu, Fri spare.
+    expect(scheduleVarianceDays({ ...base, lastReportedDate: "2026-08-11" })).toBe(3);
+  });
+
+  it("counts an overrun as negative, skipping the weekend", () => {
+    // Ran to Tuesday 18th against Friday 14th: Mon and Tue over, not four days.
+    expect(scheduleVarianceDays({ ...base, lastReportedDate: "2026-08-18" })).toBe(-2);
+  });
+
+  it("is zero when it landed exactly on the promised day", () => {
+    expect(scheduleVarianceDays({ ...base, lastReportedDate: "2026-08-14" })).toBe(0);
+  });
+
+  it("uses the projection while a project is still running", () => {
+    expect(
+      scheduleVarianceDays({
+        ...base,
+        status: "active",
+        lastReportedDate: "2026-08-11",
+        projectedDaysVsDeadline: -6,
+      }),
+    ).toBe(-6);
+  });
+
+  it("says nothing about a project with no deadline", () => {
+    expect(scheduleVarianceDays({ ...base, plannedEnd: null, lastReportedDate: "2026-08-11" })).toBeNull();
+  });
+
+  it("says nothing about a delivered project that was never reported on", () => {
+    expect(scheduleVarianceDays({ ...base, lastReportedDate: null })).toBeNull();
+  });
+
+  it("says nothing about a project that has not started, rather than guessing zero", () => {
+    // A draft with no history has no pace to project from. Zero would read as
+    // "exactly on time", which is a claim nobody has earned.
+    expect(
+      scheduleVarianceDays({ ...base, status: "draft", lastReportedDate: null, projectedDaysVsDeadline: null }),
+    ).toBeNull();
   });
 });

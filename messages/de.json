@@ -332,7 +332,11 @@
       "reviewing": "In Prüfung",
       "finished": "Abgeschlossen",
       "cancelled": "Storniert"
-    }
+    },
+    "scheduleAhead": "{n, plural, one {# Werktag Puffer} other {# Werktage Puffer}}",
+    "scheduleBehind": "{n, plural, one {# Werktag Verzug} other {# Werktage Verzug}}",
+    "scheduleOnTime": "Genau im Termin",
+    "scheduleUnknown": "Kein Termin hinterlegt"
   },
   "sub": {
     "eyebrow": "Projektübersicht",

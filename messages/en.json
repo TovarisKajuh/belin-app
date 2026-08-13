@@ -332,7 +332,11 @@
       "reviewing": "In review",
       "finished": "Finished",
       "cancelled": "Cancelled"
-    }
+    },
+    "scheduleAhead": "{n, plural, one {# working day spare} other {# working days spare}}",
+    "scheduleBehind": "{n, plural, one {# working day over} other {# working days over}}",
+    "scheduleOnTime": "Exactly on time",
+    "scheduleUnknown": "No deadline set"
   },
   "sub": {
     "eyebrow": "Project overview",
