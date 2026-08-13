@@ -2055,6 +2055,22 @@ button.gal-item {
 }
 .belin-dark .ic-cta:active { background: rgba(255,159,107,.18); }
 
+/* The sub office's two quick actions, side by side. The incident button keeps
+   its amber urgency; daily reporting is routine work and wears gold, because
+   for a boss who is also on the roof it is the most-pressed control here. */
+.belin-dark .sh-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.belin-dark .sh-actions .ic-cta { width: auto; margin-bottom: 0; }
+.belin-dark .sh-crew {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; padding: 16px; border-radius: 16px;
+  text-decoration: none; color: #14100a; touch-action: manipulation;
+  background: linear-gradient(180deg, var(--e-gold-2), var(--e-gold));
+}
+.belin-dark .sh-crew:active { filter: brightness(.94); }
+@media (max-width: 560px) {
+  .belin-dark .sh-actions { grid-template-columns: 1fr; gap: 10px; }
+}
+
 .belin-dark .ic-sheet {
   position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end;
   background: rgba(4,9,16,.72); backdrop-filter: blur(6px);

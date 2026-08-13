@@ -352,7 +352,8 @@
     "changeOrdersEmpty": "Ni prijavljenih nadgradenj.",
     "finalization": "Zaključek",
     "finalizationEmpty": "Projekt še poteka.",
-    "fromSite": "Z gradbišča"
+    "fromSite": "Z gradbišča",
+    "openCrew": "Dnevno poročanje"
   },
   "app": {
     "signedInAs": "Prijavljeni kot {name}",

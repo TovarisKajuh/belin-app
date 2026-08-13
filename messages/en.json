@@ -352,7 +352,8 @@
     "changeOrdersEmpty": "No reported change orders.",
     "finalization": "Completion",
     "finalizationEmpty": "The project is still running.",
-    "fromSite": "From the site"
+    "fromSite": "From the site",
+    "openCrew": "Daily reporting"
   },
   "app": {
     "signedInAs": "Signed in as {name}",

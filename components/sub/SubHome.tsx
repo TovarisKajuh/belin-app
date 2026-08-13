@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { CommandBar } from "@/components/project/CommandBar";
 import { TodayPosts } from "@/components/project/TodayPosts";
 import { LiveRefresh } from "@/components/LiveRefresh";
@@ -23,11 +24,19 @@ export async function SubHome({
   projectId,
   data,
   material,
+  crewToken,
 }: {
   locale: string;
   projectId: string;
   data: CrewHomeData;
   material: MaterialState;
+  /**
+   * The project's crew link token, when this person may hold it. Most subs are
+   * two to ten people and the boss is often on the roof himself, so the
+   * reporting screen has to be one click from his own dashboard rather than a
+   * link he digs out of Settings.
+   */
+  crewToken: string | null;
 }) {
   const t = await getTranslations("sub");
   const tCrew = await getTranslations("crew");
@@ -67,7 +76,14 @@ export async function SubHome({
           {/* The office reports incidents too: a call from the crew often lands
               here first, and the person taking it should not have to open the
               crew link to write it down. */}
-          <IncidentButton token={null} projectId={projectId} />
+          <div className="sh-actions">
+            <IncidentButton token={null} projectId={projectId} />
+            {crewToken && (
+              <Link href={`/${locale}/p/${crewToken}`} className="sh-crew">
+                {t("openCrew")}
+              </Link>
+            )}
+          </div>
 
           <div className="sh-grid">
             <div className="sh-card sh-card--wide">

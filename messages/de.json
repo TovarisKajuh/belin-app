@@ -352,7 +352,8 @@
     "changeOrdersEmpty": "Keine gemeldeten Nachträge.",
     "finalization": "Abschluss",
     "finalizationEmpty": "Das Projekt läuft noch.",
-    "fromSite": "Von der Baustelle"
+    "fromSite": "Von der Baustelle",
+    "openCrew": "Tagesbericht erfassen"
   },
   "app": {
     "signedInAs": "Angemeldet als {name}",

@@ -6,6 +6,8 @@ import { isUuid } from "@/lib/actor-shared";
 import { getCrewHome } from "@/lib/data/reports";
 import { getMaterialState } from "@/lib/data/materials";
 import { getEpcDashboard } from "@/lib/data/epc-dashboard";
+import { ensureCrewLink } from "@/lib/data/invites";
+import { canIssueCrewLink } from "@/lib/invites-shared";
 import { CrewHome } from "@/components/crew/CrewHome";
 import { EpcDashboard } from "@/components/epc/EpcDashboard";
 import { SubHome } from "@/components/sub/SubHome";
@@ -48,14 +50,29 @@ export default async function ProjectPage({
   const isCrewPerson = actor.kind === "person" && actor.role === "crew";
 
   if (project.role === "sub" && !isCrewPerson) {
-    const [data, material] = await Promise.all([
+    // The boss is often also the guy on the roof: most subcontractors in this
+    // market are two to ten people. His dashboard is where he works, so the
+    // daily-report screen must be one click from here, not a link he has to
+    // dig out of Settings. Same rule as the Settings copy control decides who
+    // gets the button.
+    const mayOpenCrew =
+      actor.kind === "person" && canIssueCrewLink(actor.orgType, actor.role);
+
+    const [data, material, crewToken] = await Promise.all([
       getCrewHome(project),
       getMaterialState(project),
+      mayOpenCrew ? ensureCrewLink(projectId) : Promise.resolve(null),
     ]);
     if (!data || !material) notFound();
     return (
       <>
-        <SubHome locale={locale} projectId={projectId} data={data} material={material} />
+        <SubHome
+          locale={locale}
+          projectId={projectId}
+          data={data}
+          material={material}
+          crewToken={crewToken}
+        />
         <LogoutPill locale={locale} />
       </>
     );
