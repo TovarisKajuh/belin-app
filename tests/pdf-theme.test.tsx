@@ -26,7 +26,7 @@ function SmokeDocument() {
           ]}
         />
         <View style={{ marginTop: 18 }}>
-          <SignatureBox name="Ana Novak" />
+          <SignatureBox name="Boštjan Novak" />
         </View>
         <Text style={{ color: C.muted }}>Šumniki: čšž ČŠŽ</Text>
         <Footer generatedLabel="Ustvarjeno v Belinu" />
@@ -51,7 +51,7 @@ describe("pdf engine", () => {
     const text = await textOf(await renderToBuffer(<SmokeDocument />));
     expect(text).toContain("Belin");
     expect(text).toContain("Naročilnica");
-    expect(text).toContain("Ana Novak");
+    expect(text).toContain("Boštjan Novak");
   }, 30000);
 
   it("renders Slovenian diacritics through the registered font", async () => {

@@ -144,9 +144,9 @@ if (founderEmail) {
 
 const people = [
   { id: PERSON_EPC, org_id: EPC_ORG, full_name: "Matej Kovač", role: "bauleiter", email: "matej@sonce-demo.si" },
-  { id: PERSON_EPC_ADMIN, org_id: EPC_ORG, full_name: "Nina Hribar", role: "admin", email: "nina@sonce-demo.si" },
+  { id: PERSON_EPC_ADMIN, org_id: EPC_ORG, full_name: "Marko Golob", role: "admin", email: "marko@sonce-demo.si" },
   { id: PERSON_SUB, org_id: SUB_ORG, full_name: "Luka Zupan", role: "crew", email: "luka@avesol-demo.si" },
-  { id: PERSON_SUB_ADMIN, org_id: SUB_ORG, full_name: "Ana Novak", role: "admin", email: "ana@avesol-demo.si" },
+  { id: PERSON_SUB_ADMIN, org_id: SUB_ORG, full_name: "Boštjan Novak", role: "admin", email: "bostjan@avesol-demo.si" },
 ];
 if (founderEmail) {
   people.push({ id: PERSON_FOUNDER, org_id: FOUNDER_ORG, full_name: "Jan", role: "admin", email: founderEmail });

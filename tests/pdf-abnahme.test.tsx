@@ -24,7 +24,7 @@ function protocol(penaltyReserved: boolean) {
     siteAddress: "Cesta Staneta Žagarja 69, 4000 Kranj",
     kindLabel: "Končni prevzem",
     conductedOn: "12. 08. 2026",
-    attendees: "Matej Kovač, Ana Novak",
+    attendees: "Matej Kovač, Boštjan Novak",
     declarationLabel: "Prevzeto s pridržki",
     penaltyReserved,
     warrantyStart: "12. 08. 2026",
@@ -37,7 +37,7 @@ function protocol(penaltyReserved: boolean) {
       },
     ],
     epcSigner: { name: "Matej Kovač", image: null },
-    subSigner: { name: "Ana Novak", image: null },
+    subSigner: { name: "Boštjan Novak", image: null },
     s: abnahmeStrings("sl"),
   });
 }
@@ -69,7 +69,7 @@ describe("acceptance protocol", () => {
       expect(text).toContain("Prevzeto s pridržki");
       expect(text).toContain("Manjka tesnilo");
       expect(text).toContain("Matej Kovač");
-      expect(text).toContain("Ana Novak");
+      expect(text).toContain("Boštjan Novak");
     }
   }, 60000);
 });

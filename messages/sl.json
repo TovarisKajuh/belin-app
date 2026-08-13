@@ -878,7 +878,7 @@
   },
   "portfolio": {
     "kwp": "V izvedbi",
-    "installed": "Skupaj montirano",
+    "installed": "Skupaj izvedeno",
     "installedSub": "{n, plural, one {# zaključen projekt} two {# zaključena projekta} few {# zaključeni projekti} other {# zaključenih projektov}}",
     "kwpSub": "{n, plural, one {# projekt v teku} two {# projekta v teku} few {# projekti v teku} other {# projektov v teku}}",
     "pipeline": "V pripravi",

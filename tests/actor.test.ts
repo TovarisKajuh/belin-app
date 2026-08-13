@@ -23,7 +23,7 @@ const personActor = (orgId: string) =>
     orgId,
     orgType: "epc" as const,
     role: "admin" as const,
-    fullName: "Ana Novak",
+    fullName: "Boštjan Novak",
     email: "ana@example.com",
   });
 

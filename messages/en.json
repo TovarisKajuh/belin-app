@@ -878,7 +878,7 @@
   },
   "portfolio": {
     "kwp": "Under construction",
-    "installed": "Installed to date",
+    "installed": "Delivered to date",
     "installedSub": "{n, plural, one {# completed project} other {# completed projects}}",
     "kwpSub": "{n, plural, one {# project running} other {# projects running}}",
     "pipeline": "In preparation",
