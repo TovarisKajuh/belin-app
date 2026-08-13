@@ -7,6 +7,7 @@ import type { DraftItem, DraftRoof, ProjectDraft } from "@/lib/k2/k2-project";
 import type { SubOption } from "@/lib/data/plan-imports";
 import { createSubInviteLink } from "@/app/[locale]/app/[projectId]/actions";
 import { ShareLink } from "@/components/share/ShareLink";
+import { LocaleSwitch } from "@/components/LocaleSwitch";
 import type { K2WarningCode } from "@/lib/k2/k2-shared";
 
 type Step = "plan" | "review" | "sub" | "done";
@@ -52,6 +53,7 @@ export function Wizard({
   const t = useTranslations("wizard");
   const tInvite = useTranslations("invite");
   const tShare = useTranslations("share");
+  const tLanding = useTranslations("landing");
 
   const [step, setStep] = useState<Step>("plan");
   const [busy, setBusy] = useState(false);
@@ -189,9 +191,12 @@ export function Wizard({
               <b>{t("newProject")}</b>
             </span>
           </div>
-          <Link href={`/${locale}/app/projects`} className="wz-exit">
-            {t("back")}
-          </Link>
+          <div className="e-br">
+            <LocaleSwitch label={tLanding("languageLabel")} />
+            <Link href={`/${locale}/app/projects`} className="wz-exit">
+              {t("back")}
+            </Link>
+          </div>
         </div>
       </header>
 

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { resolveTokenActorFromSession } from "@/lib/auth";
 import { listProjectsForOrg } from "@/lib/data/projects-list";
 import { BelinMark } from "@/components/BelinMark";
+import { LocaleSwitch } from "@/components/LocaleSwitch";
 
 // The EPC's project list. It exists because identity is still a project token:
 // without it, a project created in the wizard is reachable only through the
@@ -21,9 +22,10 @@ export default async function ProjectsPage({
     redirect(`/${locale}?next=${encodeURIComponent(`/${locale}/app/projects`)}`);
   }
 
-  const [projects, t] = await Promise.all([
+  const [projects, t, tLanding] = await Promise.all([
     listProjectsForOrg(actor),
     getTranslations("projects"),
+    getTranslations("landing"),
   ]);
 
   return (
@@ -40,6 +42,7 @@ export default async function ProjectsPage({
             </span>
           </div>
           <div className="e-br">
+            <LocaleSwitch label={tLanding("languageLabel")} />
             <Link href={`/${locale}/app/new`} className="pl-new">
               {t("new")}
             </Link>

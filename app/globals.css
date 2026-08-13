@@ -1640,6 +1640,29 @@ button.gal-item {
   white-space: nowrap;
 }
 .belin-dark .cb-nav:hover { background: var(--e-surface-2); color: var(--e-ink); }
+
+/* Language switch in the command bar. Quieter than the landing version: here it
+   is a control you reach for once, not a choice the page is asking you to make,
+   so it sits back until hovered and only the active locale carries any weight. */
+.belin-dark .cb-locales { display: flex; gap: 2px; }
+.belin-dark .cb-locales a {
+  display: block; padding: 5px 8px; border-radius: 7px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--e-muted); text-decoration: none;
+  transition: color .16s ease, background .16s ease;
+}
+.belin-dark .cb-locales a:hover { color: var(--e-ink); background: var(--e-surface-2); }
+.belin-dark .cb-locales a[aria-current="page"] { color: var(--e-ink); background: var(--e-surface-2); }
+
+/* The pill stays small, the TARGET does not. On the crew screen this sits in a
+   bar a thumb is reaching across, and a 26px tall link is a missed tap; the
+   overlay lifts the hit area to 44px without spending any vertical space the
+   daily report needs. */
+.belin-dark .cb-locales a { position: relative; }
+.belin-dark .cb-locales a::after {
+  content: ""; position: absolute; left: 0; right: 0;
+  top: 50%; height: 44px; transform: translateY(-50%);
+}
 .belin-dark .pl-new {
   font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap;
   padding: 10px 18px; border-radius: 10px; color: #14100a;

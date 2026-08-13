@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { BelinMark } from "@/components/BelinMark";
+import { LocaleSwitch } from "@/components/LocaleSwitch";
 import { NotificationBell } from "@/components/app/NotificationBell";
 import { getUnreadCount } from "@/lib/data/notifications";
 import { getPortfolio } from "@/lib/data/portfolio";
@@ -25,6 +26,7 @@ export async function ProjectList({
   const t = await getTranslations("projects");
   const tApp = await getTranslations("app");
   const tSettings = await getTranslations("settings");
+  const tLanding = await getTranslations("landing");
   const isEpc = actor.orgType === "epc";
   // The inbox lives on the list, where a person lands after signing in: it is
   // the one screen that is not about a single project.
@@ -48,6 +50,7 @@ export async function ProjectList({
           </div>
           <div className="e-br">
             <NotificationBell initialUnread={unread} />
+            <LocaleSwitch label={tLanding("languageLabel")} />
             <Link href={`/${locale}/app/settings`} className="cb-nav">
               {tSettings("title")}
             </Link>

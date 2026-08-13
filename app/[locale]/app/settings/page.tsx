@@ -18,6 +18,7 @@ import { OrgForm } from "@/components/settings/OrgForm";
 import { VaultPanel } from "@/components/settings/VaultPanel";
 import { NotificationPrefs } from "@/components/settings/NotificationPrefs";
 import { BelinMark } from "@/components/BelinMark";
+import { LocaleSwitch } from "@/components/LocaleSwitch";
 
 // Settings. Task B5 gives it the invitations and the crew link; Task B6 adds
 // the company details and the compliance vault to the same page.
@@ -42,6 +43,7 @@ export default async function SettingsPage({
   }
 
   const t = await getTranslations("settings");
+  const tLanding = await getTranslations("landing");
   const [projects, org, prefs, docs] = await Promise.all([
     listProjectsForPerson(person),
     getOrgSettings(person),
@@ -74,6 +76,7 @@ export default async function SettingsPage({
             </span>
           </div>
           <div className="e-br">
+            <LocaleSwitch label={tLanding("languageLabel")} />
             <Link href={`/${locale}/app`} className="cb-nav">
               {t("backToProjects")}
             </Link>

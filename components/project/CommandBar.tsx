@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { ProjectStatusControl } from "@/components/project/ProjectStatusControl";
 import { BelinMark } from "@/components/BelinMark";
+import { LocaleSwitch } from "@/components/LocaleSwitch";
 import type { ProjectStatus } from "@/lib/project-status";
 
 // The shared header for both parties. The EPC and the crew get the identical
@@ -40,6 +41,9 @@ export async function CommandBar({
 }) {
   const navLabel = locale ? (await getTranslations("projects"))("title") : null;
   const nav = locale ? await getTranslations("nav") : null;
+  // Not gated on locale or role: the language switch belongs to whoever is
+  // holding the screen. It reads the locale off the path itself.
+  const languageLabel = (await getTranslations("landing"))("languageLabel");
 
   return (
     <div className="e-bar">
@@ -58,6 +62,7 @@ export async function CommandBar({
               {navLabel}
             </Link>
           )}
+          <LocaleSwitch label={languageLabel} />
           <ProjectStatusControl token={token} projectId={projectId} role={role} status={status} />
         </div>
       </div>
