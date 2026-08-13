@@ -11,6 +11,11 @@ const db = createClient(url, key, { auth: { persistSession: false } });
 
 const EPC_ORG = "11111111-1111-4111-8111-111111111111";
 const SUB_ORG = "22222222-2222-4222-8222-222222222222";
+// An EPC works with several subcontractors, and a subcontractor sees only its
+// own jobs. With one sub on every project both companies saw an identical book,
+// which reads as a bug and hides the whole point of the two sided model.
+const SUB_ORG_2 = "22222222-2222-4222-8222-222222222223";
+const SUB_ORG_3 = "22222222-2222-4222-8222-222222222224";
 // The founder's own company, deliberately separate from both demo companies.
 const FOUNDER_ORG = "12121212-1212-4121-8121-121212121212";
 const PROJECT = "33333333-3333-4333-8333-333333333333";
@@ -95,6 +100,22 @@ await upsert("organizations", [
     vat_id: "SI10000002",
     iban: "SI56 0201 0001 2345 685",
     accountant_email: "racunovodstvo@avesol-demo.si",
+  },
+  {
+    id: SUB_ORG_2,
+    type: "sub",
+    name: "Montaža Kos d.o.o.",
+    country: "si",
+    vat_id: "SI10000003",
+    iban: "SI56 0203 0001 7654 321",
+  },
+  {
+    id: SUB_ORG_3,
+    type: "sub",
+    name: "Elektro Vrhnika d.o.o.",
+    country: "si",
+    vat_id: "SI10000004",
+    iban: "SI56 0204 0009 8765 432",
   },
 ]);
 
@@ -631,13 +652,17 @@ const PAST = [
   // mark read "Točno v roku" on all four, which is the same wall of identical
   // marks the sparkline produced, one layer further down.
   { n: 1, name: "Logistični center Naklo", city: "Naklo", street: "Cesta na Okroglo 7", zip: "4202",
-    kwp: 96.6, modules: 214, endedDaysAgo: 24, days: 6, roof: "Trapezna pločevina", slip: 2 },
+    kwp: 96.6, modules: 214, endedDaysAgo: 24, days: 6, roof: "Trapezna pločevina", slip: 2,
+    sub: SUB_ORG_3 },
   { n: 2, name: "Poslovna cona Komenda", city: "Komenda", street: "Pod hribom 41", zip: "1218",
-    kwp: 180.4, modules: 401, endedDaysAgo: 58, days: 9, roof: "Ravna streha", slip: -4 },
+    kwp: 180.4, modules: 401, endedDaysAgo: 58, days: 9, roof: "Ravna streha", slip: -4,
+    sub: SUB_ORG },
   { n: 3, name: "Hala Trimo Trebnje", city: "Trebnje", street: "Prijateljeva cesta 12", zip: "8210",
-    kwp: 320.0, modules: 711, endedDaysAgo: 96, days: 14, roof: "Ravna streha", slip: 7 },
+    kwp: 320.0, modules: 711, endedDaysAgo: 96, days: 14, roof: "Ravna streha", slip: 7,
+    sub: SUB_ORG_2 },
   { n: 4, name: "Streha Gorenje Velenje", city: "Velenje", street: "Partizanska cesta 12", zip: "3320",
-    kwp: 412.8, modules: 917, endedDaysAgo: 151, days: 16, roof: "Trapezna pločevina", slip: -1 },
+    kwp: 412.8, modules: 917, endedDaysAgo: 151, days: 16, roof: "Trapezna pločevina", slip: -1,
+    sub: SUB_ORG_2 },
 ];
 
 const NOT_STARTED = { n: 5, name: "PSE Lidl Domžale", city: "Domžale",
@@ -687,7 +712,7 @@ const bookQuantities = [];
 for (const p of PAST) {
   const dayList = workingDaysEnding(p.endedDaysAgo, p.days);
   bookProjects.push({
-    id: pid(p.n), epc_org_id: EPC_ORG, sub_org_id: SUB_ORG,
+    id: pid(p.n), epc_org_id: EPC_ORG, sub_org_id: p.sub,
     name: p.name, status: "finished", language: "sl", vat_mode: "reverse_charge", country: "si",
     address_street: p.street, address_zip: p.zip, address_city: p.city,
     kwp: p.kwp, module_count: p.modules, module_type: "Trina Vertex S+ 450 W",
@@ -731,7 +756,7 @@ for (const p of PAST) {
 // Not started: a real project with a real scope list and not one day logged.
 // Zero percent has to be a state the screen handles, not an absence.
 bookProjects.push({
-  id: pid(NOT_STARTED.n), epc_org_id: EPC_ORG, sub_org_id: SUB_ORG,
+  id: pid(NOT_STARTED.n), epc_org_id: EPC_ORG, sub_org_id: null,
   name: NOT_STARTED.name, status: "draft", language: "sl", vat_mode: "reverse_charge", country: "si",
   address_street: NOT_STARTED.street, address_zip: NOT_STARTED.zip, address_city: NOT_STARTED.city,
   kwp: NOT_STARTED.kwp, module_count: NOT_STARTED.modules, module_type: "Trina Vertex S+ 450 W",
