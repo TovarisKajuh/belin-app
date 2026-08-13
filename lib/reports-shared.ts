@@ -9,6 +9,13 @@ export interface TodayPost {
   photoUrls: string[];
   quantities: { name: string; qty: number; unit: string }[];
   createdAt: string;
+  /**
+   * Who filed it. Optional because today's list does not ask: on the crew
+   * screen everyone present already knows, and on the EPC's live feed the day
+   * is the unit. The diary DOES ask, because "who wrote this" is most of what
+   * a record is for once the day is over.
+   */
+  author?: string | null;
 }
 
 export interface EntryRow {

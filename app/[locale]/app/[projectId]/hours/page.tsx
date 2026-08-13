@@ -9,6 +9,7 @@ import { CommandBar } from "@/components/project/CommandBar";
 import { HoursTabs } from "@/components/hours/HoursTabs";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { projectTopic } from "@/lib/realtime-shared";
+import { CrewTabs } from "@/components/crew/CrewTabs";
 
 // Regiestunden for a signed-in person. The crew reach the same screen through
 // their link at /p/[token]/hours; what differs is only who may DECIDE.
@@ -50,8 +51,14 @@ export default async function HoursPage({
   // Money is printed in the PROJECT language, like every document.
   const docLocale = core.language === "de" || core.language === "en" ? core.language : "sl";
 
+  // Only the crew get the roof tabs, and for the same reason the tab routes
+  // themselves refuse everyone else: the bar's Poročaj tab has to land on an
+  // actual report form, which it only does for a crew person.
+  const isCrewSurface =
+    data.role === "sub" && actor.kind === "person" && actor.role === "crew";
+
   return (
-    <div className="belin-dark">
+    <div className={`belin-dark${isCrewSurface ? " b-tabbed" : ""}`}>
       <div className="e-grain" aria-hidden />
       <CommandBar
         token={null}
@@ -78,6 +85,13 @@ export default async function HoursPage({
           initialTab={initialTab}
           />
       </main>
+
+      {/* Hours is one of the roof tabs, so on the subcontractor side this page
+          carries the bar too. Without it, tapping Ure lands somewhere with no
+          way back to the report except the browser's back button, which is the
+          definition of a dead end on a phone. The EPC reaches this page from
+          its own dashboard and gets no bar. */}
+      {isCrewSurface && <CrewTabs locale={locale} projectId={projectId} active="hours" />}
     </div>
   );
 }

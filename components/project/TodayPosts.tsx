@@ -19,6 +19,7 @@ export async function TodayPosts({ posts }: { posts: TodayPost[] }) {
             <div className="b-h" style={{ fontSize: 15 }}>
               {t("postSummary", { headcount: post.headcount ?? 0, photos: post.photoCount })}
             </div>
+            {post.author && <div className="b-sub b-author">{post.author}</div>}
             {post.quantities.map((q, i) => (
               <div key={i} className="b-sub">
                 {q.name}: {q.qty} {q.unit}

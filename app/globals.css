@@ -1355,6 +1355,72 @@ button.gal-item {
   background: rgba(255,210,26,.14); color: var(--e-gold-2);
 }
 
+/* ==========================================================================
+   THE ROOF TAB BAR
+   Four destinations along the bottom edge, where a thumb already is. The
+   camera is the primary action and looks like one: filled, gold and lifted
+   out of the row. It is also the DEFAULT tab, so none of this costs the
+   report path a single tap.
+   ========================================================================== */
+/* The bar's height is a variable because three other things have to sit on top
+   of it exactly. Left to the content it measured 69px against a hard-coded 62
+   elsewhere, and the submit button ended up 7px underneath the tabs: the kind
+   of overlap that is invisible in a screenshot and unmissable under a thumb. */
+.cr-tabs {
+  --cr-tabs-h: 68px;
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  height: calc(var(--cr-tabs-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(8,14,22,.88); border-top: 1px solid var(--e-line);
+  backdrop-filter: blur(14px);
+}
+.cr-tab {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 6px 4px 8px;
+  color: var(--e-muted); text-decoration: none;
+  transition: color .16s;
+}
+.cr-tab-l { font-size: 10.5px; font-weight: 600; letter-spacing: .04em; }
+.cr-tab[aria-current="page"] { color: var(--e-gold); }
+.cr-tab:active { color: var(--e-ink); }
+
+/* The camera. Raised, so the eye finds the thing this app is for before it
+   reads a single label. */
+.cr-tab--go .cr-tab-i {
+  display: flex; align-items: center; justify-content: center;
+  width: 50px; height: 50px; margin-top: -20px; border-radius: 999px;
+  background: linear-gradient(180deg, var(--e-gold-2), var(--e-gold));
+  color: #14100a; box-shadow: 0 10px 22px -8px var(--e-glow);
+  border: 3px solid #0a121c;
+}
+.cr-tab--go .cr-tab-l { color: var(--e-ink2); }
+.cr-tab--go[aria-current="page"] .cr-tab-l { color: var(--e-gold); }
+
+/* With the bar present, everything fixed above it has to move up by its
+   height, and the page needs room to scroll past both. */
+.b-tabbed { --cr-tabs-h: 68px; }
+.b-tabbed .b-screen { padding-bottom: calc(var(--cr-tabs-h) + 128px); }
+.belin-dark.b-tabbed .b-submit-bar {
+  bottom: calc(var(--cr-tabs-h) + env(safe-area-inset-bottom));
+  padding-bottom: 14px;
+}
+/* The dev pills already have a raised variant for clearing the submit bar.
+   With tabs there is a second fixed thing under them, so the raised variant is
+   redefined here rather than given a third class: one place decides how high
+   "raised" is on a tabbed screen. Placed after the base rules for the same
+   source-order reason the comment above the original gives. */
+.b-tabbed .lp-logout--raised,
+.b-tabbed .b-devbar--raised {
+  bottom: calc(var(--cr-tabs-h) + 96px + env(safe-area-inset-bottom));
+}
+.b-tabbed .lp-scenario { bottom: calc(var(--cr-tabs-h) + 54px + env(safe-area-inset-bottom)); }
+
+/* One day of the diary. */
+.cr-day { margin-bottom: 12px; }
+.cr-day-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.b-author { margin-top: 2px; color: var(--e-gold-2); font-size: 12.5px; }
+
 /* dev and session pills: bottom corners, out of the command bar's way. The
    DEV pill used to sit top right, where it covered the status control. */
 .b-devbar {

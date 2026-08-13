@@ -68,7 +68,16 @@
       "recheckBody": "{count, plural, one {# new or changed item} other {# new or changed items}}. Please check whether everything arrived.",
       "recheckAction": "Check again",
       "newBadge": "new"
-    }
+    },
+    "tabs": {
+      "label": "Sections",
+      "overview": "Overview",
+      "report": "Report",
+      "diary": "Diary",
+      "hours": "Hours"
+    },
+    "diaryEmpty": "No reports have been filed on this site yet.",
+    "diaryToday": "Today"
   },
   "weather": {
     "unknown": "No data",

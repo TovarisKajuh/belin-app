@@ -68,7 +68,16 @@
       "recheckBody": "{count, plural, one {# neue oder geänderte Position} other {# neue oder geänderte Positionen}}. Bitte prüfen Sie, ob alles angekommen ist.",
       "recheckAction": "Erneut prüfen",
       "newBadge": "neu"
-    }
+    },
+    "tabs": {
+      "label": "Bereiche",
+      "overview": "Übersicht",
+      "report": "Melden",
+      "diary": "Bautagebuch",
+      "hours": "Stunden"
+    },
+    "diaryEmpty": "Auf dieser Baustelle wurden noch keine Berichte abgegeben.",
+    "diaryToday": "Heute"
   },
   "weather": {
     "unknown": "Keine Angabe",

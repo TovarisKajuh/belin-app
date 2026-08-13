@@ -68,7 +68,16 @@
       "recheckBody": "{count, plural, one {# nova ali spremenjena postavka} two {# novi ali spremenjeni postavki} few {# nove ali spremenjene postavke} other {# novih ali spremenjenih postavk}}. Preverite, ali je vse prispelo.",
       "recheckAction": "Preveri znova",
       "newBadge": "novo"
-    }
+    },
+    "tabs": {
+      "label": "Razdelki",
+      "overview": "Pregled",
+      "report": "Poročaj",
+      "diary": "Dnevnik",
+      "hours": "Ure"
+    },
+    "diaryEmpty": "Na tem gradbišču še ni oddanih poročil.",
+    "diaryToday": "Danes"
   },
   "weather": {
     "unknown": "Ni podatka",

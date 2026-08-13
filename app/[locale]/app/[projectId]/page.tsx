@@ -86,7 +86,13 @@ export default async function ProjectPage({
     if (!data || !material) notFound();
     return (
       <>
-        <CrewHome token={null} projectId={projectId} data={data} material={material} />
+        <CrewHome
+          token={null}
+          projectId={projectId}
+          data={data}
+          material={material}
+          nav={{ locale, active: "report" }}
+        />
         <LogoutPill locale={locale} raised />
       </>
     );
