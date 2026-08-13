@@ -187,6 +187,27 @@ export async function getPortfolio(actor: OrgActor): Promise<PortfolioData> {
     };
   });
 
+  // What is running comes first.
+  //
+  // Creation order is the wrong order for this screen. An EPC opens it to see
+  // the jobs that can still go wrong today, and a portfolio with four delivered
+  // projects in it pushed the live ones to the bottom of the list. Within a
+  // band the most recently touched project leads, because that is the one the
+  // reader was just thinking about.
+  const RANK: Record<string, number> = {
+    active: 0,
+    reviewing: 1,
+    paused: 2,
+    draft: 3,
+    finished: 4,
+    cancelled: 5,
+  };
+  rows.sort((a, b) => {
+    const byStatus = (RANK[a.status] ?? 9) - (RANK[b.status] ?? 9);
+    if (byStatus !== 0) return byStatus;
+    return (b.lastActivity ?? "").localeCompare(a.lastActivity ?? "");
+  });
+
   const active = rows.filter((row) => row.status === "active");
 
   return {

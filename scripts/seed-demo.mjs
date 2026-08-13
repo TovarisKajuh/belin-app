@@ -28,11 +28,14 @@ const PERSON_EPC_ADMIN = "66666666-6666-4666-8666-666666666605";
 const TOKEN_EPC = "77777777-7777-4777-8777-777777777701";
 const TOKEN_SUB = "77777777-7777-4777-8777-777777777702";
 
-// Second demo project: the same job at day zero, nothing logged yet. It exists
-// so the founder can show, and test, what the app looks like at the start of a
-// project (empty log, no progress, material check still to do) and switch back
-// to the half-built state without destroying either. Same name on purpose: it
-// reads as one project at two points in time, not two different jobs.
+// Second demo project: a job at day zero, nothing logged yet. It exists so the
+// founder can show, and test, what the app looks like at the start of a project
+// (empty log, no progress, material check still to do) and switch back to the
+// half-built state without destroying either.
+//
+// It carries its OWN name and site. It used to be a copy of Kranj, on the
+// theory that it would read as one project at two points in time. On the
+// project list it did not: it read as the same row printed twice.
 const PROJECT_START = "33333333-3333-4333-8333-333333333334";
 const SCOPE_START_UK = "44444444-4444-4444-8444-444444444411";
 const SCOPE_START_MODULES = "44444444-4444-4444-8444-444444444412";
@@ -283,17 +286,21 @@ await upsert("projects", [
     id: PROJECT_START,
     epc_org_id: EPC_ORG,
     sub_org_id: SUB_ORG,
-    name: "PSE Trgovski center Kranj",
+    // Its OWN site, not a second copy of Kranj. The two demo projects are two
+    // states of the same STORY, day one and mid job, but on the portfolio
+    // screen two identical rows read as a duplicate rather than as a scenario,
+    // which is exactly how the founder read them.
+    name: "Poslovni park Ljubljana Vzhod",
     status: "active",
     language: "sl",
     // domestic Slovenian construction services: reverse charge under 76.a ZDDV-1
     vat_mode: "reverse_charge",
     country: "si",
-    address_street: "Cesta Staneta Žagarja 69",
-    address_zip: "4000",
-    address_city: "Kranj",
-    lat: 46.2455,
-    lng: 14.3555,
+    address_street: "Letališka cesta 27",
+    address_zip: "1000",
+    address_city: "Ljubljana",
+    lat: 46.0621,
+    lng: 14.5390,
     kwp: 245.7,
     module_count: 546,
     module_type: "Trina Vertex S+ 450 W",
@@ -606,6 +613,136 @@ await db.from("documents").insert([
   },
 ]);
 console.log("documents: 3 row(s) inserted");
+
+// ---- the rest of the book ----
+//
+// An EPC does not have two projects, and a screen showing two proves nothing
+// about whether this holds up against a real portfolio. These are the jobs
+// behind and ahead of the two live ones: four delivered, one not started.
+//
+// They are built the way a real project is, from scope items and daily entries,
+// rather than by writing a percentage into a column. A finished project reads
+// 100 percent because its quantities reach its targets, and its sparkline has
+// the shape its own history gave it. Nothing here tells the screen what to say.
+const PAST = [
+  { n: 1, name: "Logistični center Naklo", city: "Naklo", street: "Cesta na Okroglo 7", zip: "4202",
+    kwp: 96.6, modules: 214, endedDaysAgo: 24, days: 6, roof: "Trapezna pločevina" },
+  { n: 2, name: "Poslovna cona Komenda", city: "Komenda", street: "Pod hribom 41", zip: "1218",
+    kwp: 180.4, modules: 401, endedDaysAgo: 58, days: 9, roof: "Ravna streha" },
+  { n: 3, name: "Hala Trimo Trebnje", city: "Trebnje", street: "Prijateljeva cesta 12", zip: "8210",
+    kwp: 320.0, modules: 711, endedDaysAgo: 96, days: 14, roof: "Ravna streha" },
+  { n: 4, name: "Streha Gorenje Velenje", city: "Velenje", street: "Partizanska cesta 12", zip: "3320",
+    kwp: 412.8, modules: 917, endedDaysAgo: 151, days: 16, roof: "Trapezna pločevina" },
+];
+
+const NOT_STARTED = { n: 5, name: "PSE Lidl Domžale", city: "Domžale",
+  street: "Ljubljanska cesta 84", zip: "1230", kwp: 265.2, modules: 589, roof: "Ravna streha" };
+
+const pid = (n) => `3333333a-0000-4000-8000-00000000000${n}`;
+const sid = (n, j) => `4444444a-000${n}-4000-8000-00000000000${j}`;
+const eid = (n, i) => `5555555a-000${n}-4000-8000-0000000000${String(i).padStart(2, "0")}`;
+
+/** Working days ending `endedDaysAgo` days ago, oldest first. */
+function workingDaysEnding(endedDaysAgo, count) {
+  const out = [];
+  for (let n = endedDaysAgo; out.length < count; n++) {
+    const iso = isoDaysAgo(n);
+    if (isWeekday(iso)) out.push(iso);
+  }
+  return out.reverse();
+}
+
+/**
+ * Splits a target across days so the LAST day lands exactly on it. A delivered
+ * project reading 99.7 percent because of rounding is one nobody believes.
+ */
+function split(target, days) {
+  const step = Math.floor(target / days);
+  const parts = Array(days).fill(step);
+  parts[days - 1] = target - step * (days - 1);
+  return parts;
+}
+
+const bookProjects = [];
+const bookScope = [];
+const bookEntries = [];
+const bookQuantities = [];
+
+for (const p of PAST) {
+  const dayList = workingDaysEnding(p.endedDaysAgo, p.days);
+  bookProjects.push({
+    id: pid(p.n), epc_org_id: EPC_ORG, sub_org_id: SUB_ORG,
+    name: p.name, status: "finished", language: "sl", vat_mode: "reverse_charge", country: "si",
+    address_street: p.street, address_zip: p.zip, address_city: p.city,
+    kwp: p.kwp, module_count: p.modules, module_type: "Trina Vertex S+ 450 W",
+    mounting_system: "K2 Dome 6.10", roof_type: p.roof, hourly_work_approved: true,
+    planned_start: dayList[0], planned_end: dayList[dayList.length - 1],
+  });
+
+  const items = [
+    { id: sid(p.n, 1), name: "Podkonstrukcija", unit: "kos", target: p.modules, weight: 2 },
+    { id: sid(p.n, 2), name: "Moduli", unit: "kos", target: p.modules, weight: 4 },
+    { id: sid(p.n, 3), name: "DC kabliranje", unit: "m", target: p.modules * 2, weight: 1 },
+  ];
+  items.forEach((item, j) => bookScope.push({
+    id: item.id, project_id: pid(p.n), name: item.name, unit: item.unit,
+    target_qty: item.target, weight: item.weight, sort_order: j + 1,
+  }));
+
+  dayList.forEach((date, i) => bookEntries.push({
+    id: eid(p.n, i), project_id: pid(p.n), entry_date: date,
+    note: "Montaža po planu.", headcount: 4 + (i % 3), created_by_person: PERSON_SUB,
+    weather: { code: i % 4 === 3 ? 2 : 0, tempC: 18 + (i % 9), capturedAt: date + "T15:00:00Z" },
+  }));
+
+  // The trades overlap the way they do on a roof: substructure leads, modules
+  // follow it, cabling trails both. That overlap is what gives the sparkline a
+  // shape instead of a straight line.
+  const phases = [
+    { item: items[0], from: 0, to: Math.ceil(p.days * 0.45) },
+    { item: items[1], from: Math.floor(p.days * 0.3), to: Math.ceil(p.days * 0.9) },
+    { item: items[2], from: Math.floor(p.days * 0.5), to: p.days },
+  ];
+  for (const phase of phases) {
+    const span = Math.max(1, Math.min(phase.to, dayList.length) - phase.from);
+    split(phase.item.target, span).forEach((qty, k) => {
+      bookQuantities.push({ entry_id: eid(p.n, phase.from + k), scope_item_id: phase.item.id, qty });
+    });
+  }
+}
+
+// Not started: a real project with a real scope list and not one day logged.
+// Zero percent has to be a state the screen handles, not an absence.
+bookProjects.push({
+  id: pid(NOT_STARTED.n), epc_org_id: EPC_ORG, sub_org_id: SUB_ORG,
+  name: NOT_STARTED.name, status: "draft", language: "sl", vat_mode: "reverse_charge", country: "si",
+  address_street: NOT_STARTED.street, address_zip: NOT_STARTED.zip, address_city: NOT_STARTED.city,
+  kwp: NOT_STARTED.kwp, module_count: NOT_STARTED.modules, module_type: "Trina Vertex S+ 450 W",
+  mounting_system: "K2 Dome 6.10", roof_type: NOT_STARTED.roof, hourly_work_approved: false,
+  planned_start: isoPlusDays(isoDaysAgo(0), 12), planned_end: isoPlusDays(isoDaysAgo(0), 54),
+});
+[["Podkonstrukcija", "kos", NOT_STARTED.modules, 2],
+ ["Moduli", "kos", NOT_STARTED.modules, 4],
+ ["DC kabliranje", "m", NOT_STARTED.modules * 2, 1]].forEach((row, j) => bookScope.push({
+  id: sid(NOT_STARTED.n, j + 1), project_id: pid(NOT_STARTED.n),
+  name: row[0], unit: row[1], target_qty: row[2], weight: row[3], sort_order: j + 1,
+}));
+
+// Rebuilt each run, like the live project's history, so re-running the seed
+// cannot leave a delivered project sitting at 140 percent.
+const bookIds = bookProjects.map((row) => row.id);
+const { data: priorBook } = await db.from("daily_entries").select("id").in("project_id", bookIds);
+const priorBookIds = (priorBook ?? []).map((row) => row.id);
+if (priorBookIds.length) {
+  await db.from("entry_photos").delete().in("entry_id", priorBookIds);
+  await db.from("entry_quantities").delete().in("entry_id", priorBookIds);
+  await db.from("daily_entries").delete().in("id", priorBookIds);
+}
+
+await upsert("projects", bookProjects);
+await upsert("scope_items", bookScope);
+await upsert("daily_entries", bookEntries);
+await upsert("entry_quantities", bookQuantities, "entry_id,scope_item_id");
 
 // Documents that no longer describe anything: a leftover invoice or protocol
 // from a previous seed would contradict the freshly staged state.
