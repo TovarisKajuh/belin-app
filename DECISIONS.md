@@ -2,6 +2,16 @@
 
 One line per significant decision: what, why, when.
 
+- 2026-08-13: The crew screen is four tabs (Pregled, Poročaj, Dnevnik, Ure) with REPORTING as the default tab, and the bar renders only for crew people. Reason: the 30 second law forbids adding a tap before a roofer can start typing, so the primary action keeps the primary position and the bar only buys reachability for what was previously unreachable. Hour sheets earn the fourth slot because crew file them and Regiestunden is half of what gets people paid. The sub office boss is excluded because his Poročaj tab would land on SubHome, which is not a report form.
+
+- 2026-08-13: The installed PWA opens /app, not the landing page, and the landing page and the app are treated as two different products sharing one origin. Reason: an icon on a home screen belongs to the app; the unprefixed path also solves language, since /app redirects by the phone's own Accept-Language, and signed out it redirects to /login, which makes the installed app a login screen and nothing else.
+
+- 2026-08-13: A server-rendered component may not decide what to render from a client-only signal. Reason: a cookie check inside SplashGate to keep the launch animation out of product shots read correctly and left the page unhydrated, because the server rendered the splash and the client rendered null; React kept the server DOM and nothing on the page was interactive, with no console error. Shot-mode suppression belongs in the capture pipeline (Playwright init script), not in the component.
+
+- 2026-08-13: The seed refuses to run when an unrecognised organization exists in the database, allowlisting the demo orgs and the founder's own by id. Reason: one database serves local, demo and production, the script deletes and rewrites, and the runbook asks for it before every demo. The proper fix is a separate Supabase project for the demo; this guard holds until then.
+
+- 2026-08-13: The demo video is Playwright takes cut with ffmpeg, captions only, and is NOT embedded on the landing page. Reason: it costs nothing per recut, which is the property that matters while the product changes weekly; Remotion was considered and rejected as a second rendering pipeline for six recordings and six lines of text, and generative video was rejected because the video's entire value is that every pixel is the real product. The landing page stays light for rural LTE; the video ships to LinkedIn and WhatsApp.
+
 - 2026-08-13: Signing in has its own page at /[locale]/login, and the landing page carries one gold button to it in the top right (founder brief). Reason: the hero now shows the product, and a login card sharing the fold with the pitch was the layout of a page with nothing to show. Every guarded route redirects there with its `next` rather than at the landing page, so a signed-out visitor never has to read marketing copy to find the door. The magic link component, server action and safeNext handling are untouched: only the page they sit on changed.
 
 - 2026-08-13: Marketing mockup sources are committed, the cut out masters are not. Reason: the founder's exports from his mockup tool exist nowhere else and are irreplaceable; the transparent masters are derived and regenerate in about two seconds from `npm run marketing:cutout`. Only the WebP the page actually serves is committed alongside the sources.

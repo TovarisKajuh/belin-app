@@ -6,7 +6,23 @@
 
 **Context:** Extends `2026-08-13-marketing-assets.md`. Its tasks 1 to 4 are done: the pipeline shoots every surface, drives the closing chain, and rasterizes the real PDFs. Task 5 (landing) is half done as of today: the hero carries the founder's device mockups and the sign-in moved to /login. This plan carries the rest of task 5 (thread A), the new tab work (thread B), a refined task 7 (thread C), and the ship checklist (thread D).
 
-**Planned on Fable, executed by Opus, per the standing workflow. Nothing here has been built.**
+**Planned on Fable, executed by Opus the same day.**
+
+## Status, end of 2026-08-13
+
+DONE: thread A (documents), thread B (tabs), thread C (video), D1 (translation
+pass), D3 (OpenGraph), D4 (start_url), D7 (seed tripwire). Deployed.
+
+DEFERRED BY THE FOUNDER: D2 (Impressum), D5 (custom domain).
+
+STILL OPEN: D6 (Resend SPF/DKIM/DMARC), D8 (rotate the service_role key),
+D9 (analytics), D10 (LinkedIn kit), and task 6 of the marketing plan (the pitch
+PDF brochure).
+
+Deviation from the plan worth noting: the tab bar shipped with four tabs and no
+capability gate on Ure, since the hours page is open to any project party, and
+the bar is restricted to crew PEOPLE rather than to the sub side, because a sub
+office boss's Poročaj tab would have landed on his office view.
 
 ---
 
