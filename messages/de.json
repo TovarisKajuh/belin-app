@@ -317,7 +317,8 @@
     "subInviteHint": "Wir erstellen einen Einladungslink. Sie können ihn über WhatsApp oder SMS senden. Eine E-Mail-Adresse ist nicht nötig.",
     "subInviteEmail": "E-Mail-Adresse (optional)",
     "subInviteReady": "Link für den Nachunternehmer",
-    "subInviteReadyHint": "Senden Sie diesen Link an den Nachunternehmer. Sobald er ihn öffnet, legt er ein Konto an und wird mit dem Projekt verbunden."
+    "subInviteReadyHint": "Senden Sie diesen Link an den Nachunternehmer. Sobald er ihn öffnet, legt er ein Konto an und wird mit dem Projekt verbunden.",
+    "countryGuess": "Das Land stand nicht in der Planung. Dies ist Ihr Standardland, bitte prüfen Sie es."
   },
   "projects": {
     "title": "Projekte",

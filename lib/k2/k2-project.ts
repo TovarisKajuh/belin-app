@@ -44,6 +44,15 @@ export interface ProjectDraft {
   items: DraftItem[];
   /** One entry per roof in the plan. A site is built roof by roof. */
   roofs: DraftRoof[];
+  /**
+   * Whether `country` came from the PLAN or from the EPC's own default.
+   *
+   * The review screen has to say which, because the two look identical in the
+   * field and they are not the same claim. Country decides the VAT clause on
+   * every invoice the project will ever produce, so a silent fallback is the
+   * one prefill that is worse wrong than blank.
+   */
+  countryFromPlan: boolean;
 }
 
 // The three pilot countries plus the spellings K2 actually prints.
@@ -63,6 +72,21 @@ const COUNTRY_NAMES: Record<string, string> = {
 
 // A German or Slovenian postal code followed by a place name.
 const ZIP_CITY_RE = /^(\d{4,5})\s+(.+)$/;
+
+/**
+ * The country a postcode can prove, or null.
+ *
+ * Among the three pilot countries a five digit postcode is German and nothing
+ * else, because Slovenia and Austria both use four. Those two therefore cannot
+ * be told apart this way at all, and this REFUSES rather than picking the more
+ * likely one: an EPC who sees a blank asks a question, while an EPC who sees a
+ * confidently wrong country signs an invoice with the wrong VAT clause on it.
+ * The same rule the roof pairing already follows.
+ */
+export function countryFromZip(zip: string | null): string | null {
+  if (zip === null) return null;
+  return /^\d{5}$/.test(zip) ? "de" : null;
+}
 
 /**
  * Best effort split of a one line address into the columns projects carries.
@@ -186,6 +210,11 @@ export function projectDraftFromParse(
     moduleType: meta.moduleDesc,
   });
 
+  // Named in the address, else proved by the postcode, else the EPC's own.
+  // The first two are the plan speaking; the third is a guess the review screen
+  // has to own up to.
+  const readCountry = address.country ?? countryFromZip(address.zip);
+
   return {
     name: meta.projectName ?? "",
     addressStreet: address.street,
@@ -193,7 +222,8 @@ export function projectDraftFromParse(
     addressCity: address.city,
     // The plan's own country wins over the EPC's default: an EPC in Slovenia
     // routinely builds in Germany, and the country drives the VAT mode.
-    country: address.country ?? opts.fallbackCountry,
+    country: readCountry ?? opts.fallbackCountry,
+    countryFromPlan: readCountry !== null,
     language: opts.locale,
     kwp: meta.kwpTotal,
     moduleCount: meta.moduleCount,

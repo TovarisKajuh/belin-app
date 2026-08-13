@@ -317,7 +317,8 @@
     "subInviteHint": "Ustvarimo povezavo za povabilo. Pošljete jo lahko kar prek WhatsAppa ali SMS. E-pošta ni obvezna.",
     "subInviteEmail": "E-poštni naslov (neobvezno)",
     "subInviteReady": "Povezava za podizvajalca",
-    "subInviteReadyHint": "Pošljite to povezavo podizvajalcu. Ko jo odpre, si ustvari račun in se poveže s projektom."
+    "subInviteReadyHint": "Pošljite to povezavo podizvajalcu. Ko jo odpre, si ustvari račun in se poveže s projektom.",
+    "countryGuess": "Države ni bilo v načrtu. To je vaša privzeta država, preverite jo."
   },
   "projects": {
     "title": "Projekti",

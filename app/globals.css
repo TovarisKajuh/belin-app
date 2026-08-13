@@ -1531,6 +1531,12 @@ button.gal-item {
 .belin-dark .wz-h1 { font-size: 26px; font-weight: 800; letter-spacing: -.01em; margin: 0 0 8px; }
 .belin-dark .wz-hint { color: var(--e-muted); font-size: 13.5px; margin: 0 0 22px; }
 
+/* A prefilled value the plan did NOT provide. Amber, not red: nothing is wrong
+   yet, but the EPC is the only one who can confirm it, and it must not look
+   like the fields either side of it that were genuinely read from the file. */
+.belin-dark .wz-field .wz-hint { margin: 6px 0 0; font-size: 12.5px; color: var(--e-warn, #d9a441); }
+.belin-dark .b-field.wz-unread { border-color: var(--e-warn, #d9a441); }
+
 .belin-dark .wz-drop {
   margin-top: 22px; padding: 46px 30px; text-align: center;
   border: 1px dashed rgba(255,255,255,.16); border-radius: 18px;

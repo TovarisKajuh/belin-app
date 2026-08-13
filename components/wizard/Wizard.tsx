@@ -30,6 +30,9 @@ const emptyDraft = (country: string, locale: string): ProjectDraft => ({
   addressZip: null,
   addressCity: null,
   country,
+  // The manual path: there is no plan, so the country is by definition the
+  // EPC's default and the review screen says so.
+  countryFromPlan: false,
   language: locale,
   kwp: null,
   moduleCount: null,
@@ -284,7 +287,7 @@ export function Wizard({
               </Field>
               <Field label={t("fieldCountry")}>
                 <select
-                  className="b-field"
+                  className={`b-field${draft.countryFromPlan ? "" : " wz-unread"}`}
                   value={draft.country}
                   onChange={(e) => set("country", e.target.value)}
                 >
@@ -294,6 +297,13 @@ export function Wizard({
                     </option>
                   ))}
                 </select>
+                {/* The plan did not say, so this is OUR default wearing the
+                    same clothes as a fact read from the file. Country decides
+                    the VAT clause on every invoice this project will produce,
+                    so it says so out loud rather than looking confident. */}
+                {!draft.countryFromPlan && (
+                  <span className="wz-hint">{t("countryGuess")}</span>
+                )}
               </Field>
               <Field label={t("fieldLanguage")}>
                 <select

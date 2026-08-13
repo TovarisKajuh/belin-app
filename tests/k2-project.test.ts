@@ -64,7 +64,12 @@ describe("projectDraftFromParse", () => {
     expect(draft.mountingSystem).toBe("SingleRail");
     expect(draft.roofType).toBe("Ziegel");
     expect(draft.language).toBe("sl");
-    expect(draft.country).toBe("si"); // no country in the address, so the EPC's own
+    // The address never spells "Deutschland", but 39307 Genthin is a five digit
+    // postcode and only Germany uses those among the pilot countries. This used
+    // to fall back to the Slovenian EPC's own country, which would have put a
+    // Slovenian VAT clause on an invoice for a German site.
+    expect(draft.country).toBe("de");
+    expect(draft.countryFromPlan).toBe(true);
     // This report carries no article list, but it does state its panels, and a
     // crew still has to confirm those arrived.
     expect(draft.items).toEqual([
@@ -207,5 +212,67 @@ describe("modules reach the material list", () => {
   it("adds nothing when the plan knows of no panels at all", () => {
     expect(moduleItemsFromRoofs([], { moduleCount: null, moduleType: null })).toEqual([]);
     expect(moduleItemsFromRoofs([], { moduleCount: 0, moduleType: "X" })).toEqual([]);
+  });
+});
+
+// Country decides the VAT clause on every invoice a project will ever produce,
+// so where it came from matters as much as what it is. Found in the wild: a
+// K2 plan for Oberlaaer Str. 88, 1100 Wien came through the wizard prefilled
+// as SI, because the plan never spelled a country out and the EPC's own
+// country filled the gap silently.
+describe("country on the draft", () => {
+  const parse = (address: string) =>
+    ({
+      ok: true,
+      metadata: {
+        projectName: "P",
+        address,
+        roofs: [],
+        moduleCount: null,
+        moduleDesc: null,
+        kwpTotal: null,
+        mountingSystem: null,
+        roofType: null,
+        plannedInstallDate: null,
+      },
+      items: [],
+      warnings: [],
+      diagnostics: [],
+    }) as never;
+
+  const draftFor = (address: string, fallbackCountry = "si") =>
+    projectDraftFromParse(parse(address), { fallbackCountry, locale: "sl" });
+
+  it("believes a country the plan spells out", () => {
+    const draft = draftFor("Musterweg 1, 80331 München, Deutschland");
+    expect(draft.country).toBe("de");
+    expect(draft.countryFromPlan).toBe(true);
+  });
+
+  it("proves Germany from a five digit postcode, which only Germany uses here", () => {
+    const draft = draftFor("Musterweg 1, 80331 München");
+    expect(draft.country).toBe("de");
+    expect(draft.countryFromPlan).toBe(true);
+  });
+
+  it("REFUSES to guess between Austria and Slovenia, which share four digits", () => {
+    // The real Vienna case. Four digits cannot tell 1100 Wien from 1000
+    // Ljubljana, so the EPC's default stands and is flagged as a default.
+    const draft = draftFor("Oberlaaer Str. 88, 1100 Wien");
+    expect(draft.country).toBe("si");
+    expect(draft.countryFromPlan).toBe(false);
+  });
+
+  it("flags the fallback when there is no address at all", () => {
+    const draft = draftFor("");
+    expect(draft.countryFromPlan).toBe(false);
+  });
+
+  it("never claims the plan said so just because the guess happens to match", () => {
+    // Same Vienna plan, an Austrian EPC: the value is now right by luck, and
+    // that is exactly when a silent prefill is most dangerous to trust.
+    const draft = draftFor("Oberlaaer Str. 88, 1100 Wien", "at");
+    expect(draft.country).toBe("at");
+    expect(draft.countryFromPlan).toBe(false);
   });
 });

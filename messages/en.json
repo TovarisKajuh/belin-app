@@ -317,7 +317,8 @@
     "subInviteHint": "We create an invitation link. You can send it over WhatsApp or SMS. An email address is not required.",
     "subInviteEmail": "Email address (optional)",
     "subInviteReady": "Link for the subcontractor",
-    "subInviteReadyHint": "Send this link to the subcontractor. When they open it, they create an account and are connected to the project."
+    "subInviteReadyHint": "Send this link to the subcontractor. When they open it, they create an account and are connected to the project.",
+    "countryGuess": "The plan did not state a country. This is your default, please check it."
   },
   "projects": {
     "title": "Projects",
