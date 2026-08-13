@@ -877,9 +877,12 @@
     "byContractor": "Die Rechnung stellt der Nachunternehmer aus."
   },
   "portfolio": {
-    "active": "Aktive Projekte",
     "kwp": "In Ausführung",
-    "openHours": "Offene Stunden",
-    "openIncidents": "Vorkommnisse diese Woche"
+    "installed": "Gesamt installiert",
+    "installedSub": "{n, plural, one {# abgeschlossenes Projekt} other {# abgeschlossene Projekte}}",
+    "kwpSub": "{n, plural, one {# laufendes Projekt} other {# laufende Projekte}}",
+    "pipeline": "In Vorbereitung",
+    "pipelineSub": "noch nicht begonnen",
+    "waiting": "Wartet auf Sie"
   }
 }

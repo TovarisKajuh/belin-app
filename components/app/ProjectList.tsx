@@ -5,7 +5,7 @@ import { LocaleSwitch } from "@/components/LocaleSwitch";
 import { NotificationBell } from "@/components/app/NotificationBell";
 import { getUnreadCount } from "@/lib/data/notifications";
 import { getPortfolio } from "@/lib/data/portfolio";
-import { PortfolioHeader } from "./PortfolioHeader";
+import { PortfolioHeader, PortfolioFooter } from "./PortfolioHeader";
 import { ScheduleBar } from "./ScheduleBar";
 import type { ProjectListRow } from "@/lib/data/projects-list";
 import type { PersonActor } from "@/lib/actor";
@@ -122,6 +122,8 @@ export async function ProjectList({
                   );
                 })}
               </ul>
+
+              <PortfolioFooter data={portfolio} />
             </>
           )}
         </section>

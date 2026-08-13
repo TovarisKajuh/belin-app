@@ -44,7 +44,14 @@ export interface PortfolioData {
   activeCount: number;
   openHourSheets: number;
   incidentsThisWeek: number;
+  /** Capacity on roofs right now, across projects being built. */
   kwpInProgress: number;
+  /** Everything ever finished: the number an EPC quotes about itself. */
+  kwpInstalled: number;
+  /** Sold or planned, not yet started. */
+  kwpPipeline: number;
+  /** How many delivered projects make up kwpInstalled. */
+  finishedCount: number;
   projects: PortfolioProject[];
 }
 
@@ -54,6 +61,9 @@ export async function getPortfolio(actor: OrgActor): Promise<PortfolioData> {
     openHourSheets: 0,
     incidentsThisWeek: 0,
     kwpInProgress: 0,
+    kwpInstalled: 0,
+    kwpPipeline: 0,
+    finishedCount: 0,
     projects: [],
   };
   if (!isUuid(actor.orgId)) return empty;
@@ -234,6 +244,11 @@ export async function getPortfolio(actor: OrgActor): Promise<PortfolioData> {
   });
 
   const active = rows.filter((row) => row.status === "active");
+  // Done, doing, next. The three capacity figures partition the whole book and
+  // never double count: a roof is either finished, being built, or not started.
+  const finished = rows.filter((row) => row.status === "finished");
+  const pipeline = rows.filter((row) => row.status === "draft");
+  const sumKwp = (list: PortfolioProject[]) => list.reduce((sum, row) => sum + (row.kwp ?? 0), 0);
 
   return {
     activeCount: active.length,
@@ -241,7 +256,10 @@ export async function getPortfolio(actor: OrgActor): Promise<PortfolioData> {
     incidentsThisWeek: rows.reduce((sum, row) => sum + row.incidentsThisWeek, 0),
     // Only what is actually being built: a finished or cancelled roof is not
     // capacity in progress.
-    kwpInProgress: Math.round(active.reduce((sum, row) => sum + (row.kwp ?? 0), 0)),
+    kwpInProgress: Math.round(sumKwp(active)),
+    kwpInstalled: Math.round(sumKwp(finished)),
+    kwpPipeline: Math.round(sumKwp(pipeline)),
+    finishedCount: finished.length,
     projects: rows,
   };
 }

@@ -2378,7 +2378,7 @@ button.gal-item {
    a number cannot say.
    ============================================================== */
 .belin-dark .pf-strip {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px;
 }
 .belin-dark .pf-tile {
   padding: 16px 18px; border-radius: 16px;
@@ -2440,6 +2440,9 @@ button.gal-item {
 
 @media (max-width: 860px) {
   .belin-dark .pf-strip { grid-template-columns: 1fr 1fr; }
+  /* Three tiles in two columns leaves the third stranded at half width, so it
+     takes the whole row instead. */
+  .belin-dark .pf-strip > :nth-child(3):last-child { grid-column: 1 / -1; }
 }
 
 /* The card lays itself out from ITS OWN width, not the window's.
@@ -2450,6 +2453,23 @@ button.gal-item {
    to NINE pixels, wrapping "245.7 kWp" one word per line down a 454px tall
    card. A container query asks the only question that matters here: does this
    card, right now, have room for a row. */
+/* The sub-line under each headline number: what the figure covers. A lifetime
+   total and an in-progress total look identical without it. */
+.belin-dark .pf-tile-s { font-size: 11.5px; color: var(--e-muted); margin-top: 2px; }
+
+/* Today's inbox, under the list rather than over it. Quiet on purpose: it is
+   real, but it is not the shape of the business. */
+.belin-dark .pf-foot {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px;
+  margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--e-line);
+  font-size: 13px; color: var(--e-ink2);
+}
+.belin-dark .pf-foot-l {
+  font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--e-muted); font-weight: 700;
+}
+.belin-dark .pf-foot-i b { color: var(--e-ink); font-weight: 700; }
+
 .belin-dark .pl-item { container-type: inline-size; }
 
 @container (max-width: 430px) {

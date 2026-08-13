@@ -877,9 +877,12 @@
     "byContractor": "Račun izda podizvajalec."
   },
   "portfolio": {
-    "active": "Aktivni projekti",
     "kwp": "V izvedbi",
-    "openHours": "Odprte ure",
-    "openIncidents": "Zapleti ta teden"
+    "installed": "Skupaj montirano",
+    "installedSub": "{n, plural, one {# zaključen projekt} two {# zaključena projekta} few {# zaključeni projekti} other {# zaključenih projektov}}",
+    "kwpSub": "{n, plural, one {# projekt v teku} two {# projekta v teku} few {# projekti v teku} other {# projektov v teku}}",
+    "pipeline": "V pripravi",
+    "pipelineSub": "še ni v izvedbi",
+    "waiting": "Čaka na vas"
   }
 }

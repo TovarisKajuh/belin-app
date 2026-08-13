@@ -877,9 +877,12 @@
     "byContractor": "The invoice is issued by the subcontractor."
   },
   "portfolio": {
-    "active": "Active projects",
     "kwp": "Under construction",
-    "openHours": "Open hours",
-    "openIncidents": "Incidents this week"
+    "installed": "Installed to date",
+    "installedSub": "{n, plural, one {# completed project} other {# completed projects}}",
+    "kwpSub": "{n, plural, one {# project running} other {# projects running}}",
+    "pipeline": "In preparation",
+    "pipelineSub": "not started yet",
+    "waiting": "Waiting for you"
   }
 }
