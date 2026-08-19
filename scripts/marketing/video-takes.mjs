@@ -103,6 +103,73 @@ async function finish(context, name) {
 
 const settle = (page, ms) => page.waitForTimeout(ms);
 
+/**
+ * A tap, the way a viewer can see it.
+ *
+ * A recording of a form filling itself is unreadable: things change and nobody
+ * knows why. A ring at the point of contact turns every change into a visible
+ * cause. Drawn into the page rather than added in the edit, so it lands exactly
+ * where the click lands, at the real resolution, with no compositing.
+ */
+async function tap(page, locator, { hold = 420 } = {}) {
+  await locator.scrollIntoViewIfNeeded();
+  await settle(page, 220);
+  const box = await locator.boundingBox();
+  if (box) {
+    await page.evaluate(
+      ([x, y]) => {
+        const ring = document.createElement("div");
+        ring.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:74px;height:74px;
+          margin:-37px 0 0 -37px;border-radius:999px;border:3px solid #ffd21a;
+          box-shadow:0 0 26px rgba(255,210,26,.55);pointer-events:none;z-index:2147483647;
+          transform:scale(.35);opacity:.95;transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .5s ease`;
+        document.body.appendChild(ring);
+        requestAnimationFrame(() => {
+          ring.style.transform = "scale(1.5)";
+          ring.style.opacity = "0";
+        });
+        setTimeout(() => ring.remove(), 900);
+      },
+      [box.x + box.width / 2, box.y + box.height / 2],
+    );
+  }
+  await settle(page, hold);
+  await locator.click();
+}
+
+/**
+ * A slow push toward whatever matters right now.
+ *
+ * Done in the browser, not in ffmpeg. A zoom applied to finished footage is
+ * resampled from 1080p and jitters, because ffmpeg's zoompan moves in whole
+ * pixels; a CSS transform is rendered by the same engine that drew the page, at
+ * full resolution, and lands smooth and sharp. It also means the framing is
+ * chosen while looking at a real element rather than guessed at in the edit.
+ */
+async function pushIn(page, locator, { to = 1.22, ms = 1100 } = {}) {
+  const box = await locator.boundingBox();
+  if (!box) return;
+  await page.evaluate(
+    ([x, y, scale, duration]) => {
+      const root = document.documentElement;
+      root.style.transformOrigin = `${x}px ${y}px`;
+      root.style.transition = `transform ${duration}ms cubic-bezier(.4,0,.2,1)`;
+      root.style.transform = `scale(${scale})`;
+    },
+    [box.x + box.width / 2, box.y + box.height / 2, to, ms],
+  );
+  await settle(page, ms + 120);
+}
+
+async function pullOut(page, { ms = 700 } = {}) {
+  await page.evaluate((duration) => {
+    const root = document.documentElement;
+    root.style.transition = `transform ${duration}ms cubic-bezier(.4,0,.2,1)`;
+    root.style.transform = "scale(1)";
+  }, ms);
+  await settle(page, ms + 80);
+}
+
 async function waitForApp(page) {
   await page.waitForFunction(() => !document.querySelector("[data-splash]"), { timeout: 15000 })
     .catch(() => {});
@@ -114,32 +181,120 @@ async function sceneCrew(browser) {
   const page = await context.newPage();
   await page.goto(`${BASE}/sl/app/${PROJECT}`, { waitUntil: "networkidle" });
   await waitForApp(page);
-  await settle(page, 1200);
+  await settle(page, 1000);
 
-  // Quantities, tapped up the way a thumb does it: one press at a time.
+  // Quantities, tapped up the way a thumb does it: one press at a time, with
+  // the ring showing where the thumb landed.
   const plus = page.locator(".b-step-btn").filter({ hasText: "+" });
   const count = await plus.count();
   for (let i = 0; i < Math.min(count, 2); i++) {
     for (let n = 0; n < 3; n++) {
-      await plus.nth(i).click();
-      await settle(page, 260);
+      await tap(page, plus.nth(i), { hold: n === 0 ? 380 : 140 });
+      await settle(page, 150);
     }
-    await settle(page, 500);
+    await settle(page, 350);
   }
 
   // A photo, from the same fixture the seed uses for its site pictures.
   const file = page.locator('input[type="file"]').first();
   if (await file.count()) {
     await file.setInputFiles("public/icons/icon-512.png");
-    await settle(page, 1800);
+    await settle(page, 1600);
   }
 
-  await page.locator(".b-submit-bar .b-btn").scrollIntoViewIfNeeded();
-  await settle(page, 700);
-  await page.locator(".b-submit-bar .b-btn").click();
-  await settle(page, 3500);
+  // The send: pushed into, tapped, then held on the result. This is the beat
+  // the whole scene exists for, so it gets the camera move.
+  const send = page.locator(".b-submit-bar .b-btn");
+  await pushIn(page, send, { to: 1.3, ms: 1000 });
+  await tap(page, send, { hold: 600 });
+  await settle(page, 2200);
+  await pullOut(page);
+  await settle(page, 1600);
 
   await finish(context, "crew");
+}
+
+/**
+ * Scene 4: the acceptance, signed by both sides.
+ *
+ * The most convincing seconds this product has, and the most expensive to film:
+ * the pads only exist after a handover has been requested and a completion
+ * report generated, so both of those happen off camera in their own contexts
+ * and only the acceptance itself is recorded. The demo is left mid-acceptance
+ * and `npm run seed` puts it back.
+ */
+async function sceneSign(browser) {
+  const sub = await take(browser, { who: "sub", viewport: { width: 1600, height: 1000 }, name: ".sub-setup" });
+  const subPage = await sub.newPage();
+  await subPage.goto(`${BASE}/sl/app/${PROJECT}/final`, { waitUntil: "networkidle" });
+  await waitForApp(subPage);
+  const askOne = subPage.getByRole("button", { name: "Zaključi projekt" }).first();
+  if (await askOne.count()) {
+    await askOne.click();
+    await subPage.getByRole("button", { name: "Zaključi projekt" }).last().click();
+    await settle(subPage, 1500);
+  }
+  await discard(sub, ".sub-setup");
+
+  const prep = await take(browser, { who: "epc", viewport: { width: 1600, height: 1000 }, name: ".epc-setup" });
+  const prepPage = await prep.newPage();
+  await prepPage.goto(`${BASE}/sl/app/${PROJECT}/final`, { waitUntil: "networkidle" });
+  await waitForApp(prepPage);
+  const make = prepPage.getByRole("button", { name: "Ustvari poročilo" });
+  if (await make.count()) {
+    await make.click();
+    await prepPage.waitForSelector("text=Prenesi poročilo", { timeout: 90000 }).catch(() => {});
+  }
+  await discard(prep, ".epc-setup");
+
+  // Now the camera.
+  const context = await take(browser, { who: "epc", viewport: { width: 1600, height: 1000 }, name: "sign" });
+  const page = await context.newPage();
+  await page.goto(`${BASE}/sl/app/${PROJECT}/final`, { waitUntil: "networkidle" });
+  await waitForApp(page);
+  await settle(page, 900);
+
+  const start = page.getByRole("button", { name: "Začni prevzem" });
+  if (!(await start.count())) {
+    console.log("skip sign: acceptance is not available in this state");
+    await finish(context, "sign");
+    return;
+  }
+  await tap(page, start, { hold: 500 });
+  await page.waitForSelector("canvas", { timeout: 20000 });
+  await settle(page, 900);
+
+  await page.getByPlaceholder(/Imena oseb/i).fill("Marko Golob, Boštjan Novak, Matej Kovač");
+  await settle(page, 500);
+
+  const canvas = page.locator("canvas").first();
+  await canvas.scrollIntoViewIfNeeded();
+  await settle(page, 500);
+  await pushIn(page, canvas, { to: 1.35, ms: 1100 });
+
+  // Both signatures, drawn at a human speed rather than a machine one.
+  for (let index = 0; index < 2; index++) {
+    const pad = page.locator("canvas").nth(index);
+    const box = await pad.boundingBox();
+    if (!box) continue;
+    await page.mouse.move(box.x + box.width * 0.15, box.y + box.height * 0.6);
+    await page.mouse.down();
+    for (let i = 1; i <= 26; i++) {
+      const t = i / 26;
+      await page.mouse.move(
+        box.x + box.width * (0.15 + t * 0.7),
+        box.y + box.height * (0.6 - Math.sin(t * Math.PI * (2 + index)) * 0.22),
+      );
+      await settle(page, 22);
+    }
+    await page.mouse.up();
+    await settle(page, 700);
+  }
+
+  await settle(page, 1200);
+  await pullOut(page);
+  await settle(page, 900);
+  await finish(context, "sign");
 }
 
 /** Scene 2: the office. The report that was just sent, on the dashboard. */
@@ -148,7 +303,16 @@ async function sceneDashboard(browser) {
   const page = await context.newPage();
   await page.goto(`${BASE}/sl/app/${PROJECT}`, { waitUntil: "networkidle" });
   await waitForApp(page);
-  await settle(page, 2200);
+  await settle(page, 1400);
+
+  // Into the progress ring first: it is the number the client actually opens
+  // this page for, and it moved because of the report sent in the last scene.
+  const ring = page.locator(".e-proj-ring, .e-bar").first();
+  if (await ring.count()) {
+    await pushIn(page, ring, { to: 1.28, ms: 1100 });
+    await settle(page, 1500);
+    await pullOut(page);
+  }
 
   // A slow scroll down to the day feed, where the new report is.
   await page.evaluate(async () => {
@@ -175,6 +339,12 @@ async function sceneHours(browser) {
   await finish(context, "hours");
 }
 
+/** A setup context: recorded (every context is) but its file is thrown away. */
+async function discard(context, name) {
+  await context.close();
+  rmSync(`${OUT}/.raw-${name}`, { recursive: true, force: true });
+}
+
 async function main() {
   rmSync(OUT, { recursive: true, force: true });
   mkdirSync(OUT, { recursive: true });
@@ -189,6 +359,7 @@ async function main() {
   await sceneCrew(browser);
   await sceneDashboard(browser);
   await sceneHours(browser);
+  await sceneSign(browser);
   await browser.close();
   console.log(`\ntakes in ${OUT}`);
 }

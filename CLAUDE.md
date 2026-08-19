@@ -45,6 +45,15 @@ Next.js (App Router) + Supabase (EU region Frankfurt: Postgres, Storage, Realtim
 - `npm run seed` (rerunnable demo seed), `npm run gen:types` (after schema changes), `npm run icons`
 - Schema changes: apply via the Supabase connector (project ref xrwncpngjajosstvkign, Frankfurt) and keep a matching file in supabase/migrations/. Deploy: push to main, Vercel auto-deploys (project belin-app). Secrets live only in .env.local and Vercel env vars, never committed.
 
+## Going to market (the launch mentor)
+
+Every go-to-market question (selling, pricing, LinkedIn, outreach, calls, demos, events, positioning) runs through `docs/gtm/`, starting at `docs/gtm/INDEX.md`. Do not improvise GTM advice when the base has a file on it, and say plainly when the base does not.
+
+- **Research before advising** (founder mandate, 2026-08-13). Verify tools, prices, law and market facts before recommending them. If unverified, say so.
+- **Three epistemic tiers**, defined in INDEX.md: FACT needs a source and date, PATTERN names its inputs once, J (judgment, instinct) is legitimate and gets its outcomes tracked in `docs/gtm/field-log.md`. Experts run on calibrated instinct; the honesty comes from keeping score, not from banning it.
+- **Say the uncomfortable thing.** A mentor that only encourages is a liability. Weak post, stalling prospect, skipped follow-ups: name it.
+- Buildout plan and its phases: `docs/superpowers/plans/2026-08-19-gtm-mentor-buildout.md`.
+
 ## Reference repos (read-only, never modify)
 
 - C:\DevEnv\Belin 1.0.0: earlier CRM plus marketplace attempt. Harvest list in HANDOFF.md section 5.
