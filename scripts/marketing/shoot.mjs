@@ -3,6 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { frameBrowser, framePhone } from "./frames.mjs";
+import { LOCALE, BROWSER_LOCALE, dir } from "./locale.mjs";
 
 // Every screen Belin sells itself with, shot by the machine.
 //
@@ -16,8 +17,8 @@ import { frameBrowser, framePhone } from "./frames.mjs";
 // faked session is a screenshot of something that does not exist.
 
 const BASE = "http://localhost:3000";
-const RAW = "assets/marketing/raw";
-const FRAMED = "assets/marketing/framed";
+const RAW = dir("raw");
+const FRAMED = dir("framed");
 
 const env = Object.fromEntries(
   readFileSync(".env.local", "utf8")
@@ -49,12 +50,12 @@ async function magicLink(email) {
     token_hash: createHash("sha256").update(raw, "utf8").digest("hex"),
     expires_at: new Date(Date.now() + 3600_000).toISOString(),
   });
-  return `${BASE}/sl/auth/verify/${raw}`;
+  return `${BASE}/${LOCALE}/auth/verify/${raw}`;
 }
 
 /** A fresh browser context signed in as one person, with dev chrome suppressed. */
 async function contextFor(browser, who, viewport, deviceScaleFactor) {
-  const context = await browser.newContext({ viewport, deviceScaleFactor, locale: "sl-SI" });
+  const context = await browser.newContext({ viewport, deviceScaleFactor, locale: BROWSER_LOCALE });
   await context.addCookies([
     { name: "belin-shot", value: "1", url: BASE },
   ]);
@@ -76,7 +77,7 @@ const SHOTS = [
     who: "epc",
     viewport: { width: 1600, height: 1000 },
     scale: 2,
-    path: "/sl/app",
+    path: `/${LOCALE}/app`,
     ready: ".pf-strip",
     frame: "browser",
     label: "belin-app.vercel.app",
@@ -86,7 +87,7 @@ const SHOTS = [
     who: "epc",
     viewport: { width: 1600, height: 1000 },
     scale: 2,
-    path: `/sl/app/${PROJECT}`,
+    path: `/${LOCALE}/app/${PROJECT}`,
     ready: ".e-proj-ring, .e-bar",
     frame: "browser",
     label: "belin-app.vercel.app",
@@ -96,7 +97,7 @@ const SHOTS = [
     who: "epc",
     viewport: { width: 1600, height: 1100 },
     scale: 2,
-    path: `/sl/app/${PROJECT}`,
+    path: `/${LOCALE}/app/${PROJECT}`,
     ready: ".e-bar",
     scrollTo: ".e-daylog, .e-sec:nth-of-type(4)",
     frame: "browser",
@@ -107,7 +108,7 @@ const SHOTS = [
     who: "epc",
     viewport: { width: 1600, height: 1000 },
     scale: 2,
-    path: `/sl/app/${PROJECT}/hours`,
+    path: `/${LOCALE}/app/${PROJECT}/hours`,
     ready: ".e-bar",
     frame: "browser",
     label: "belin-app.vercel.app",
@@ -117,7 +118,7 @@ const SHOTS = [
     who: "sub",
     viewport: { width: 1600, height: 1000 },
     scale: 2,
-    path: "/sl/app/settings",
+    path: `/${LOCALE}/app/settings`,
     ready: ".cr-list, .st-card",
     scrollTo: ".cr-list",
     frame: "browser",
@@ -128,7 +129,7 @@ const SHOTS = [
     who: "crew",
     viewport: { width: 390, height: 844 },
     scale: 3,
-    path: `/sl/app/${PROJECT}`,
+    path: `/${LOCALE}/app/${PROJECT}`,
     ready: ".cr-quick",
     frame: "phone",
     hide: [".ih-strip"],
@@ -153,7 +154,7 @@ async function crewLinkPath() {
     .eq("revoked", false)
     .limit(1)
     .maybeSingle();
-  return `/sl/p/${data.token}`;
+  return `/${LOCALE}/p/${data.token}`;
 }
 
 async function main() {

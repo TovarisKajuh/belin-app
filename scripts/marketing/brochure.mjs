@@ -5,6 +5,8 @@ import sharp from "sharp";
 import React from "react";
 import { BrochureDocument } from "../../lib/pdf/brochure.tsx";
 import { renderDocument } from "../../lib/pdf/theme.tsx";
+import { COPY } from "../../lib/pdf/brochure-copy.ts";
+import { LOCALE, dir, named } from "./locale.mjs";
 
 // Renders the sales brochure, then photographs every page so it can be LOOKED
 // AT rather than assumed correct.
@@ -17,7 +19,7 @@ import { renderDocument } from "../../lib/pdf/theme.tsx";
 // so the seam is invisible.
 
 const OUT = "assets/marketing";
-const SHOTS = "assets/marketing/brochure-pages";
+const SHOTS = `assets/marketing/brochure-pages${LOCALE === "sl" ? "" : `-${LOCALE}`}`;
 const BG = { r: 10, g: 18, b: 30 }; // D.bg, #0a121e
 
 // JPEG, not PNG. These are photographic compositions with no transparency left
@@ -29,11 +31,11 @@ const flat = (pipeline) => pipeline.flatten({ background: BG }).jpeg({ quality: 
 /** The cover: the laptop with the phone standing in front of its left corner. */
 async function heroImage() {
   const W = 1500;
-  const laptop = await sharp("assets/marketing/hero/laptop.png")
+  const laptop = await sharp(`${dir("hero")}/laptop.png`)
     .trim({ threshold: 1 })
     .resize({ width: Math.round(W * 0.78) })
     .toBuffer();
-  const phone = await sharp("assets/marketing/hero/phone.png")
+  const phone = await sharp(`${dir("hero")}/phone.png`)
     .trim({ threshold: 1 })
     .resize({ width: Math.round(W * 0.3) })
     .toBuffer();
@@ -55,7 +57,7 @@ async function heroImage() {
 /** One framed screenshot, sized and set on the page colour. */
 async function framed(name, width = 1400) {
   return flat(
-    sharp(`assets/marketing/framed/${name}.png`).trim({ threshold: 1 }).resize({ width }),
+    sharp(`${dir("framed")}/${name}.png`).trim({ threshold: 1 }).resize({ width }),
   ).toBuffer();
 }
 
@@ -68,11 +70,11 @@ async function framed(name, width = 1400) {
  */
 async function crewImage() {
   const W = 1400;
-  const phone = await sharp("assets/marketing/mockups/phone-crew-left.png")
+  const phone = await sharp(`${dir("mockups")}/phone-crew-left.png`)
     .trim({ threshold: 1 })
     .resize({ height: 900 })
     .toBuffer();
-  const join = await sharp("assets/marketing/mockups/phone-join-right.png")
+  const join = await sharp(`${dir("mockups")}/phone-join-right.png`)
     .trim({ threshold: 1 })
     .resize({ height: 820 })
     .toBuffer();
@@ -96,10 +98,10 @@ async function documentsImage() {
   const W = 1400;
   const RAISE = 44; // how high the middle sheet rides
   const parts = [];
-  const names = ["doc-report", "doc-abnahme", "doc-invoice"];
+  const names = [named("doc-report"), named("doc-abnahme"), named("doc-invoice")];
   for (const [i, name] of names.entries()) {
     const width = i === 1 ? Math.round(W * 0.44) : Math.round(W * 0.4);
-    parts.push(await sharp(`assets/marketing/mockups/${name}.png`).resize({ width }).toBuffer());
+    parts.push(await sharp(`${dir("mockups")}/${name}.png`).resize({ width }).toBuffer());
   }
   const meta = await Promise.all(parts.map((b) => sharp(b).metadata()));
   // Height computed from the sheets rather than fixed. A fixed canvas left a
@@ -144,8 +146,13 @@ async function main() {
   }
 
   console.log("rendering pdf ...");
-  const pdf = await renderDocument(React.createElement(BrochureDocument, { img }));
-  const file = `${OUT}/belin-predstavitev-sl.pdf`;
+  const copy = COPY[LOCALE];
+  if (!copy) {
+    console.error(`No brochure copy for locale "${LOCALE}". Add it to lib/pdf/brochure-copy.ts.`);
+    process.exit(1);
+  }
+  const pdf = await renderDocument(React.createElement(BrochureDocument, { img, copy }));
+  const file = `${OUT}/${LOCALE === "de" ? "belin-vorstellung-de" : `belin-predstavitev-${LOCALE}`}.pdf`;
   writeFileSync(file, pdf);
   console.log(`  ${file}  ${(pdf.length / 1024 / 1024).toFixed(2)} MB`);
 

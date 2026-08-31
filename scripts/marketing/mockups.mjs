@@ -19,7 +19,9 @@ import sharp from "sharp";
 //    itself has white text and pale panels: a global threshold would eat the
 //    artwork. Only background CONNECTED to the border goes.
 
-const OUT = "assets/marketing/mockups";
+import { dir, named } from "./locale.mjs";
+
+const OUT = dir("mockups");
 
 /** Devices, each a viewport shape and a frame treatment. */
 const DEVICES = {
@@ -215,11 +217,11 @@ async function main() {
   const browser = await chromium.launch();
 
   const jobs = [
-    ["assets/marketing/raw/epc-dashboard.png", "laptop", { rotateY: -22, rotateX: 6, rotateZ: -1, scale: 0.62 }, "laptop-dashboard-left"],
-    ["assets/marketing/raw/portfolio.png", "laptop", { rotateY: 18, rotateX: 5, rotateZ: 1, scale: 0.62 }, "laptop-portfolio-right"],
-    ["assets/marketing/raw/crew-phone.png", "phone", { rotateY: -20, rotateX: 4, rotateZ: -2, scale: 0.78 }, "phone-crew-left"],
-    ["assets/marketing/raw/crew-join.png", "phone", { rotateY: 16, rotateX: 4, rotateZ: 2, scale: 0.78 }, "phone-join-right"],
-    ["assets/marketing/raw/crew-phone.png", "phone", { rotateY: 0, rotateX: 0, rotateZ: 0, scale: 0.9 }, "phone-crew-flat"],
+    [`${dir("raw")}/epc-dashboard.png`, "laptop", { rotateY: -22, rotateX: 6, rotateZ: -1, scale: 0.62 }, "laptop-dashboard-left"],
+    [`${dir("raw")}/portfolio.png`, "laptop", { rotateY: 18, rotateX: 5, rotateZ: 1, scale: 0.62 }, "laptop-portfolio-right"],
+    [`${dir("raw")}/crew-phone.png`, "phone", { rotateY: -20, rotateX: 4, rotateZ: -2, scale: 0.78 }, "phone-crew-left"],
+    [`${dir("raw")}/crew-join.png`, "phone", { rotateY: 16, rotateX: 4, rotateZ: 2, scale: 0.78 }, "phone-join-right"],
+    [`${dir("raw")}/crew-phone.png`, "phone", { rotateY: 0, rotateX: 0, rotateZ: 0, scale: 0.9 }, "phone-crew-flat"],
   ];
 
   for (const [src, device, angle, name] of jobs) {
@@ -240,9 +242,9 @@ async function main() {
     // sheet's RIGHT edge toward the viewer, so the left sheet takes the positive
     // value to face the middle. With them reversed the three splayed outward and
     // read as three separate objects instead of one fanned set.
-    ["assets/marketing/docs/completion-cover.png", { rotateY: 9, rotateZ: -1.2 }, "doc-report"],
-    ["assets/marketing/docs/abnahme.png", { rotateY: 0, rotateZ: 0, rotateX: 4, scale: 1.06 }, "doc-abnahme"],
-    ["assets/marketing/docs/invoice.png", { rotateY: -9, rotateZ: 1.2 }, "doc-invoice"],
+    [`${dir("docs")}/completion-cover.png`, { rotateY: 9, rotateZ: -1.2 }, named("doc-report")],
+    [`${dir("docs")}/abnahme.png`, { rotateY: 0, rotateZ: 0, rotateX: 4, scale: 1.06 }, named("doc-abnahme")],
+    [`${dir("docs")}/invoice.png`, { rotateY: -9, rotateZ: 1.2 }, named("doc-invoice")],
   ];
 
   for (const [src, angle, name] of papers) {

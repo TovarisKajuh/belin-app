@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { createHash, randomBytes } from "node:crypto";
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
+import { LOCALE } from "./locale.mjs";
 
 // Walks the closing chain so the documents exist to photograph.
 //
@@ -93,10 +94,22 @@ async function main() {
   // Targeted by placeholder, the way a person reads the form. These inputs
   // carry no type attribute, so input[type=text] matches none of them, which
   // cost this script its first run.
-  await epc.page.getByPlaceholder(/Imena oseb/i).fill("Marko Golob, Boštjan Novak, Matej Kovač");
+  // The UI stays Slovenian for the whole drive, because these selectors are
+  // written against it, but the TYPED text lands in the generated document and
+  // the document renders in the project's language. So the defect text follows
+  // the marketing locale, not the interface.
+  const PRESENT = {
+    sl: "Marko Golob, Boštjan Novak, Matej Kovač",
+    de: "Michael Berger, Boštjan Novak, Matthias Kern",
+  };
+  const DEFECT = {
+    sl: "Manjka tesnilo na prehodu kabla skozi kritino na strehi 2.",
+    de: "Dichtung an der Kabeldurchführung durch die Dacheindeckung auf Dach 2 fehlt.",
+  };
+  await epc.page.getByPlaceholder(/Imena oseb/i).fill(PRESENT[LOCALE] ?? PRESENT.sl);
   await epc.page
     .getByPlaceholder(/Opis pomanjkljivosti/i)
-    .fill("Manjka tesnilo na prehodu kabla skozi kritino na strehi 2.");
+    .fill(DEFECT[LOCALE] ?? DEFECT.sl);
   const dates = epc.page.locator("input[type=date]");
   await dates.nth(0).fill("2026-08-27");
   await epc.page.getByRole("button", { name: "Dodaj pomanjkljivost" }).click();

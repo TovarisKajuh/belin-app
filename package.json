@@ -27,7 +27,11 @@
     "marketing:video:takes": "node scripts/marketing/video-takes.mjs",
     "marketing:video:cut": "node scripts/marketing/video-cut.mjs",
     "marketing:video": "npm run marketing:video:takes && npm run marketing:video:cut",
-    "marketing:brochure": "tsx --tsconfig tsconfig.scripts.json scripts/marketing/brochure.mjs"
+    "marketing:brochure": "tsx --tsconfig tsconfig.scripts.json scripts/marketing/brochure.mjs",
+    "marketing:germanize": "node --env-file=.env.local scripts/marketing/germanize.mjs",
+    "marketing:pipeline": "node scripts/marketing/pipeline.mjs",
+    "marketing:sl": "node scripts/marketing/pipeline.mjs sl",
+    "marketing:de": "node scripts/marketing/pipeline.mjs de"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

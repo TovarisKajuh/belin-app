@@ -11,7 +11,9 @@ import { createClient } from "@supabase/supabase-js";
 // sees on the page is provably the document they will receive. It also means
 // these images cannot drift from the product: change the template and re-run.
 
-const OUT = "assets/marketing/docs";
+import { dir } from "./locale.mjs";
+
+const OUT = dir("docs");
 const env = Object.fromEntries(
   readFileSync(".env.local", "utf8")
     .split(/\r?\n/)
