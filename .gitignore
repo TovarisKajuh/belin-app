@@ -35,3 +35,7 @@ assets/marketing/hero/
 # `npm run marketing:video`; the finished mp4s beside them ARE committed.
 assets/marketing/video/takes/
 assets/marketing/video/.work/
+
+# Rasterized brochure pages, for looking at during a build. The PDF itself is
+# committed; these regenerate from `npm run marketing:brochure`.
+assets/marketing/brochure-pages/
