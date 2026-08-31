@@ -2,6 +2,16 @@
 
 Every change to this repository is logged here, newest first, with date, what and why, in the same commit as the change. Knowingly taken shortcuts are logged here as debt the moment they are taken.
 
+## 2026-08-31
+
+- IMPRESSUM AND PRIVACY POLICY, in all three languages, at /[locale]/impressum and /[locale]/zasebnost, linked from the landing and login footers. This was the standing blocker on German outreach at any scale beyond one warm contact.
+- THEY 404 UNTIL THE OPERATOR IS REAL. Every identity field in lib/legal.ts is null, and while any required one is missing both routes return 404 and the footer links do not render. An Impressum is a legal declaration about a real company: a plausible one with invented details is a false statement rather than a missing one, which is strictly worse. Filling six values in one file publishes both pages on the next deploy with no other change.
+- THE LAW WAS CHECKED, NOT RECALLED. The German duty moved from § 5 TMG to § 5 DDG in May 2024, so the page cites DDG. It must be easily recognisable, immediately accessible and permanently available, which is why the link sits in the footer of every public page and is labelled with the plain word Impressum in German.
+- THE PRIVACY TEXT DESCRIBES THIS APP, not a template. Verified against the code: exactly one session cookie plus next-intl's locale cookie, no analytics, no tracking pixels, no advertising, which is why there is no consent banner and the policy says so plainly rather than inventing one. Processors named (Supabase in Frankfurt, Vercel, Resend), EU storage stated, and the compliance vault rests on the EPC's own legal obligation under Art. 6(1)(c), which is the strongest basis available and worth naming.
+- The legal pages carry their own long-form copy in lib/legal-copy.ts rather than the message catalogs, the same split the brochure uses: three languages of GDPR prose in messages/*.json would swamp the interface strings and make the parity test police paragraphs it cannot judge.
+- DEBT: tests/k2-parse.test.ts "end to end on forum2" failed once under load (a build and a server running alongside the suite) and passed on its own and on a clean full run. A test that fails when the machine is busy will fail in CI eventually; its timeout wants raising or its work reducing.
+- STILL OPEN before German outreach: the operator identity above, Resend SPF/DKIM/DMARC, and the custom domain.
+
 ## 2026-08-13
 
 - SECTION 04 SHOWS THE THREE DOCUMENTS, and they are the documents. Rasterized from the real PDF bytes in storage, cropped to the top 65 percent, faded at the cut edge and fanned like sheets on a desk. The crop is measured, not chosen: the protocol's signatures sit at 58 percent of page height and the invoice's reverse-charge clause at 48, so 65 keeps the proof in all three while cutting the empty half no document fills. The acceptance protocol takes the middle, larger and raised, because it is the only one of the three carrying signatures.

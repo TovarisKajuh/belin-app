@@ -243,7 +243,9 @@
     "ctaBody": "Naložite načrt in v nekaj minutah vidite, kako izgleda.",
     "ctaButton": "Prijava",
     "ctaMail": "Pišite nam",
-    "imprint": "Belin, getbelin.com"
+    "imprint": "Belin, getbelin.com",
+    "legalImprint": "Impresum",
+    "legalPrivacy": "Zasebnost"
   },
   "auth": {
     "username": "Uporabniško ime",

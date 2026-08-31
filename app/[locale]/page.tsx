@@ -7,6 +7,7 @@ import { resolveActorFromSession } from "@/lib/auth";
 import { safeNext } from "@/lib/auth-core";
 import { Story } from "@/components/landing/Story";
 import { Wordmark } from "@/components/landing/Wordmark";
+import { LegalLinks } from "@/components/landing/LegalLinks";
 
 const POINTS = ["point1", "point2", "point3"] as const;
 
@@ -129,7 +130,7 @@ export default async function Home({
       <div className="lp-wrap">
         <footer className="lp-foot">
           <span>{t("footer")}</span>
-          <span className="lp-foot-i">{t("imprint")}</span>
+          <LegalLinks locale={locale} />
         </footer>
       </div>
     </main>

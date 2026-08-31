@@ -243,7 +243,9 @@
     "ctaBody": "Upload the plan and see in minutes what it looks like.",
     "ctaButton": "Sign in",
     "ctaMail": "Write to us",
-    "imprint": "Belin, getbelin.com"
+    "imprint": "Belin, getbelin.com",
+    "legalImprint": "Legal notice",
+    "legalPrivacy": "Privacy"
   },
   "auth": {
     "username": "Username",

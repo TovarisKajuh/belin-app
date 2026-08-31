@@ -1249,6 +1249,40 @@ button.gal-item {
 .lp-solo .lp-card { width: 100%; max-width: 420px; }
 
 .lp-foot { color: var(--e-muted); font-size: 12px; text-align: center; padding-top: 8px; }
+.lp-foot a { color: var(--e-muted); text-decoration: none; }
+.lp-foot a:hover { color: var(--e-ink2); text-decoration: underline; }
+.lp-foot-links { display: flex; gap: 16px; }
+
+/* ==========================================================================
+   LEGAL PAGES
+   Prose, not marketing. A narrower measure than the rest of the site, because
+   these exist to be read closely by somebody deciding whether to trust us.
+   ========================================================================== */
+.lg-doc { flex: 1; max-width: 62ch; padding: 40px 0 56px; }
+.lg-title { margin: 0; font-size: clamp(28px, 4vw, 38px); font-weight: 800; letter-spacing: -.022em; }
+.lg-sub { margin: 10px 0 0; font-size: 14px; color: var(--e-muted); }
+.lg-sec { margin-top: 34px; }
+.lg-h2 { margin: 0 0 10px; font-size: 17px; font-weight: 700; color: var(--e-ink); }
+.lg-p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.68; color: var(--e-ink2); }
+
+/* The identity block: a definition list that stays readable when a value runs
+   to several lines, which an address always does. */
+.lg-ident {
+  margin-top: 28px; padding: 22px 24px; border-radius: 14px;
+  background: var(--e-surface); border: 1px solid var(--e-line);
+}
+.lg-ident-row { display: grid; grid-template-columns: 190px 1fr; gap: 14px; padding: 9px 0; }
+.lg-ident-row + .lg-ident-row { border-top: 1px solid var(--e-line); }
+.lg-ident-label {
+  font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--e-muted); padding-top: 2px;
+}
+.lg-ident-value { display: flex; flex-direction: column; gap: 2px; }
+.lg-ident-line { font-size: 14.5px; color: var(--e-ink); }
+
+@media (max-width: 620px) {
+  .lg-ident-row { grid-template-columns: 1fr; gap: 4px; }
+}
 
 /* logout control, paired with the DEV swap pill; goes with the demo login */
 .lp-logout { position: fixed; left: 12px; bottom: 12px; z-index: 60; }

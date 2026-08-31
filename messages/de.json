@@ -243,7 +243,9 @@
     "ctaBody": "Planung hochladen und in wenigen Minuten sehen, wie es aussieht.",
     "ctaButton": "Anmelden",
     "ctaMail": "Schreiben Sie uns",
-    "imprint": "Belin, getbelin.com"
+    "imprint": "Belin, getbelin.com",
+    "legalImprint": "Impressum",
+    "legalPrivacy": "Datenschutz"
   },
   "auth": {
     "username": "Benutzername",

@@ -7,6 +7,7 @@ import { safeNext } from "@/lib/auth-core";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { MagicLinkForm } from "@/components/auth/MagicLinkForm";
 import { Wordmark } from "@/components/landing/Wordmark";
+import { LegalLinks } from "@/components/landing/LegalLinks";
 
 /**
  * Signing in, on its own screen.
@@ -83,7 +84,7 @@ export default async function Login({
             edge and reads as a layout bug. */}
         <footer className="lp-foot">
           <span>{t("footer")}</span>
-          <span className="lp-foot-i">{t("imprint")}</span>
+          <LegalLinks locale={locale} />
         </footer>
       </div>
     </main>
