@@ -16,7 +16,7 @@ import { LOCALE, BROWSER_LOCALE, dir } from "./locale.mjs";
 // login tokens and walking the real magic-link flow, because a screenshot of a
 // faked session is a screenshot of something that does not exist.
 
-const BASE = "http://localhost:3000";
+const BASE = process.env.BASE ?? "http://localhost:3000";
 const RAW = dir("raw");
 const FRAMED = dir("framed");
 

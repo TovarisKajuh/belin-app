@@ -14,7 +14,7 @@ import { LOCALE } from "./locale.mjs";
 // It leaves the demo dirty on purpose. `npm run marketing:all` re-seeds after
 // the pictures are taken, which is also what proves the reset actually resets.
 
-const BASE = "http://localhost:3000";
+const BASE = process.env.BASE ?? "http://localhost:3000";
 const PROJECT = "33333333-3333-4333-8333-333333333333";
 
 const env = Object.fromEntries(

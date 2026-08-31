@@ -25,15 +25,19 @@ import { spawnSync } from "node:child_process";
 const LOCALE = (process.argv[2] ?? "sl").toLowerCase();
 const BASE = process.env.BASE ?? "http://localhost:3000";
 
-const npx = process.platform === "win32" ? "npx.cmd" : "npx";
-const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+const npx = "npx";
+const npm = "npm";
 
 function run(label, command, args, env = {}) {
   console.log(`\n=== ${label} ===`);
   const result = spawnSync(command, args, {
     stdio: "inherit",
     env: { ...process.env, MARKETING_LOCALE: LOCALE, BASE, ...env },
-    shell: false,
+    // The shell is needed for npm and npx on Windows, because they are .cmd
+    // shims that cannot be spawned directly. It must NOT be used for node,
+    // whose path is C:\Program Files\nodejs\node.exe: through a shell that
+    // splits at the space and tries to run "C:\Program".
+    shell: process.platform === "win32" && (command === npm || command === npx),
   });
   if (result.status !== 0) {
     console.error(`\nFAILED at "${label}". The demo may still be dressed in ${LOCALE}.`);

@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { chromium } from "playwright";
 import sharp from "sharp";
@@ -28,16 +28,29 @@ const BG = { r: 10, g: 18, b: 30 }; // D.bg, #0a121e
 // not open. Quality 82 at print resolution lands the whole thing near 1 MB.
 const flat = (pipeline) => pipeline.flatten({ background: BG }).jpeg({ quality: 82, mozjpeg: true });
 
-/** The cover: the laptop with the phone standing in front of its left corner. */
+/**
+ * The cover: the laptop with the phone standing in front of its left corner.
+ *
+ * Slovenian uses the founder's own photoreal device renders in assets/marketing
+ * /hero, which are the best pictures this project has. They cannot be reused for
+ * another language, because the app screenshot is baked into the render: a
+ * German cover built from them would show a Slovenian dashboard, which is the
+ * exact failure this whole locale-aware pipeline exists to prevent. So every
+ * other language composes its cover from that language's generated device
+ * mockups instead. Slightly less photoreal, entirely correct.
+ */
 async function heroImage() {
   const W = 1500;
-  const laptop = await sharp(`${dir("hero")}/laptop.png`)
+  const hasOwnRenders = existsSync(`${dir("hero")}/laptop.png`);
+  const laptopSrc = hasOwnRenders ? `${dir("hero")}/laptop.png` : `${dir("mockups")}/laptop-dashboard-left.png`;
+  const phoneSrc = hasOwnRenders ? `${dir("hero")}/phone.png` : `${dir("mockups")}/phone-crew-left.png`;
+  const laptop = await sharp(laptopSrc)
     .trim({ threshold: 1 })
     .resize({ width: Math.round(W * 0.78) })
     .toBuffer();
-  const phone = await sharp(`${dir("hero")}/phone.png`)
+  const phone = await sharp(phoneSrc)
     .trim({ threshold: 1 })
-    .resize({ width: Math.round(W * 0.3) })
+    .resize({ width: Math.round(W * (hasOwnRenders ? 0.3 : 0.26)) })
     .toBuffer();
   const lm = await sharp(laptop).metadata();
   const pm = await sharp(phone).metadata();
@@ -176,12 +189,30 @@ async function main() {
   const page = await context.newPage();
   await page.goto(`file://${resolve("scripts/marketing/pdf-view.html")}`);
   const data = [...pdf];
-  for (let n = 1; n <= 7; n++) {
-    const info = await page.evaluate(
+  const first = await page.evaluate(
+    ([bytes]) => window.renderPdfPage(bytes, 1, 2),
+    [data],
+  );
+
+  // The brochure is SEVEN pages. Any other number means a page overflowed, which
+  // is how the German cover silently became two pages: the longer title pushed
+  // the hero and the footer onto a sheet of their own, and nothing complained.
+  // A page count is the cheapest possible assertion about a PDF, so it is made
+  // before anything is looked at.
+  const EXPECTED = 7;
+  if (first.pages !== EXPECTED) {
+    console.error(
+      `
+LAYOUT OVERFLOW: the brochure rendered ${first.pages} pages, expected ${EXPECTED}.`,
+    );
+    console.error("Some page's content is taller than A4. Photographing anyway so it can be seen.");
+  }
+
+  for (let n = 1; n <= first.pages; n++) {
+    await page.evaluate(
       ([bytes, pageNumber]) => window.renderPdfPage(bytes, pageNumber, 2),
       [data, n],
     );
-    if (n > info.pages) break;
     writeFileSync(`${SHOTS}/page-${n}.png`, await page.locator("#page").screenshot({ type: "png" }));
     console.log(`  page ${n}`);
   }

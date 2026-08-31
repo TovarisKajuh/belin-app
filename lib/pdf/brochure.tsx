@@ -126,6 +126,23 @@ const s = StyleSheet.create({
     color: D.muted,
   },
   imgFull: { width: "100%", objectFit: "contain" },
+  /**
+   * The cover image gets a FIXED height, not a natural one.
+   *
+   * German runs the cover title to four lines where Slovenian takes three, and
+   * with a free-flowing image the extra lines pushed the picture and the whole
+   * footer onto a second page: a two page cover, discovered only by counting.
+   * A fixed box makes the cover's height arithmetic independent of how long the
+   * language is.
+   */
+  coverImage: { width: "100%", height: 330, objectFit: "contain" },
+  /**
+   * Content images get a fixed height for the same reason the cover one does.
+   * German runs every string longer, and on the daily-loop page the extra lines
+   * in the heading, the lead and the three steps pushed the closing panel over
+   * the edge: it was cut mid sentence and finished on a page of its own.
+   */
+  contentImage: { width: "100%", height: 290, objectFit: "contain" },
 });
 
 /** The rising cell mark, same twelve cells as the app and the landing page. */
@@ -176,7 +193,7 @@ export function BrochureDocument({ img, copy }: { img: BrochureImages; copy: Bro
       <Page size="A4" style={s.coverPage}>
         <Brand />
 
-        <View style={{ marginTop: 74 }}>
+        <View style={{ marginTop: 52 }}>
           <Text style={s.eyebrow}>{copy.cover.eyebrow}</Text>
           <Text style={s.coverTitle}>
             {copy.cover.titleTop}
@@ -189,7 +206,7 @@ export function BrochureDocument({ img, copy }: { img: BrochureImages; copy: Bro
         <View style={s.grow} />
 
         <View style={{ marginHorizontal: -26 }}>
-          <Image src={img.hero} style={s.imgFull} />
+          <Image src={img.hero} style={s.coverImage} />
         </View>
 
         <View style={s.grow} />
@@ -247,7 +264,7 @@ export function BrochureDocument({ img, copy }: { img: BrochureImages; copy: Bro
           ))}
         </View>
 
-        <Image src={img.crewPhone} style={[s.imgFull, { marginTop: 4 }]} />
+        <Image src={img.crewPhone} style={[s.contentImage, { marginTop: 4 }]} />
 
         <View style={s.grow} />
 
