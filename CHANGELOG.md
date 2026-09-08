@@ -2,6 +2,12 @@
 
 Every change to this repository is logged here, newest first, with date, what and why, in the same commit as the change. Knowingly taken shortcuts are logged here as debt the moment they are taken.
 
+## 2026-09-08
+
+- THE LOGO EXISTS AS A FILE NOW. `npm run icons` writes public/icons/logo.svg (on the navy plate, as on a home screen) and public/icons/logo-transparent.svg (mark only, for a light background or somebody else's slide) alongside the four PNGs.
+- It was only ever in memory before: scripts/generate-icons.mjs built the SVG, handed it to sharp and threw it away, so the first time the mark was needed for a printer, a deck, a trade directory or a LinkedIn page there was no vector to give and the choices were to re-draw it by eye or upscale a PNG. It is emitted by the same function that draws the rasters, so the two cannot drift.
+- Verified the four PNGs are byte identical after the change: the vector output touches nothing that existed.
+
 ## 2026-08-31
 
 - IMPRESSUM AND PRIVACY POLICY, in all three languages, at /[locale]/impressum and /[locale]/zasebnost, linked from the landing and login footers. This was the standing blocker on German outreach at any scale beyond one warm contact.

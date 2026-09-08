@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 
 // The Belin mark: a 3 wide by 4 tall cell grid whose columns rise 1, 2, 3,
 // gold from the bottom. Identical shape to the launch animation
@@ -19,8 +19,9 @@ const GAP_RATIO = 0.22; // gap as a fraction of the cell
  * @param size    icon edge in px
  * @param radius  corner radius of the icon plate (0 for full-bleed)
  * @param markH   mark height as a fraction of the icon edge
+ * @param plate   false for a transparent mark with no navy backing
  */
-function svg({ size, radius, markH }) {
+function svg({ size, radius, markH, plate = true }) {
   // 4 cells + 3 gaps tall, 3 cells + 2 gaps wide.
   const cell = (size * markH) / (ROWS + (ROWS - 1) * GAP_RATIO);
   const step = cell * (1 + GAP_RATIO);
@@ -45,7 +46,7 @@ function svg({ size, radius, markH }) {
 
   return Buffer.from(
     `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="${size}" height="${size}" rx="${radius}" fill="${NAVY}"/>
+      ${plate ? `<rect width="${size}" height="${size}" rx="${radius}" fill="${NAVY}"/>` : ""}
       ${cells}
     </svg>`
   );
@@ -66,4 +67,23 @@ const jobs = [
 for (const job of jobs) {
   await sharp(svg(job)).png().toFile(`public/icons/${job.file}`);
   console.log(`wrote public/icons/${job.file}`);
+}
+
+// THE VECTOR IS WRITTEN OUT TOO, from the same function that draws the PNGs.
+//
+// It used to exist only in memory: sharp rasterised it and threw it away, so
+// the day somebody needed a logo to hand to a printer, a slide deck or a trade
+// directory, there was no file to give them and the only options were to
+// re-draw it by eye or to upscale a PNG. Emitting it here means the vector and
+// the raster cannot drift apart, because there is one function and one run.
+const vectors = [
+  // On the navy plate: the app icon as people see it on a home screen.
+  { file: "logo.svg", size: 512, radius: 96, markH: 0.58, plate: true },
+  // No plate: for a light background, a letterhead, or somebody else's slide.
+  { file: "logo-transparent.svg", size: 512, radius: 0, markH: 0.58, plate: false },
+];
+
+for (const v of vectors) {
+  writeFileSync(`public/icons/${v.file}`, svg(v));
+  console.log(`wrote public/icons/${v.file}`);
 }
