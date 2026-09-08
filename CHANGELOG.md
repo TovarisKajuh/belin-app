@@ -4,6 +4,13 @@ Every change to this repository is logged here, newest first, with date, what an
 
 ## 2026-09-08
 
+- THE FULL LOCKUP EXISTS AS A FILE. `npm run logo` writes assets/brand/: the mark over BELIN over SOFTWARE, cropped tight to the ink, transparent, as SVG and as a 2048px PNG. Three editions: white type, white type with the unlit cells in grey, and dark type for a light surface.
+- IT IS THE LAUNCH SCREEN, LIFTED. Every number comes from components/BelinSplash.tsx rather than measured off a screenshot, so the file and the thing that animates on a phone stay the same logo.
+- THE LETTERS ARE OUTLINES, NOT TEXT. The splash names a font stack and lets the device pick, which on an iPhone resolves to SF Pro Display. An SVG that did the same would render in whatever the opening machine has, and a printer or a sign maker would silently substitute Arial with nobody thinking to check. fontkit instances InterVariable at the right weight and converts the glyphs to paths, so the file depends on nothing.
+- THE FONT IS INTER, NOT SF PRO, and that is a real difference. SF Pro is Apple licensed and cannot be redistributed inside a logo file. Inter is what the app, the landing page and every generated PDF already use, and it is the same grotesque genre. The splash on an iPhone stays very slightly different from the file, which is the correct trade.
+- THE UNLIT CELLS GOT A SECOND COLOUR. #2a3242 reads as "unlit" on the app's own navy, which is the point of it; on a mid-dark surface it reads as a hole rather than a cell. The grey edition uses --e-muted so the mark stays legible as a mark. Same logo, one colour apart.
+- fontkit added as an explicit devDependency. It was already present transitively under @react-pdf, and a repo script importing a package nobody declared is the kind of thing that breaks on somebody else's install.
+
 - THE LOGO EXISTS AS A FILE NOW. `npm run icons` writes public/icons/logo.svg (on the navy plate, as on a home screen) and public/icons/logo-transparent.svg (mark only, for a light background or somebody else's slide) alongside the four PNGs.
 - It was only ever in memory before: scripts/generate-icons.mjs built the SVG, handed it to sharp and threw it away, so the first time the mark was needed for a printer, a deck, a trade directory or a LinkedIn page there was no vector to give and the choices were to re-draw it by eye or upscale a PNG. It is emitted by the same function that draws the rasters, so the two cannot drift.
 - Verified the four PNGs are byte identical after the change: the vector output touches nothing that existed.
