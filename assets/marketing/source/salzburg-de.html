@@ -104,6 +104,7 @@ h2 .soft,h1 .soft{color:var(--muted)}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:40px;align-items:center}
 .two.rev{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.gal{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:16px}
 .cards3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:20px}
 .card{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:18px}
 .card em{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.16em;color:var(--gold);display:block;margin-bottom:9px}
@@ -189,6 +190,7 @@ h2 .soft,h1 .soft{color:var(--muted)}
   .steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
   .step b{font-size:15px}.step span{font-size:12px}
   .three,.cards3{grid-template-columns:minmax(0,1fr)}
+  .gal{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .nums{gap:8px}
   .num{padding:12px}.num b{font-size:21px}.num span{font-size:10.5px}
   .fan{grid-template-columns:minmax(0,1fr)}.fan .mid{transform:none}
@@ -253,10 +255,10 @@ h2 .soft,h1 .soft{color:var(--muted)}
   <p class="eyebrow">Der ganze Ablauf</p>
   <h2>Vier Schritte. <span class="soft">Mehr ist es nicht.</span></h2>
   <div class="steps">
-    <div class="step"><div class="frame"><img class="ph" src="{{IMG:montage-module}}" alt="Montage auf dem Dach"></div>
+    <div class="step"><div class="frame"><img class="ph" src="{{IMG:crew-arbeit}}" alt="Mannschaft bei der Modulmontage"></div>
       <em>01</em><b>Wir arbeiten</b><span>und fotografieren dabei</span></div>
-    <div class="step"><div class="frame"><img class="ph top" src="{{IMG:s-phone}}" alt="Melden am Handy"></div>
-      <em>02</em><b>Ein Knopf</b><span>der Bericht ist weg</span></div>
+    <div class="step"><div class="frame"><img class="ph" src="{{IMG:phone-melden}}" alt="Tagesbericht am Handy senden"></div>
+      <em>02</em><b>Wir melden</b><span>Fortschritt, Foto, Notiz</span></div>
     <div class="step"><div class="frame"><img class="ph top" src="{{IMG:s-dash-crop}}" alt="Ihre Projektübersicht"></div>
       <em>03</em><b>Sie sehen es</b><span>am selben Tag, im Büro</span></div>
     <div class="step"><div class="frame"><img class="ph top" src="{{IMG:s-docs}}" alt="Fertige Dokumente"></div>
@@ -278,7 +280,7 @@ h2 .soft,h1 .soft{color:var(--muted)}
       <div class="card"><em>STÜCKLISTE</em><b>Position für Position</b><p>Abgehakt und fotografiert. Fehlmengen sehen Sie sofort.</p></div>
     </div>
    </div>
-   <div class="stage frame tall"><img class="ph" src="{{IMG:unterkonstruktion}}" alt="Unterkonstruktion vor der Modulmontage"><span class="chip"><i></i>Tag 1 &middot; Unterkonstruktion</span></div>
+   <div class="stage frame" style="aspect-ratio:4/3"><img class="ph" src="{{IMG:unterkonstruktion}}" alt="Fertig montierte Unterkonstruktion"><span class="chip"><i></i>Unterkonstruktion, vor den Modulen</span></div>
   </div>
  </div>
 </section>
@@ -331,7 +333,7 @@ h2 .soft,h1 .soft{color:var(--muted)}
 <section class="slide" data-chap="3">
  <div class="wrap">
   <div class="two rev">
-   <div class="stage frame tall"><img class="ph" src="{{IMG:montage-module}}" alt="Modulmontage"><span class="chip"><i></i>Foto vom Dach &middot; 11:15</span></div>
+   <div class="stage frame" style="aspect-ratio:4/3"><img class="ph" src="{{IMG:crew-panel}}" alt="Monteure mit einem Modul"><span class="chip"><i></i>Foto vom Dach &middot; 11:15</span></div>
    <div class="words">
     <p class="eyebrow">Auf der Baustelle</p>
     <h2>Foto machen.<br><span class="soft">Absenden. Fertig.</span></h2>
@@ -357,7 +359,7 @@ h2 .soft,h1 .soft{color:var(--muted)}
       <div class="logRow"><span class="d">Tag 3</span><div class="t"><b>Unterkonstruktion, westliche Reihe</b><span>5 Mann &middot; heiter, 21 °C &middot; 2 Fotos</span></div><span class="k">Protokolliert</span></div>
     </div>
     <div class="flowRow">
-      <div class="frame"><img class="ph" src="{{IMG:dach-weit}}" alt="Modulmontage"><span class="chip">11:15</span></div>
+      <div class="frame"><img class="ph" src="{{IMG:crew-montage}}" alt="Module werden gelegt"><span class="chip">11:15</span></div>
       <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></div>
       <div class="logRow"><span class="d">Tag 6</span><div class="t"><b>Module, zweite Reihe</b><span>6 Mann &middot; sonnig, 26 °C &middot; 4 Fotos</span></div><span class="k">Protokolliert</span></div>
     </div>
@@ -385,7 +387,22 @@ h2 .soft,h1 .soft{color:var(--muted)}
  </div>
 </section>
 
-<!-- 8 STUNDEN -->
+<!-- 8 FORTSCHRITT IN BILDERN -->
+<section class="slide" data-chap="3">
+ <div class="wrap">
+  <p class="eyebrow">Dazu die Bilder</p>
+  <h2>Nicht nur Prozente. <span class="soft">Sie sehen es.</span></h2>
+  <div class="gal">
+    <div><div class="frame" style="aspect-ratio:4/3"><img class="ph" src="{{IMG:unterkonstruktion}}" alt="Unterkonstruktion"><span class="chip"><i></i>Tag 2</span></div><p class="cap">Unterkonstruktion</p></div>
+    <div><div class="frame" style="aspect-ratio:4/3"><img class="ph" src="{{IMG:crew-module}}" alt="Erste Module"><span class="chip"><i></i>Tag 5</span></div><p class="cap">Erste Module</p></div>
+    <div><div class="frame" style="aspect-ratio:4/3"><img class="ph" src="{{IMG:dach-weit}}" alt="Das Modulfeld wächst"><span class="chip"><i></i>Tag 9</span></div><p class="cap">Das Feld wächst</p></div>
+    <div><div class="frame" style="aspect-ratio:4/3"><img class="ph" src="{{IMG:anlage-weit}}" alt="Fertige Anlage"><span class="chip"><i></i>Tag 12</span></div><p class="cap">Fertig</p></div>
+  </div>
+  <p class="tiny">Jedes Foto hängt an seinem Bautag, in voller Auflösung, jederzeit herunterladbar.</p>
+ </div>
+</section>
+
+<!-- 9 STUNDEN -->
 <section class="slide" data-chap="3">
  <div class="wrap">
   <div class="two rev">
@@ -399,7 +416,7 @@ h2 .soft,h1 .soft{color:var(--muted)}
  </div>
 </section>
 
-<!-- 9 MESSUNG -->
+<!-- 10 MESSUNG -->
 <section class="slide" data-chap="4">
  <div class="wrap">
   <p class="eyebrow">Prüfung</p>
@@ -444,7 +461,7 @@ h2 .soft,h1 .soft{color:var(--muted)}
  </div>
 </section>
 
-<!-- 10 BEFLIEGUNG -->
+<!-- 11 BEFLIEGUNG -->
 <section class="slide" data-chap="4">
  <div class="wrap">
   <p class="eyebrow">Aus der Luft</p>
@@ -458,7 +475,7 @@ h2 .soft,h1 .soft{color:var(--muted)}
  </div>
 </section>
 
-<!-- 11 DREI DOKUMENTE -->
+<!-- 12 DREI DOKUMENTE -->
 <section class="slide" data-chap="4">
  <div class="wrap">
   <p class="eyebrow">Am letzten Bautag</p>
@@ -476,7 +493,7 @@ h2 .soft,h1 .soft{color:var(--muted)}
  </div>
 </section>
 
-<!-- 12 PORTFOLIO -->
+<!-- 13 PORTFOLIO -->
 <section class="slide" data-chap="5">
  <div class="wrap">
   <p class="eyebrow">Danach</p>
@@ -491,7 +508,7 @@ h2 .soft,h1 .soft{color:var(--muted)}
  </div>
 </section>
 
-<!-- 13 ANGEBOT -->
+<!-- 14 ANGEBOT -->
 <section class="slide" data-chap="5">
  <div class="wrap">
   <p class="eyebrow">Für Salzburg</p>

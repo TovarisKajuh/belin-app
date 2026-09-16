@@ -112,3 +112,31 @@ two document tables rather than on a slide. Sixteen slides became thirteen.
 - **Photographs are the expensive thing in a self-contained file.** The first
   photo build was 6 MB, which is not an attachment. Per-image quality brought it
   to 3.9 MB.
+
+---
+
+## Third pass: the pictures had to show what the captions said
+
+Four corrections from the founder, all the same class of mistake: a photograph
+that is roughly about the right subject is not a photograph of the subject.
+
+- **The Unterkonstruktion shot read as modules.** It was not the wrong photo, it
+  was an ambiguous crop: a 3:4 portrait, top third sky, bottom half empty
+  concrete, and the tilted rails catching low sun looked like panel rows at
+  thumbnail size. Cropped to the rail field it is unarguable. He suggested a
+  stock photo from the web; his own photo cropped is better on authenticity and
+  on licensing, and that is worth saying rather than just doing.
+- **The phone step did not read as a phone.** Cropped to the reporting half now,
+  where the send button and the tab bar do the work.
+- **The log flow's photos did not match its own log lines.** On the one slide
+  whose entire argument is that the photo becomes the record, that was the worst
+  place for it.
+- **The dashboard slide had percentages and no pictures.** A new slide carries
+  four dated progress photos.
+
+### Learned
+
+- **Check a photo against the sentence next to it, not against its filename.**
+  `unterkonstruktion.jpg` was correctly named and still wrong in place.
+- **A thumbnail is a different photograph.** Every one of these read fine at full
+  size and wrong at the size the deck actually renders them.

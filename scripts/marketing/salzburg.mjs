@@ -35,14 +35,18 @@ const FONT = path.join(root, "public", "fonts", "InterVariable.ttf");
  * transparency with a soft shadow and sit directly on the dark page.
  */
 const IMAGES = {
-  // Real AVESOL site photography. These are the masters, committed because they
-  // exist nowhere else in this repo. Photographs of gravel, grass and module
-  // grids are the most expensive thing in the file, so they carry their own
-  // quality: the deck has to stay small enough to send as an attachment.
+  // Real AVESOL site photography, from the company's own archive. These are
+  // masters: they exist nowhere else in this repo. Photographs of gravel, grass
+  // and module grids are the most expensive thing in the file, so they carry
+  // their own quality; the deck has to stay small enough to send as an
+  // attachment.
   "anlage-weit": ["site/anlage-weit.jpg", 1800, false, 74],
-  "montage-module": ["site/montage-module.jpg", 900, false, 72],
-  "unterkonstruktion": ["site/unterkonstruktion.jpg", 900, false, 72],
-  "dach-weit": ["site/dach-weit.jpg", 640, false, 72],
+  "crew-arbeit": ["site/crew-arbeit.jpg", 1100, false, 76],
+  "crew-panel": ["site/crew-panel.jpg", 1100, false, 76],
+  "crew-montage": ["site/crew-montage.jpg", 900, false, 74],
+  "crew-module": ["site/crew-module.jpg", 900, false, 74],
+  "unterkonstruktion": ["site/unterkonstruktion.jpg", 1100, false, 74],
+  "dach-weit": ["site/dach-weit.jpg", 900, false, 72],
   "dc-verkabelung": ["site/dc-verkabelung.jpg", 640, false, 72],
   "flug-1-unterkonstruktion": ["site/flug-1-unterkonstruktion.jpg", 900, false, 74],
   "flug-2-halbzeit": ["site/flug-2-halbzeit.jpg", 900, false, 74],
@@ -53,9 +57,11 @@ const IMAGES = {
   "s-dash": ["framed-de/epc-dashboard.png", 1700, true, 82],
   "s-hours": ["framed-de/hours-countdown.png", 1500, true, 82],
   "s-portfolio": ["framed-de/portfolio.png", 1700, true, 82],
-  "s-phone": ["raw-de/crew-phone.png", 700, false, 82],
   "s-dash-crop": ["raw-de/epc-dashboard.png", 900, false, 82],
   "s-docs": ["docs-de/completion-cover.png", 800, false, 82],
+  // The reporting half of the crew screen. Cropped rather than shot fresh: the
+  // send button and the tab bar are what make it read as a phone.
+  "phone-melden": ["site/phone-melden.png", 760, false, 84],
 
   // Documents rasterized from the real PDF bytes, tilted and faded.
   "m-abnahme": ["mockups-de/doc-abnahme-de.png", 820, true, 82],
