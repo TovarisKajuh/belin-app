@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Belin, PV-Anlage Salzburg, 250 kWp</title>
+<meta name="description" content="Wie AVESOL das Projekt in Salzburg ausführt und wie Sie es von Ihrem Schreibtisch aus in jedem Detail mitverfolgen.">
+<style>
+@font-face{font-family:"BelinInter";src:url({{FONT}}) format("truetype");font-weight:100 900;font-display:swap}
+
+:root{
+  --ink:#f4f1ea; --ink2:#cfcabf; --muted:#8f8a7e;
+  --gold:#ffd21a; --gold2:#ffe488;
+  --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.18);
+  --surf:rgba(255,255,255,.035); --surf2:rgba(255,255,255,.06);
+  --ok:#4ad07a; --blue:#4692e0; --warn:#d9762f;
+  --glow:rgba(255,210,26,.45); --glow2:rgba(255,210,26,.18);
+  --paper:#ffffff; --p-ink:#0a1628; --p-soft:#3c4a5e; --p-muted:#8a95a6; --p-line:#e6e9ef; --p-bg:#f5f6f8;
+  --nav-h:72px;
+  --font:"BelinInter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:var(--font); color:var(--ink); line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  background:
+    radial-gradient(1200px 640px at 12% -8%, rgba(255,210,26,.10) 0%, transparent 52%),
+    radial-gradient(1000px 720px at 104% 8%, rgba(43,120,180,.12) 0%, transparent 50%),
+    linear-gradient(158deg,#0c1826 0%,#080f1a 55%,#05090f 100%);
+  background-attachment:fixed;
+  overflow:hidden;
+}
+.grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.05;mix-blend-mode:soft-light;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ---------- chapter rail ---------- */
+.rail{position:fixed;top:0;left:0;right:0;z-index:40;background:rgba(8,14,22,.72);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line)}
+.rail-in{max-width:1220px;margin:0 auto;padding:11px 22px;display:flex;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:9px;flex:0 0 auto;cursor:pointer;border:0;background:none;padding:0;color:inherit;font-family:inherit}
+.brand svg{width:19px;height:19px;display:block}
+.brand b{font-size:14px;font-weight:700;letter-spacing:.16em}
+.chaps{display:flex;gap:4px;margin-left:auto;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.chaps::-webkit-scrollbar{display:none}
+.chap{border:0;background:none;color:var(--muted);font-family:inherit;font-size:11.5px;font-weight:600;
+  letter-spacing:.03em;padding:6px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:color .2s,background .2s}
+.chap:hover{color:var(--ink2)}
+.chap[data-on="1"]{color:#0a1628;background:var(--gold)}
+.bar{height:2px;background:rgba(255,255,255,.07)}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));
+  box-shadow:0 0 12px var(--glow);transition:width .4s cubic-bezier(.4,0,.2,1)}
+
+/* ---------- deck ---------- */
+.deck{position:relative;z-index:1;height:100%;padding-top:52px;padding-bottom:var(--nav-h)}
+.slide{display:none;height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.slide[data-on="1"]{display:block;animation:rise .5s cubic-bezier(.2,.7,.3,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide[data-on="1"]{animation:none}}
+.wrap{max-width:1180px;margin:0 auto;padding:30px 22px 44px;min-height:100%;display:flex;flex-direction:column;justify-content:center}
+
+/* ---------- type ---------- */
+.eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.20em;text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+.eyebrow.q{color:var(--muted)}
+h1{font-size:clamp(32px,5.4vw,58px);line-height:1.06;letter-spacing:-.025em;font-weight:700;margin:0 0 18px}
+h2{font-size:clamp(25px,3.7vw,40px);line-height:1.12;letter-spacing:-.02em;font-weight:700;margin:0 0 14px}
+h2 .soft{color:var(--muted);font-weight:700}
+.lead{font-size:clamp(15px,1.7vw,19px);line-height:1.55;color:var(--ink2);max-width:62ch;margin:0 0 6px}
+.kicker{font-size:14.5px;color:var(--muted);max-width:58ch;margin:14px 0 0}
+.punch{margin:22px 0 0;padding:15px 18px;border-left:2px solid var(--gold);background:linear-gradient(90deg,rgba(255,210,26,.09),transparent 70%);
+  font-size:15.5px;line-height:1.5;color:var(--ink);border-radius:0 8px 8px 0;max-width:68ch}
+.punch b{color:var(--gold2);font-weight:700}
+
+/* ---------- layout helpers ---------- */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:44px;align-items:center}
+.split.rev{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr)}
+.split.tight{gap:34px}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:26px}
+.cols4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:26px}
+.cols2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:24px}
+
+.card{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px}
+.card h3{margin:0 0 8px;font-size:16px;font-weight:700;letter-spacing:-.01em}
+.card p{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink2)}
+.card .n{display:block;font-size:10.5px;font-weight:700;letter-spacing:.16em;color:var(--gold);margin-bottom:11px}
+
+.stat{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:18px}
+.stat b{display:block;font-size:29px;font-weight:700;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.35}
+
+ul.ticks{list-style:none;margin:22px 0 0;padding:0}
+ul.ticks li{position:relative;padding:0 0 0 27px;margin:0 0 11px;font-size:14.5px;line-height:1.5;color:var(--ink2)}
+ul.ticks li::before{content:"";position:absolute;left:3px;top:7px;width:7px;height:7px;border-radius:2px;
+  background:var(--gold);box-shadow:0 0 10px var(--glow2)}
+ul.ticks li b{color:var(--ink);font-weight:700}
+
+.pill{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;padding:5px 11px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2)}
+.pill.gold{border-color:rgba(255,210,26,.42);color:var(--gold);background:rgba(255,210,26,.07)}
+.pill.ok{border-color:rgba(74,208,122,.42);color:var(--ok);background:rgba(74,208,122,.07)}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+
+/* ---------- shots ---------- */
+.shot{width:100%;height:auto;display:block;filter:drop-shadow(0 26px 60px rgba(0,0,0,.55))}
+.shot.phone{max-width:296px;margin:0 auto}
+.stage{position:relative}
+.stage::before{content:"";position:absolute;inset:-6% -4%;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(255,210,26,.13),transparent 72%);filter:blur(34px);z-index:-1}
+.docCrop{position:relative;height:clamp(210px,34vh,340px);border-radius:6px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.14);box-shadow:0 26px 60px rgba(0,0,0,.55);background:#fff}
+.docCrop img{display:block;width:100%;height:auto}
+.docCrop::after{content:"";position:absolute;left:0;right:0;bottom:0;height:58px;
+  background:linear-gradient(to bottom,rgba(255,255,255,0),#fff)}
+.paperShot{width:100%;height:auto;display:block;border-radius:6px;border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 26px 60px rgba(0,0,0,.55)}
+.fan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end;margin-top:8px}
+.fan img{width:100%;height:auto;display:block;filter:drop-shadow(0 22px 48px rgba(0,0,0,.55))}
+.fan .mid{transform:translateY(-18px) scale(1.06)}
+.cap{font-size:11.5px;color:var(--muted);text-align:center;margin-top:9px;letter-spacing:.02em}
+
+/* ---------- app-style mock (document vault) ---------- */
+.mock{background:rgba(255,255,255,.028);border:1px solid var(--line);border-radius:16px;padding:16px;
+  box-shadow:0 22px 50px rgba(0,0,0,.4)}
+.mock-h{display:flex;align-items:center;justify-content:space-between;padding:0 4px 13px;border-bottom:1px solid var(--line)}
+.mock-h b{font-size:14px;font-weight:700}
+.row{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid rgba(255,255,255,.055)}
+.row:last-child{border-bottom:0}
+.row .ic{width:30px;height:30px;border-radius:8px;flex:0 0 auto;display:grid;place-items:center;
+  background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.row .ic svg{width:14px;height:14px;opacity:.75}
+.row .t{flex:1 1 auto;min-width:0}
+.row .t b{display:block;font-size:13px;font-weight:600;letter-spacing:-.005em}
+.row .t span{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.tag{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:4px 9px;border-radius:999px;flex:0 0 auto}
+.tag.ok{color:var(--ok);background:rgba(74,208,122,.10);border:1px solid rgba(74,208,122,.3)}
+.tag.soon{color:var(--gold);background:rgba(255,210,26,.10);border:1px solid rgba(255,210,26,.32)}
+
+/* ---------- paper documents rendered in place ---------- */
+.sheet{background:var(--paper);color:var(--p-ink);border-radius:5px;padding:34px 36px 26px;
+  box-shadow:0 26px 60px rgba(0,0,0,.55);font-size:11px;line-height:1.45;letter-spacing:0}
+.sheet .sh-top{display:flex;justify-content:space-between;align-items:flex-start;
+  padding-bottom:12px;border-bottom:1px solid var(--p-line)}
+.sheet .sh-top h4{margin:0;font-size:23px;font-weight:400;letter-spacing:-.01em;line-height:1.15}
+.sheet .sh-top p{margin:3px 0 0;font-size:11px;color:var(--p-soft)}
+.sheet .sh-mark{font-size:12px;letter-spacing:.24em;font-weight:400;color:var(--p-ink);white-space:nowrap;padding-top:3px}
+.sheet .meta{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 12px;margin:18px 0 0}
+.sheet .meta dt{color:var(--p-muted);font-size:11px}
+.sheet .meta dd{margin:0;font-size:11px}
+.sheet .meta dd.ph{color:var(--p-muted);font-style:italic}
+.sheet h5{margin:22px 0 8px;font-size:13px;font-weight:400;letter-spacing:-.005em}
+.sheet table{width:100%;border-collapse:collapse;font-size:10px}
+.sheet thead th{background:var(--p-bg);color:var(--p-muted);font-weight:400;text-align:left;
+  padding:6px 7px;font-size:9.5px;letter-spacing:.01em;white-space:nowrap}
+.sheet tbody td{padding:6px 7px;border-bottom:1px solid var(--p-line);vertical-align:top;font-variant-numeric:tabular-nums}
+.sheet .r{text-align:right}
+.sheet .c{text-align:center}
+.sheet .okmark{color:#158a35}
+.sheet .note{margin:14px 0 0;padding:10px 12px;border:1px solid var(--p-ink);font-size:10px;line-height:1.5}
+.sheet .sh-foot{display:flex;justify-content:space-between;margin-top:26px;padding-top:9px;
+  border-top:1px solid var(--p-line);font-size:9px;color:var(--p-muted)}
+.sigrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:34px;margin-top:30px}
+.sig svg{display:block;width:150px;height:34px}
+.sig b{display:block;font-size:10.5px;font-weight:400;margin-top:3px}
+.sig span{display:block;font-size:10px;color:var(--p-muted)}
+.sheet-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.swipehint{display:none}
+@media (max-width:900px){.swipehint{display:block;font-size:11.5px;color:var(--muted);margin:9px 0 0;text-align:center}}
+
+/* ---------- drone ---------- */
+.flight{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:20px}
+.flight svg{width:100%;height:auto;display:block}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:40;height:var(--nav-h);
+  background:rgba(8,14,22,.80);backdrop-filter:blur(14px);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom)}
+.nav-in{max-width:1180px;margin:0 auto;height:var(--nav-h);padding:0 22px;display:flex;align-items:center;gap:14px}
+.btn{font-family:inherit;font-size:14.5px;font-weight:700;letter-spacing:-.005em;border-radius:999px;
+  padding:12px 24px;cursor:pointer;border:1px solid var(--line2);background:transparent;color:var(--ink2);
+  transition:border-color .2s,color .2s,transform .12s,box-shadow .2s;min-height:46px;white-space:nowrap}
+.btn:hover{color:var(--ink);border-color:rgba(255,255,255,.34)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.28;cursor:default;pointer-events:none}
+.btn.go{margin-left:auto;background:var(--gold);color:#0a1628;border-color:var(--gold);box-shadow:0 0 0 rgba(255,210,26,0)}
+.btn.go:hover{background:var(--gold2);border-color:var(--gold2);color:#0a1628;box-shadow:0 6px 26px rgba(255,210,26,.28)}
+.dots{display:flex;gap:5px;margin:0 auto;flex-wrap:wrap;justify-content:center;max-width:44%}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.18);border:0;padding:0;cursor:pointer;
+  transition:background .2s,transform .2s}
+.dot:hover{background:rgba(255,255,255,.4)}
+.dot[data-on="1"]{background:var(--gold);transform:scale(1.35);box-shadow:0 0 10px var(--glow)}
+.count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ---------- title slide ---------- */
+.title-wrap{text-align:left}
+.bigmark{display:flex;align-items:center;gap:14px;margin-bottom:34px}
+.bigmark svg{width:38px;height:38px}
+.bigmark b{font-size:25px;font-weight:700;letter-spacing:.17em}
+.bigmark i{width:1px;height:26px;background:var(--line2);display:block}
+.bigmark em{font-style:normal;font-size:14px;color:var(--muted);letter-spacing:.02em}
+.hint{margin-top:30px;font-size:12.5px;color:var(--muted);max-width:46ch;line-height:1.7}
+.hint kbd{font-family:inherit;font-size:11px;border:1px solid var(--line2);border-radius:5px;padding:2px 7px;color:var(--ink2);margin-right:3px}
+
+/* ---------- closing ---------- */
+.contact{margin-top:26px;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.contact b{display:block;font-size:16px;margin-bottom:3px}
+.contact span{display:block;font-size:13.5px;color:var(--ink2)}
+.contact a{color:var(--gold);text-decoration:none}
+.contact a:hover{text-decoration:underline}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  :root{--nav-h:66px}
+  .split,.split.rev{grid-template-columns:minmax(0,1fr);gap:26px}
+  .split .stage{order:2}
+  .split .words{order:1}
+  .cols3,.cols4{grid-template-columns:minmax(0,1fr);gap:12px}
+  .cols2{grid-template-columns:minmax(0,1fr)}
+  .wrap{padding:22px 16px 34px;justify-content:flex-start}
+  .chaps{display:none}
+  .dots{max-width:none}
+  .fan{grid-template-columns:minmax(0,1fr);gap:16px}
+  .fan .mid{transform:none}
+  .sheet{padding:22px 20px 18px;font-size:10px;min-width:560px}
+  .sheet .meta{grid-template-columns:118px minmax(0,1fr)}
+  .sheet .sh-top h4{font-size:19px}
+  .sigrow{gap:18px}
+  h1{font-size:clamp(28px,8vw,40px)}
+  h2{font-size:clamp(22px,6.4vw,30px)}
+  .btn{padding:11px 18px;font-size:13.5px}
+  .rail-in{padding:10px 16px}
+  .nav-in{padding:0 14px;gap:10px}
+  .shot.phone{max-width:230px}
+}
+@media (max-width:640px){
+  .dots{display:none}
+  .count{margin:0 auto}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<header class="rail">
+  <div class="rail-in">
+    <button class="brand" data-go="0" aria-label="Zur Titelseite">
+      <svg viewBox="0 0 512 512" aria-hidden="true">
+        <rect x="146.39" y="107.52" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="146.39" y="185.26" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="146.39" y="263.01" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="146.39" y="340.75" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/><rect x="224.14" y="107.52" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="224.14" y="185.26" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="224.14" y="263.01" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/><rect x="224.14" y="340.75" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/><rect x="301.88" y="107.52" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="301.88" y="185.26" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/><rect x="301.88" y="263.01" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/><rect x="301.88" y="340.75" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/>
+      </svg>
+      <b>BELIN</b>
+    </button>
+    <nav class="chaps" id="chaps"></nav>
+  </div>
+  <div class="bar"><i id="bar" style="width:0%"></i></div>
+</header>
+
+<main class="deck" id="deck">
+
+<!-- 0 ................................................................ -->
+<section class="slide" data-chap="0">
+ <div class="wrap title-wrap">
+  <div class="bigmark">
+    <svg viewBox="0 0 512 512" aria-hidden="true">
+      <rect x="146.39" y="107.52" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="146.39" y="185.26" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="146.39" y="263.01" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="146.39" y="340.75" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/><rect x="224.14" y="107.52" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="224.14" y="185.26" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="224.14" y="263.01" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/><rect x="224.14" y="340.75" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/><rect x="301.88" y="107.52" width="63.73" height="63.73" rx="7.65" fill="#2a3242"/><rect x="301.88" y="185.26" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/><rect x="301.88" y="263.01" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/><rect x="301.88" y="340.75" width="63.73" height="63.73" rx="7.65" fill="#ffd21a"/>
+    </svg>
+    <b>BELIN</b><i></i><em>AVESOL d.o.o.</em>
+  </div>
+  <p class="eyebrow">PV-Anlage Salzburg &middot; 250 kWp &middot; Montage im Subunternehmen</p>
+  <h1>Wir sind auf dem Dach.<br>Sie sehen alles,<br>vom Schreibtisch aus.</h1>
+  <p class="lead">Und am Ende ist jedes Dokument schon fertig: Bautagesberichte, Strangmessprotokoll, Sicherheitsunterweisung, Stücklistenfreigabe, Abnahmeprotokoll, Abschlussbericht und Rechnung. Ohne dass einer von uns beiden sie tippt.</p>
+  <div class="pills">
+    <span class="pill gold">Für Sie kostenlos</span>
+    <span class="pill">Kein Download nötig</span>
+    <span class="pill">Daten in Frankfurt</span>
+  </div>
+  <p class="hint"><kbd>&rarr;</kbd> oder <b style="color:var(--ink2);font-weight:600">Weiter</b> klicken. Am Handy: wischen. Dauer: etwa vier Minuten.</p>
+ </div>
+</section>
+
+<!-- 1 ................................................................ -->
+<section class="slide" data-chap="1">
+ <div class="wrap">
+  <p class="eyebrow">Das Prinzip</p>
+  <h2>Jeder macht das,<br>was er am besten kann.</h2>
+  <p class="lead">Sie verkaufen, planen und verantworten die Anlage. Wir montieren sie. Die Dokumentation macht die Software, aus der Arbeit selbst, während sie passiert.</p>
+  <div class="cols3">
+    <div class="card"><span class="n">01 &middot; WIR</span><h3>Wir bauen.</h3><p>Unsere Mannschaft steht in Salzburg auf dem Dach. Jeder Handgriff, den wir machen, erzeugt nebenbei einen Datenpunkt: ein Foto, einen Fortschritt, eine Stunde, ein Vorkommnis.</p></div>
+    <div class="card"><span class="n">02 &middot; SIE</span><h3>Sie sehen zu.</h3><p>Sie öffnen Belin am PC und sehen den Stand von heute. Nicht den von der letzten Baubesprechung. Fortschritt, Tempo, Prognose, Fotos, Probleme, Stunden. Live.</p></div>
+    <div class="card"><span class="n">03 &middot; BELIN</span><h3>Belin schreibt mit.</h3><p>Aus denselben Daten entstehen die Dokumente. Kein zweites Erfassen, keine Excel-Liste am Freitagabend, kein Streit darüber, was an welchem Tag war.</p></div>
+  </div>
+  <div class="punch">Das Ziel ist einfach: <b>Sie sollen dieses Projekt besser dokumentiert haben als jedes davor, ohne dafür eine einzige Minute zusätzlich aufzuwenden.</b></div>
+ </div>
+</section>
+
+<!-- 2 ................................................................ -->
+<section class="slide" data-chap="2">
+ <div class="wrap">
+  <p class="eyebrow">Vor Baubeginn &middot; Schritt 1</p>
+  <h2>Die Bestellung <span class="soft">fixiert den Umfang.</span></h2>
+  <p class="lead" style="margin-bottom:18px">Sie stellen die Bestellung in Belin ein, wir nehmen sie in der App an. Ab diesem Moment ist der Leistungsumfang für beide Seiten schriftlich, und jede spätere Rechnung rechnet gegen genau diese Positionen.</p>
+  <div class="sheet-scroll">
+  <div class="sheet">
+    <div class="sh-top">
+      <div><h4>Bestellung</h4><p>PV-Anlage Salzburg, 250 kWp</p></div>
+      <div class="sh-mark">BELIN<br><span style="font-size:8.5px;letter-spacing:.02em;color:#8a95a6">Nr. 1</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:20px">
+      <div><div style="font-size:12px;margin-bottom:5px">Besteller</div><div class="ph" style="font-size:11px;color:#8a95a6;font-style:italic">Ihr Unternehmen</div></div>
+      <div><div style="font-size:12px;margin-bottom:5px">Auftragnehmer</div><div style="font-size:11px">AVESOL d.o.o.</div></div>
+    </div>
+    <dl class="meta">
+      <dt>Ort der Baustelle</dt><dd>Salzburg</dd>
+      <dt>Ausführungsfrist</dt><dd class="ph">nach Terminplan</dd>
+      <dt>Zahlungsbedingungen</dt><dd class="ph">nach Vereinbarung</dd>
+      <dt>Stundensatz für Regiestunden</dt><dd class="ph">nach Angebot</dd>
+    </dl>
+    <table style="margin-top:20px">
+      <thead><tr><th>Beschreibung</th><th class="r" style="width:74px">Menge</th><th class="r" style="width:92px">Einzelpreis</th><th class="r" style="width:92px">Summe</th></tr></thead>
+      <tbody>
+        <tr><td>Montage der Unterkonstruktion, Flachdach, 250 kWp</td><td class="r">1 Pausch.</td><td class="r ph" style="color:#8a95a6;font-style:italic">nach Angebot</td><td class="r ph" style="color:#8a95a6;font-style:italic">nach Angebot</td></tr>
+        <tr><td>Modulmontage inklusive Klemmung und Ausrichtung</td><td class="r">437 Stk</td><td class="r ph" style="color:#8a95a6;font-style:italic">nach Angebot</td><td class="r ph" style="color:#8a95a6;font-style:italic">nach Angebot</td></tr>
+        <tr><td>DC-Verkabelung, Strangführung und Anschluss an die Wechselrichter</td><td class="r">23 Stränge</td><td class="r ph" style="color:#8a95a6;font-style:italic">nach Angebot</td><td class="r ph" style="color:#8a95a6;font-style:italic">nach Angebot</td></tr>
+        <tr><td>Strangmessung und Begleitung der Inbetriebnahme</td><td class="r">1 Pausch.</td><td class="r ph" style="color:#8a95a6;font-style:italic">nach Angebot</td><td class="r ph" style="color:#8a95a6;font-style:italic">nach Angebot</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Annahme der Bestellung: Die Bestellung wird in Belin angenommen. Die Annahme hält den Namen der angemeldeten Person, die Uhrzeit am Server und den Fingerabdruck dieses Dokuments fest, sodass jederzeit nachweisbar ist, welche Fassung angenommen wurde.</p>
+    <div class="sh-foot"><span>Erstellt in Belin</span><span>getbelin.com</span></div>
+  </div>
+  </div>
+  <p class="swipehint">Das Dokument lässt sich seitlich wischen.</p><p class="cap">Struktur der Bestellung. Die Preisspalten füllen Sie mit den Zahlen aus unserem Angebot.</p>
+ </div>
+</section>
+
+<!-- 3 ................................................................ -->
+<section class="slide" data-chap="2">
+ <div class="wrap">
+  <div class="split tight rev">
+   <div class="stage">
+    <div class="mock">
+      <div class="mock-h"><b>Dokumente</b><span class="pill ok">Vollständig</span></div>
+      <div class="row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#f4f1ea" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="t"><b>A1-Bescheinigung</b><span>6 Personen &middot; gültig bis 31.12.2026</span></div><span class="tag ok">Gültig</span></div>
+      <div class="row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#f4f1ea" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="t"><b>ZKO-Meldung</b><span>Entsendung Österreich &middot; eingebracht 02.10.2026</span></div><span class="tag ok">Gültig</span></div>
+      <div class="row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#f4f1ea" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="t"><b>Betriebshaftpflicht</b><span>Deckungssumme 5 Mio. EUR</span></div><span class="tag ok">Gültig</span></div>
+      <div class="row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#f4f1ea" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="t"><b>Qualifikationsnachweise</b><span>Elektrofachkraft, PSAgA, Hubarbeitsbühne</span></div><span class="tag ok">Gültig</span></div>
+      <div class="row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#f4f1ea" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="t"><b>Ausweisdokumente</b><span>6 Personen &middot; eines läuft am 14.11. ab</span></div><span class="tag soon">Läuft bald ab</span></div>
+    </div>
+    <p class="cap">Dokumententresor des Projekts, Ansicht für den Auftraggeber</p>
+   </div>
+   <div class="words">
+    <p class="eyebrow">Vor Baubeginn &middot; Schritt 2</p>
+    <h2>Jeder Mann auf Ihrem Dach<br><span class="soft">ist nachweislich angemeldet.</span></h2>
+    <p class="lead">A1-Bescheinigungen, ZKO-Meldung, Versicherung, Qualifikationsnachweise, Ausweise. Alles liegt vor Baubeginn im Projekt, und Sie sehen auf einen Blick, dass es vollständig ist.</p>
+    <ul class="ticks">
+      <li><b>Belin überwacht die Ablaufdaten.</b> Ein Dokument, das während der Bauzeit abläuft, meldet sich von selbst, bevor es abgelaufen ist.</li>
+      <li>Kommt die Finanzpolizei auf die Baustelle, ist die Mappe in zehn Sekunden am Handy offen.</li>
+      <li>Sie müssen niemandem hinterhertelefonieren. Fehlt etwas, sehen Sie es, ohne zu fragen.</li>
+    </ul>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- 4 ................................................................ -->
+<section class="slide" data-chap="2">
+ <div class="wrap">
+  <p class="eyebrow">Vor Baubeginn &middot; Schritt 3</p>
+  <h2>Sicherheitsunterweisung,<br><span class="soft">unterschrieben, bevor der Erste hinaufsteigt.</span></h2>
+  <p class="lead" style="margin-bottom:18px">&sect; 14 ASchG verlangt die Unterweisung vor Aufnahme der Tätigkeit. Bei uns passiert das am Tablet auf der Baustelle, und das fertige Protokoll liegt am selben Tag in Ihrem Projekt.</p>
+  <div class="sheet-scroll">
+  <div class="sheet">
+    <div class="sh-top">
+      <div><h4>Sicherheitsunterweisung</h4><p>PV-Anlage Salzburg, 250 kWp</p></div>
+      <div class="sh-mark">BELIN</div>
+    </div>
+    <dl class="meta">
+      <dt>Projekt</dt><dd>PV-Anlage Salzburg, 250 kWp</dd>
+      <dt>Auftraggeber</dt><dd class="ph">Ihr Unternehmen</dd>
+      <dt>Auftragnehmer</dt><dd>AVESOL d.o.o.</dd>
+      <dt>Rechtsgrundlage</dt><dd>&sect; 14 ASchG, BauV; Baustellenordnung des Auftraggebers</dd>
+      <dt>Unterweisender</dt><dd>Bau- und Montageleitung AVESOL</dd>
+      <dt>Datum</dt><dd>vor Aufnahme der Tätigkeit, erster Bautag</dd>
+    </dl>
+    <h5>Inhalte der Unterweisung</h5>
+    <table>
+      <thead><tr><th style="width:26px">Nr.</th><th>Thema</th><th style="width:170px">Bezug</th><th class="c" style="width:74px">Behandelt</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Absturzsicherung, PSA gegen Absturz, Anschlagpunkte und Seilsicherung</td><td>BauV, Herstellerangaben</td><td class="c okmark">Ja</td></tr>
+        <tr><td>2</td><td>Durchsturzgefahr bei Lichtkuppeln, Lichtbändern und nicht durchsturzsicheren Flächen</td><td>BauV</td><td class="c okmark">Ja</td></tr>
+        <tr><td>3</td><td>Elektrische Gefährdung auf der DC-Seite, Umgang mit unter Spannung stehenden Strängen</td><td>OVE E 8101, ESV</td><td class="c okmark">Ja</td></tr>
+        <tr><td>4</td><td>Hubarbeitsbühne, Kran und Materialtransport auf das Dach</td><td>Bedienungsanleitung, BauV</td><td class="c okmark">Ja</td></tr>
+        <tr><td>5</td><td>Persönliche Schutzausrüstung: Helm mit Kinnriemen, Schnittschutz, Sicherheitsschuhe</td><td>PSA-V</td><td class="c okmark">Ja</td></tr>
+        <tr><td>6</td><td>Witterung: Wind, Nässe, Gewitter. Wann die Arbeit eingestellt wird und wer das entscheidet</td><td>Baustellenordnung</td><td class="c okmark">Ja</td></tr>
+        <tr><td>7</td><td>Verhalten bei Unfall, Erste Hilfe, Rettungskette, Notruf 144 und 112</td><td>ASchG</td><td class="c okmark">Ja</td></tr>
+        <tr><td>8</td><td>Baustellenordnung des Auftraggebers, Verkehrswege, Lagerflächen, Ordnung und Sauberkeit</td><td>Auftraggeber</td><td class="c okmark">Ja</td></tr>
+      </tbody>
+    </table>
+    <h5>Teilnehmer</h5>
+    <table>
+      <thead><tr><th style="width:26px">Nr.</th><th>Name</th><th style="width:150px">Funktion</th><th style="width:78px">Datum</th><th style="width:130px">Unterschrift</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Montageleiter</td><td>Bauleitung</td><td>1. Bautag</td><td><svg viewBox="0 0 120 22" style="width:108px;height:19px"><path d="M4 16 C 16 4, 28 4, 40 13 S 62 20, 74 9 S 96 3, 114 12" fill="none" stroke="#0a1628" stroke-width="1.1" stroke-linecap="round"/></svg></td></tr>
+        <tr><td>2</td><td>Elektrofachkraft</td><td>DC-Montage</td><td>1. Bautag</td><td><svg viewBox="0 0 120 22" style="width:108px;height:19px"><path d="M6 15 C 14 6, 24 18, 36 8 S 58 16, 70 7 S 94 17, 112 10" fill="none" stroke="#0a1628" stroke-width="1.1" stroke-linecap="round"/></svg></td></tr>
+        <tr><td>3</td><td>Monteur</td><td>Unterkonstruktion</td><td>1. Bautag</td><td><svg viewBox="0 0 120 22" style="width:108px;height:19px"><path d="M4 13 C 20 5, 30 17, 44 10 S 68 5, 82 14 S 100 8, 116 13" fill="none" stroke="#0a1628" stroke-width="1.1" stroke-linecap="round"/></svg></td></tr>
+        <tr><td>4</td><td>Monteur</td><td>Modulmontage</td><td>1. Bautag</td><td><svg viewBox="0 0 120 22" style="width:108px;height:19px"><path d="M5 16 C 18 8, 26 6, 38 12 S 60 18, 76 8 S 98 12, 115 9" fill="none" stroke="#0a1628" stroke-width="1.1" stroke-linecap="round"/></svg></td></tr>
+        <tr><td>5</td><td>Monteur</td><td>Modulmontage</td><td>1. Bautag</td><td><svg viewBox="0 0 120 22" style="width:108px;height:19px"><path d="M4 12 C 16 18, 28 5, 42 11 S 64 17, 78 10 S 100 5, 116 14" fill="none" stroke="#0a1628" stroke-width="1.1" stroke-linecap="round"/></svg></td></tr>
+        <tr><td>6</td><td>Monteur</td><td>Materiallogistik</td><td>1. Bautag</td><td><svg viewBox="0 0 120 22" style="width:108px;height:19px"><path d="M6 14 C 18 7, 30 15, 44 9 S 66 6, 80 15 S 102 14, 114 8" fill="none" stroke="#0a1628" stroke-width="1.1" stroke-linecap="round"/></svg></td></tr>
+      </tbody>
+    </table>
+    <p class="note">Mit der Unterschrift bestätigt die unterwiesene Person, die Inhalte verstanden zu haben und die Anweisungen einzuhalten. Die Unterweisung wurde in einer Sprache durchgeführt, die die unterwiesene Person versteht.</p>
+    <div class="sh-foot"><span>Erstellt in Belin</span><span>getbelin.com</span></div>
+  </div>
+  </div>
+  <p class="swipehint">Das Dokument lässt sich seitlich wischen.</p><p class="cap">Am Tablet unterschrieben, sofort als PDF im Projekt. Namen und Datum kommen aus der Mannschaftsliste.</p>
+ </div>
+</section>
+
+<!-- 5 ................................................................ -->
+<section class="slide" data-chap="2">
+ <div class="wrap">
+  <div class="split tight">
+   <div class="words">
+    <p class="eyebrow">Vor Baubeginn &middot; Schritt 4</p>
+    <h2>Stückliste:<br><span class="soft">abgehakt, nicht behauptet.</span></h2>
+    <p class="lead">Sie hinterlegen die Stückliste im Projekt. Unsere Mannschaft prüft sie auf der Baustelle Position für Position ab und fotografiert, was angekommen ist.</p>
+    <ul class="ticks">
+      <li><b>Fehlmengen sehen Sie am selben Tag</b>, nicht am Montag, wenn die Mannschaft bereits zwei Tage gewartet hat.</li>
+      <li>Ändern Sie die Liste, meldet die App der Mannschaft die geänderten Positionen und verlangt eine erneute Prüfung.</li>
+      <li>Die Freigabe ist datiert und mit Uhrzeit protokolliert. Sie steht später im Abschlussbericht.</li>
+    </ul>
+    <div class="pills"><span class="pill ok">Material vollständig</span><span class="pill">Mit Datum und Uhrzeit protokolliert</span></div>
+   </div>
+   <div class="stage"><img class="shot phone" src="{{IMG:phone}}" alt="Stücklistenprüfung am Handy"><p class="cap">Ansicht der Mannschaft, am Handy</p></div>
+  </div>
+ </div>
+</section>
+
+<!-- 6 ................................................................ -->
+<section class="slide" data-chap="3">
+ <div class="wrap">
+  <div class="split tight rev">
+   <div class="stage"><img class="shot phone" src="{{IMG:phone-angle}}" alt="Tagesbericht am Handy" style="max-width:330px"><p class="cap">Melden ist der Startbildschirm, kein Menüpunkt</p></div>
+   <div class="words">
+    <p class="eyebrow">Während der Bauzeit &middot; Unsere Seite</p>
+    <h2>Auf dem Dach<br><span class="soft">darf es nicht länger dauern<br>als die Arbeit selbst.</span></h2>
+    <p class="lead">Die ganze Erfassung ist auf eine Regel gebaut: einhändig, mit Handschuhen, im Wind, unter 30 Sekunden. Sonst wird sie nicht gemacht, und dann gibt es am Ende auch keine Dokumentation.</p>
+    <ul class="ticks">
+      <li><b>Tagesbericht:</b> Fortschritt, Mannschaftsstärke, was gemacht wurde, Fotos. Ein Bildschirm, ein Knopf.</li>
+      <li><b>Vorkommnis oder Behinderung:</b> ein Foto und zwei Sätze. Sie werden sofort benachrichtigt.</li>
+      <li><b>Anfrage:</b> fehlendes Material, ein Plan, eine Anweisung. Schriftlich, statt in einem Anruf, an den sich später keiner erinnert.</li>
+      <li><b>Regiestunden:</b> vom Mann erfasst, der sie geleistet hat, am Tag, an dem er sie geleistet hat.</li>
+    </ul>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- 7 ................................................................ -->
+<section class="slide" data-chap="3">
+ <div class="wrap">
+  <p class="eyebrow">Während der Bauzeit &middot; Ihre Seite</p>
+  <h2>Ihr Bildschirm im Büro,<br><span class="soft">jeden Tag aktuell.</span></h2>
+  <p class="lead" style="margin-bottom:20px">Kein Anruf, keine Baubesprechung, um zu erfahren, wo das Projekt steht. Sie öffnen die Seite und wissen es.</p>
+  <div class="stage"><img class="shot" src="{{IMG:dash}}" alt="Projektübersicht für den Auftraggeber"></div>
+  <div class="cols4">
+    <div class="stat"><b>58,3 %</b><span>Gesamtfortschritt, aus Berichten und Fotos berechnet</span></div>
+    <div class="stat"><b>6,5 %<span style="font-size:14px">/Tag</span></b><span>Tagestempo gegen das Solltempo</span></div>
+    <div class="stat"><b>13</b><span>Werktage Puffer, oder Verzug, wenn es kippt</span></div>
+    <div class="stat"><b>6</b><span>Mann heute tatsächlich vor Ort</span></div>
+  </div>
+  <div class="punch">Das Wichtigste daran: <b>Sie sehen einen Verzug an dem Tag, an dem er entsteht, nicht in der Woche, in der er weh tut.</b> Die Prognose ist eine Rechnung aus dem tatsächlichen Tempo, keine Zusage von uns.</div>
+ </div>
+</section>
+
+<!-- 8 ................................................................ -->
+<section class="slide" data-chap="3">
+ <div class="wrap">
+  <p class="eyebrow">Während der Bauzeit &middot; Die Akte</p>
+  <h2>Jeder Bautag <span class="soft">wird zu einer Seite.</span></h2>
+  <p class="lead" style="margin-bottom:20px">Aus dem, was die Mannschaft ohnehin meldet, entsteht der Bautagesbericht: Datum, Wetter, Mannschaftsstärke, ausgeführte Arbeiten, Fotos, Vorkommnisse und die Regiestunden dieses Tages. Niemand tippt ihn ab. Er ist ein anderer Blick auf dieselben Daten.</p>
+  <div class="cols2" style="margin-top:0;gap:26px;align-items:start">
+    <div><div class="docCrop"><img src="{{IMG:doc-day}}" alt="Bautagesbericht, ein Tag"></div><p class="cap">Ein einzelner Bautag</p></div>
+    <div><div class="docCrop"><img src="{{IMG:doc-cover}}" alt="Bauablauf nach Tagen"></div><p class="cap">Alle Tage zusammengefasst, im Abschlussbericht</p></div>
+  </div>
+  <div class="punch">Der Bericht ist <b>nicht rückwirkend änderbar.</b> Das ist der Punkt: ein Bautagebuch, das eine Partei später umschreiben kann, ist als Beweis nichts wert.</div>
+ </div>
+</section>
+
+<!-- 9 ................................................................ -->
+<section class="slide" data-chap="3">
+ <div class="wrap">
+  <p class="eyebrow">Während der Bauzeit &middot; Geld</p>
+  <h2>Regiestunden und Nachträge,<br><span class="soft">mit Frist statt mit Diskussion.</span></h2>
+  <p class="lead" style="margin-bottom:20px">Der häufigste Streit zwischen Auftraggeber und Nachunternehmer ist der über Stunden, die Monate später auftauchen. Hier taucht nichts später auf.</p>
+  <div class="stage"><img class="shot" src="{{IMG:hours}}" alt="Regiestunden mit Frist"></div>
+  <div class="cols3">
+    <div class="card"><span class="n">EINGEREICHT</span><h3>Am Tag der Leistung</h3><p>Der Stundenzettel kommt mit Datum, Name und Beschreibung der Arbeit, während Sie noch wissen, worum es ging.</p></div>
+    <div class="card"><span class="n">FRIST</span><h3>Acht Werktage</h3><p>Sie erkennen an oder lehnen ab, mit Begründung. Ohne Rückmeldung gilt der Zettel nach Fristablauf als anerkannt. Die Frist läuft sichtbar, für beide Seiten.</p></div>
+    <div class="card"><span class="n">ERGEBNIS</span><h3>Keine Überraschung</h3><p>Was in der Schlussrechnung steht, haben Sie während der Bauzeit einzeln gesehen und entschieden. Nachträge laufen genauso.</p></div>
+  </div>
+ </div>
+</section>
+
+<!-- 10 ............................................................... -->
+<section class="slide" data-chap="4">
+ <div class="wrap">
+  <p class="eyebrow">Prüfung und Abschluss &middot; Messung</p>
+  <h2>Strangmessprotokoll,<br><span class="soft">jeder Strang einzeln.</span></h2>
+  <p class="lead" style="margin-bottom:18px">Die Erstprüfung nach OVE EN 62446-1 und OVE E 8101-7-712 läuft nach einer festen Vorlage. Sie bekommen kein Foto einer handschriftlichen Liste, sondern ein sauberes Protokoll mit jeder Messgröße, dem Messgerät und seinem Kalibrierstand.</p>
+  <div class="sheet-scroll">
+  <div class="sheet">
+    <div class="sh-top">
+      <div><h4>Strangmessprotokoll</h4><p>Erstprüfung nach OVE EN 62446-1, Kategorie 1</p></div>
+      <div class="sh-mark">BELIN</div>
+    </div>
+    <dl class="meta">
+      <dt>Projekt</dt><dd>PV-Anlage Salzburg, 250 kWp</dd>
+      <dt>Auftraggeber</dt><dd class="ph">Ihr Unternehmen</dd>
+      <dt>Auftragnehmer</dt><dd>AVESOL d.o.o.</dd>
+      <dt>Generator</dt><dd>437 Module &agrave; 570 Wp, 23 Stränge zu 19 Modulen, 249,09 kWp</dd>
+      <dt>Wechselrichter</dt><dd>3 Stück, Systemspannung max. 1100 V DC</dd>
+      <dt>Messgerät</dt><dd>PV-Installationstester, Kalibrierung im Protokoll mit Datum ausgewiesen</dd>
+      <dt>Randbedingungen</dt><dd>Einstrahlung und Modultemperatur je Messreihe erfasst</dd>
+    </dl>
+    <h5>Messwerte je Strang</h5>
+    <table>
+      <thead><tr>
+        <th style="width:38px">Strang</th><th style="width:56px">WR / MPPT</th><th class="c" style="width:44px">Module</th>
+        <th class="r" style="width:62px">Uoc [V]</th><th class="r" style="width:58px">Isc [A]</th>
+        <th class="r" style="width:66px">Riso [M&#8486;]</th><th class="r" style="width:54px">E [W/m&sup2;]</th>
+        <th class="r" style="width:50px">Tm [&deg;C]</th><th class="c" style="width:52px">Polarität</th><th class="c" style="width:56px">Bewertung</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>A1</td><td>1 / 1</td><td class="c">19</td><td class="r">944,6</td><td class="r">10,94</td><td class="r">&gt; 100</td><td class="r">781</td><td class="r">42,1</td><td class="c okmark">i.O.</td><td class="c okmark">bestanden</td></tr>
+        <tr><td>A2</td><td>1 / 1</td><td class="c">19</td><td class="r">943,1</td><td class="r">10,91</td><td class="r">&gt; 100</td><td class="r">779</td><td class="r">42,4</td><td class="c okmark">i.O.</td><td class="c okmark">bestanden</td></tr>
+        <tr><td>A3</td><td>1 / 2</td><td class="c">19</td><td class="r">945,2</td><td class="r">10,97</td><td class="r">86,4</td><td class="r">783</td><td class="r">41,8</td><td class="c okmark">i.O.</td><td class="c okmark">bestanden</td></tr>
+        <tr><td>A4</td><td>1 / 2</td><td class="c">19</td><td class="r">942,8</td><td class="r">10,88</td><td class="r">&gt; 100</td><td class="r">778</td><td class="r">42,6</td><td class="c okmark">i.O.</td><td class="c okmark">bestanden</td></tr>
+        <tr><td>B1</td><td>2 / 1</td><td class="c">19</td><td class="r">946,0</td><td class="r">11,02</td><td class="r">72,9</td><td class="r">787</td><td class="r">41,5</td><td class="c okmark">i.O.</td><td class="c okmark">bestanden</td></tr>
+        <tr><td>B2</td><td>2 / 1</td><td class="c">19</td><td class="r">944,1</td><td class="r">10,95</td><td class="r">&gt; 100</td><td class="r">784</td><td class="r">42,0</td><td class="c okmark">i.O.</td><td class="c okmark">bestanden</td></tr>
+        <tr><td>B3</td><td>2 / 2</td><td class="c">19</td><td class="r">943,5</td><td class="r">10,90</td><td class="r">91,2</td><td class="r">780</td><td class="r">42,3</td><td class="c okmark">i.O.</td><td class="c okmark">bestanden</td></tr>
+        <tr><td colspan="10" style="color:#8a95a6;border-bottom:0;padding-top:8px">Fortsetzung bis Strang C7. Insgesamt 23 Stränge, jeder einzeln gemessen und bewertet.</td></tr>
+      </tbody>
+    </table>
+    <h5>Weitere Prüfungen nach OVE EN 62446-1</h5>
+    <table>
+      <thead><tr><th>Prüfung</th><th style="width:230px">Kriterium</th><th class="c" style="width:74px">Ergebnis</th></tr></thead>
+      <tbody>
+        <tr><td>Durchgängigkeit der Schutz- und Potentialausgleichsleiter</td><td>durchgehend, niederohmig</td><td class="c okmark">bestanden</td></tr>
+        <tr><td>Polarität sämtlicher Stränge</td><td>richtig gepolt, vor dem Zuschalten geprüft</td><td class="c okmark">bestanden</td></tr>
+        <tr><td>Isolationswiderstand DC-Kreis</td><td>Prüfspannung 1000 V, Grenzwert 1 M&#8486;</td><td class="c okmark">bestanden</td></tr>
+        <tr><td>Funktionsprüfung Wechselrichter und Abschaltung</td><td>Abschaltung und Wiederzuschaltung geprüft</td><td class="c okmark">bestanden</td></tr>
+        <tr><td>Sichtprüfung Verkabelung, Steckverbinder, Erdung</td><td>ohne Beanstandung</td><td class="c okmark">bestanden</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Die gemessenen Leerlaufspannungen sind auf die zum Messzeitpunkt erfasste Modultemperatur bezogen. Kurzschlussströme sind auf die gemessene Einstrahlung bezogen. Abweichungen zwischen Strängen desselben Wechselrichters liegen innerhalb der Toleranz nach OVE EN 62446-1.</p>
+    <div class="sigrow">
+      <div class="sig"><svg viewBox="0 0 150 34"><path d="M6 24 C 22 8, 40 8, 58 20 S 92 30, 110 13 S 134 6, 146 18" fill="none" stroke="#0a1628" stroke-width="1.2" stroke-linecap="round"/></svg><b>Elektrofachkraft, AVESOL d.o.o.</b><span>Prüfende Person</span></div>
+      <div class="sig"><svg viewBox="0 0 150 34"><path d="M5 20 C 20 30, 36 10, 54 18 S 86 8, 104 22 S 130 24, 145 14" fill="none" stroke="#0a1628" stroke-width="1.2" stroke-linecap="round"/></svg><b class="ph" style="color:#8a95a6;font-style:italic">Ihr Unternehmen</b><span>Zur Kenntnis genommen</span></div>
+    </div>
+    <div class="sh-foot"><span>Erstellt in Belin</span><span>getbelin.com</span></div>
+  </div>
+  </div>
+  <p class="swipehint">Das Dokument lässt sich seitlich wischen.</p><p class="cap">Vorlage mit Beispielwerten. Auf Ihrem Projekt stehen dort die tatsächlich gemessenen Zahlen.</p>
+ </div>
+</section>
+
+<!-- 11 ............................................................... -->
+<section class="slide" data-chap="4">
+ <div class="wrap">
+  <div class="split tight">
+   <div class="words">
+    <p class="eyebrow">Prüfung und Abschluss &middot; Aus der Luft</p>
+    <h2>Drohnenaufnahmen,<br><span class="soft">dreimal im Projekt.</span></h2>
+    <p class="lead">Ein Dach mit 250 kWp lässt sich vom Boden aus nicht zeigen. Wir befliegen es dreimal und legen das Material im Projekt ab, wo auch alle anderen Unterlagen liegen.</p>
+    <ul class="ticks">
+      <li><b>Vor der Montage:</b> Bestandsaufnahme des Dachs, so wie wir es übernommen haben. Das beendet jede spätere Diskussion über vorhandene Schäden.</li>
+      <li><b>Zur Halbzeit:</b> Fortschrittsflug. Eine Aufnahme sagt mehr über den Stand als jede Prozentzahl.</li>
+      <li><b>Nach der Fertigstellung:</b> Abschlussbefliegung. Übersichtsvideo, Orthofoto des gesamten Modulfelds und Detailaufnahmen der Reihen.</li>
+    </ul>
+    <div class="punch">Das Material gehört Ihnen. <b>Einen Teil davon werden Sie für Ihren eigenen Kunden und für Ihre Referenzen gut gebrauchen können</b>, und Sie haben es, ohne es bestellt zu haben.</div>
+   </div>
+   <div class="stage">
+    <div class="flight">
+      <svg viewBox="0 0 420 300" aria-label="Befliegungsplan">
+        <defs>
+          <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#16243a"/><stop offset="1" stop-color="#0b1524"/>
+          </linearGradient>
+          <linearGradient id="mod" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#22314a"/><stop offset="1" stop-color="#16233a"/>
+          </linearGradient>
+        </defs>
+        <rect x="34" y="66" width="352" height="196" rx="6" fill="url(#roof)" stroke="rgba(255,255,255,.12)"/>
+        <g fill="url(#mod)" stroke="rgba(255,210,26,.20)" stroke-width=".7">
+          <g id="r"></g>
+        </g>
+        <g fill="url(#mod)" stroke="rgba(255,210,26,.22)" stroke-width=".7">
+          <rect x="50" y="84" width="27" height="15" rx="1.6"/><rect x="81" y="84" width="27" height="15" rx="1.6"/><rect x="112" y="84" width="27" height="15" rx="1.6"/><rect x="143" y="84" width="27" height="15" rx="1.6"/><rect x="174" y="84" width="27" height="15" rx="1.6"/><rect x="205" y="84" width="27" height="15" rx="1.6"/><rect x="236" y="84" width="27" height="15" rx="1.6"/><rect x="267" y="84" width="27" height="15" rx="1.6"/><rect x="298" y="84" width="27" height="15" rx="1.6"/><rect x="329" y="84" width="27" height="15" rx="1.6"/>
+          <rect x="50" y="109" width="27" height="15" rx="1.6"/><rect x="81" y="109" width="27" height="15" rx="1.6"/><rect x="112" y="109" width="27" height="15" rx="1.6"/><rect x="143" y="109" width="27" height="15" rx="1.6"/><rect x="174" y="109" width="27" height="15" rx="1.6"/><rect x="205" y="109" width="27" height="15" rx="1.6"/><rect x="236" y="109" width="27" height="15" rx="1.6"/><rect x="267" y="109" width="27" height="15" rx="1.6"/><rect x="298" y="109" width="27" height="15" rx="1.6"/><rect x="329" y="109" width="27" height="15" rx="1.6"/>
+          <rect x="50" y="134" width="27" height="15" rx="1.6"/><rect x="81" y="134" width="27" height="15" rx="1.6"/><rect x="112" y="134" width="27" height="15" rx="1.6"/><rect x="143" y="134" width="27" height="15" rx="1.6"/><rect x="174" y="134" width="27" height="15" rx="1.6"/><rect x="205" y="134" width="27" height="15" rx="1.6"/><rect x="236" y="134" width="27" height="15" rx="1.6"/><rect x="267" y="134" width="27" height="15" rx="1.6"/><rect x="298" y="134" width="27" height="15" rx="1.6"/><rect x="329" y="134" width="27" height="15" rx="1.6"/>
+          <rect x="50" y="159" width="27" height="15" rx="1.6"/><rect x="81" y="159" width="27" height="15" rx="1.6"/><rect x="112" y="159" width="27" height="15" rx="1.6"/><rect x="143" y="159" width="27" height="15" rx="1.6"/><rect x="174" y="159" width="27" height="15" rx="1.6"/><rect x="205" y="159" width="27" height="15" rx="1.6"/><rect x="236" y="159" width="27" height="15" rx="1.6"/><rect x="267" y="159" width="27" height="15" rx="1.6"/><rect x="298" y="159" width="27" height="15" rx="1.6"/><rect x="329" y="159" width="27" height="15" rx="1.6"/>
+          <rect x="50" y="184" width="27" height="15" rx="1.6"/><rect x="81" y="184" width="27" height="15" rx="1.6"/><rect x="112" y="184" width="27" height="15" rx="1.6"/><rect x="143" y="184" width="27" height="15" rx="1.6"/><rect x="174" y="184" width="27" height="15" rx="1.6"/><rect x="205" y="184" width="27" height="15" rx="1.6"/><rect x="236" y="184" width="27" height="15" rx="1.6"/><rect x="267" y="184" width="27" height="15" rx="1.6"/><rect x="298" y="184" width="27" height="15" rx="1.6"/><rect x="329" y="184" width="27" height="15" rx="1.6"/>
+          <rect x="50" y="209" width="27" height="15" rx="1.6"/><rect x="81" y="209" width="27" height="15" rx="1.6"/><rect x="112" y="209" width="27" height="15" rx="1.6"/><rect x="143" y="209" width="27" height="15" rx="1.6"/><rect x="174" y="209" width="27" height="15" rx="1.6"/><rect x="205" y="209" width="27" height="15" rx="1.6"/><rect x="236" y="209" width="27" height="15" rx="1.6"/><rect x="267" y="209" width="27" height="15" rx="1.6"/><rect x="298" y="209" width="27" height="15" rx="1.6"/><rect x="329" y="209" width="27" height="15" rx="1.6"/>
+          <rect x="50" y="234" width="27" height="15" rx="1.6"/><rect x="81" y="234" width="27" height="15" rx="1.6"/><rect x="112" y="234" width="27" height="15" rx="1.6"/><rect x="143" y="234" width="27" height="15" rx="1.6"/><rect x="174" y="234" width="27" height="15" rx="1.6"/><rect x="205" y="234" width="27" height="15" rx="1.6"/><rect x="236" y="234" width="27" height="15" rx="1.6"/><rect x="267" y="234" width="27" height="15" rx="1.6"/><rect x="298" y="234" width="27" height="15" rx="1.6"/><rect x="329" y="234" width="27" height="15" rx="1.6"/>
+        </g>
+        <path d="M46 52 H 374 M374 52 V 274 M374 274 H 46 M46 274 V 52" fill="none" stroke="rgba(255,210,26,.55)" stroke-width="1.4" stroke-dasharray="7 6"/>
+        <g font-family="inherit" font-size="10" font-weight="700" fill="#0a1628">
+          <circle cx="46" cy="52" r="10" fill="#ffd21a"/><text x="46" y="55.5" text-anchor="middle">1</text>
+          <circle cx="374" cy="163" r="10" fill="#ffd21a"/><text x="374" y="166.5" text-anchor="middle">2</text>
+          <circle cx="46" cy="274" r="10" fill="#ffd21a"/><text x="46" y="277.5" text-anchor="middle">3</text>
+        </g>
+        <g font-family="inherit" font-size="9.5" fill="#8f8a7e">
+          <text x="64" y="40">Bestandsaufnahme, vor der Montage</text>
+          <text x="360" y="140" text-anchor="end">Fortschrittsflug</text>
+          <text x="64" y="292">Abschlussbefliegung</text>
+        </g>
+      </svg>
+    </div>
+    <p class="cap">Befliegungsplan: dreimal über dasselbe Dach, im selben Raster</p>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- 12 ............................................................... -->
+<section class="slide" data-chap="4">
+ <div class="wrap">
+  <p class="eyebrow">Prüfung und Abschluss &middot; Die Übergabe</p>
+  <h2>Drei Dokumente,<br><span class="soft">und keines davon wird getippt.</span></h2>
+  <p class="lead" style="margin-bottom:8px">Am letzten Bautag melden wir die Fertigstellung. Was dann passiert, passiert in der App, und Sie sehen jeden Schritt.</p>
+  <div class="fan">
+    <div><img src="{{IMG:m-abnahme}}" alt="Abnahmeprotokoll"></div>
+    <div class="mid"><img src="{{IMG:m-report}}" alt="Abschlussbericht"></div>
+    <div><img src="{{IMG:m-invoice}}" alt="Rechnung"></div>
+  </div>
+  <div class="cols3" style="margin-top:8px">
+    <div class="card"><span class="n">ABNAHMEPROTOKOLL</span><h3>Mit Mängeln und Fristen</h3><p>Art der Abnahme, festgestellte Mängel mit Frist und Status, Abnahmeerklärung, Beginn der Gewährleistungsfrist, Vorbehalt der Vertragsstrafe. Beide Unterschriften am Tablet.</p></div>
+    <div class="card"><span class="n">ABSCHLUSSBERICHT</span><h3>Das ganze Projekt</h3><p>Anzahl der Tage, Summe der Regiestunden, Fotos, Vorfälle, Nachträge, und danach jeder einzelne Bautag als eigene Seite mit Bildern.</p></div>
+    <div class="card"><span class="n">RECHNUNG</span><h3>Aus den eigenen Zahlen</h3><p>Positionen der Bestellung, anerkannte Regiestunden, angenommene Nachträge. Bei Reverse Charge mit der richtigen Klausel. Nichts, was Sie nicht schon gesehen haben.</p></div>
+  </div>
+  <div class="punch"><b>Null manuelle Eingabe.</b> Diese drei Dokumente entstehen aus Daten, die während der Bauzeit ohnehin schon entstanden sind, und die Sie während der Bauzeit schon einzeln freigegeben haben.</div>
+ </div>
+</section>
+
+<!-- 13 ............................................................... -->
+<section class="slide" data-chap="5">
+ <div class="wrap">
+  <p class="eyebrow">Nach dem Projekt &middot; Ihr Bestand</p>
+  <h2>Salzburg ist dann<br><span class="soft">nur das erste Projekt in Ihrer Liste.</span></h2>
+  <p class="lead" style="margin-bottom:20px">Das Projekt verschwindet nicht, wenn es fertig ist. Es bleibt offen, durchsuchbar und teilbar, zusammen mit jedem weiteren, das dazukommt.</p>
+  <div class="stage"><img class="shot" src="{{IMG:portfolio}}" alt="Übersicht aller Projekte"></div>
+  <div class="cols3">
+    <div class="card"><span class="n">JEDERZEIT</span><h3>Nachschlagen</h3><p>Zwei Jahre später fragt jemand, wann auf diesem Dach die DC-Verkabelung gemacht wurde und wie das Wetter war. Sie schlagen es nach, in zwanzig Sekunden.</p></div>
+    <div class="card"><span class="n">HERUNTERLADEN</span><h3>Als PDF</h3><p>Jedes Dokument einzeln oder der ganze Abschlussbericht. Für Ihre Ablage, für die Bank, für die Versicherung, für den Betreiber.</p></div>
+    <div class="card"><span class="n">TEILEN</span><h3>Mit einem Link</h3><p>Ihr Kunde will den Nachweis. Sie schicken einen Link statt eines Ordners mit 400 MB an Fotos.</p></div>
+  </div>
+ </div>
+</section>
+
+<!-- 14 ............................................................... -->
+<section class="slide" data-chap="5">
+ <div class="wrap">
+  <p class="eyebrow">Nach dem Projekt &middot; Daten</p>
+  <h2>Die Daten liegen in Frankfurt,<br><span class="soft">und sonst nirgends.</span></h2>
+  <p class="lead">Das ist keine Formulierung für die Broschüre. Das ist die Konfiguration.</p>
+  <div class="cols2">
+    <div class="card"><span class="n">STANDORT</span><h3>EU, Frankfurt am Main</h3><p>Datenbank und Dateispeicher liegen in der Region Frankfurt. Keine Übermittlung in Drittstaaten, kein Umweg über einen anderen Kontinent.</p></div>
+    <div class="card"><span class="n">DSGVO</span><h3>Rechtsgrundlage benannt</h3><p>Die Verarbeitung der Nachweise Ihrer Nachunternehmer stützt sich auf Ihre eigene rechtliche Verpflichtung als Auftraggeber, Art. 6 Abs. 1 lit. c DSGVO.</p></div>
+    <div class="card"><span class="n">KEIN TRACKING</span><h3>Zwei Cookies: Anmeldung und Sprache</h3><p>Sonst nichts. Keine Analyse-Werkzeuge, keine Werbe-Pixel, kein Profiling. Deshalb gibt es auch kein Cookie-Banner: es gibt nichts zuzustimmen.</p></div>
+    <div class="card"><span class="n">ZUGRIFF</span><h3>Nur die Beteiligten</h3><p>Jede Person sieht genau ihr Projekt und genau ihre Rolle. Die Mannschaft auf dem Dach kommt an Ihre kaufmännischen Unterlagen nicht heran.</p></div>
+  </div>
+ </div>
+</section>
+
+<!-- 15 ............................................................... -->
+<section class="slide" data-chap="5">
+ <div class="wrap">
+  <p class="eyebrow">Der Vorschlag</p>
+  <h2>Für Salzburg heißt das:</h2>
+  <div class="cols3" style="margin-top:22px">
+    <div class="card"><span class="n">SIE TUN</span><h3>Fast nichts</h3><p>Bestellung einstellen, Stückliste hinterlegen, Zugang annehmen. Danach schauen Sie zu und entscheiden über Stunden und Nachträge, wenn welche kommen.</p></div>
+    <div class="card"><span class="n">WIR TUN</span><h3>Die Arbeit</h3><p>Montage, tägliche Berichte mit Fotos, Unterweisung, Stücklistenprüfung, Strangmessung, drei Befliegungen, Übergabe und Abnahme.</p></div>
+    <div class="card"><span class="n">SIE ZAHLEN</span><h3>Für die App nichts</h3><p>Der Zugang für dieses Projekt ist für Sie kostenlos. Wenn es Ihnen nach Salzburg nichts gebracht hat, hört es dort auf.</p></div>
+  </div>
+  <div class="punch" style="margin-top:26px">Am Ende dieses Projekts haben Sie eine Akte, <b>die vollständiger ist als die jedes Projekts, das Sie bisher gebaut haben</b>, und Sie haben dafür keine Minute zusätzlich gearbeitet. Das ist das ganze Angebot.</div>
+  <div class="contact">
+    <b>AVESOL d.o.o.</b>
+    <span>Montage im Subunternehmen für EPC in Österreich, Deutschland und Slowenien.</span>
+    <span style="margin-top:9px">Belin: <a href="https://getbelin.com">getbelin.com</a></span>
+  </div>
+ </div>
+</section>
+
+</main>
+
+<nav class="nav">
+  <div class="nav-in">
+    <button class="btn" id="prev">Zurück</button>
+    <div class="dots" id="dots"></div>
+    <span class="count" id="count"></span>
+    <button class="btn go" id="next">Weiter</button>
+  </div>
+</nav>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var CHAPTERS = ['Das Prinzip','Vor Baubeginn','Während der Bauzeit','Prüfung und Abschluss','Nach dem Projekt'];
+  var i = 0;
+
+  var dots = document.getElementById('dots');
+  var chaps = document.getElementById('chaps');
+  var bar = document.getElementById('bar');
+  var count = document.getElementById('count');
+  var prev = document.getElementById('prev');
+  var next = document.getElementById('next');
+
+  slides.forEach(function(s, n){
+    var b = document.createElement('button');
+    b.className = 'dot';
+    b.type = 'button';
+    b.setAttribute('aria-label', 'Seite ' + (n + 1));
+    b.addEventListener('click', function(){ go(n); });
+    dots.appendChild(b);
+  });
+
+  // First slide of each chapter, so the rail can jump there.
+  var chapStart = {};
+  slides.forEach(function(s, n){
+    var c = parseInt(s.getAttribute('data-chap'), 10);
+    if (c > 0 && chapStart[c] === undefined) chapStart[c] = n;
+  });
+  CHAPTERS.forEach(function(name, k){
+    var b = document.createElement('button');
+    b.className = 'chap';
+    b.type = 'button';
+    b.textContent = name;
+    b.addEventListener('click', function(){ go(chapStart[k + 1]); });
+    chaps.appendChild(b);
+  });
+
+  function go(n){
+    if (n < 0 || n >= slides.length || n === i) return;
+    slides[i].removeAttribute('data-on');
+    i = n;
+    var s = slides[i];
+    s.setAttribute('data-on', '1');
+    s.scrollTop = 0;
+    paint();
+    if (history.replaceState) history.replaceState(null, '', '#' + (i + 1));
+  }
+
+  function paint(){
+    var d = dots.children, k;
+    for (k = 0; k < d.length; k++) {
+      if (k === i) d[k].setAttribute('data-on', '1'); else d[k].removeAttribute('data-on');
+    }
+    var chap = parseInt(slides[i].getAttribute('data-chap'), 10);
+    var c = chaps.children;
+    for (k = 0; k < c.length; k++) {
+      if (k + 1 === chap) c[k].setAttribute('data-on', '1'); else c[k].removeAttribute('data-on');
+    }
+    bar.style.width = ((i) / (slides.length - 1) * 100) + '%';
+    count.textContent = (i + 1) + ' / ' + slides.length;
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+    next.textContent = (i === 0) ? 'Ablauf ansehen' : 'Weiter';
+  }
+
+  prev.addEventListener('click', function(){ go(i - 1); });
+  next.addEventListener('click', function(){ go(i + 1); });
+  document.querySelector('.brand').addEventListener('click', function(){ go(0); });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); go(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(i - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(slides.length - 1); }
+    else if (e.key === ' ') {
+      // Space pages forward, but only when the slide has nothing left to scroll.
+      var s = slides[i];
+      if (s.scrollTop + s.clientHeight >= s.scrollHeight - 4) { e.preventDefault(); go(i + 1); }
+    }
+  });
+
+  // Horizontal swipe only. A vertical drag must stay a scroll, because a slide
+  // that is taller than the phone is scrolled with exactly that gesture.
+  var x0 = null, y0 = null, locked = false;
+  document.getElementById('deck').addEventListener('touchstart', function(e){
+    if (e.touches.length !== 1) { x0 = null; return; }
+    // A document wider than the phone is read by dragging it sideways. That is
+    // the same gesture that turns the page, so inside one the page must not turn.
+    var box = e.target.closest ? e.target.closest('.sheet-scroll') : null;
+    if (box && box.scrollWidth > box.clientWidth + 2) { x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; locked = false;
+  }, { passive: true });
+  document.getElementById('deck').addEventListener('touchmove', function(e){
+    if (x0 === null || locked) return;
+    var dx = e.touches[0].clientX - x0, dy = e.touches[0].clientY - y0;
+    if (Math.abs(dy) > Math.abs(dx)) { x0 = null; return; }
+    if (Math.abs(dx) > 55) { locked = true; go(dx < 0 ? i + 1 : i - 1); x0 = null; }
+  }, { passive: true });
+
+  var start = parseInt((location.hash || '').replace('#', ''), 10);
+  i = (start > 0 && start <= slides.length) ? start - 1 : 0;
+  slides[i].setAttribute('data-on', '1');
+  paint();
+})();
+</script>
+</body>
+</html>

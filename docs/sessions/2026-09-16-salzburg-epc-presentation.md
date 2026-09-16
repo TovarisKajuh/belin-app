@@ -1,0 +1,78 @@
+# Session, 2026-09-16: the Salzburg presentation
+
+Ran on Opus. One deliverable: a German click-through presentation of Belin for
+an Austrian EPC with a 250 kWp project in Salzburg, where AVESOL is the
+subcontractor and Belin is what the EPC gets for free while we do the montage.
+
+This is the first asset written from the other side of the table. Every earlier
+one sells Belin to an EPC as a product. This one sells AVESOL as a
+subcontractor and gives the software away as the reason to pick us.
+
+## Done
+
+1. **`npm run marketing:salzburg`.** Source at
+   `assets/marketing/source/salzburg-de.html`, builder at
+   `scripts/marketing/salzburg.mjs`, output one file at
+   `assets/marketing/belin-salzburg-de.html`, 1.7 MB, self contained. Sixteen
+   screens in five chapters. Keyboard, swipe, two buttons, a chapter rail, a
+   progress bar, hash deep links. Nothing loads from the network.
+2. **Nine real app and document screenshots**, reused from the German brochure
+   pipeline, resized and inlined as WebP.
+3. **Three documents drawn in HTML** in the app's own paper style: the
+   Bestellung, the Sicherheitsunterweisung and the Strangmessprotokoll.
+4. **`marketing-preview`** in `.claude/launch.json`, a static server on 4173 for
+   looking at built marketing HTML in a browser.
+
+## Learned
+
+- **The "-de" folders are not all German.** `docs-de/narocilnica.png` is the
+  Slovenian naročilnica with a German folder name. It names Sonce Energija
+  d.o.o., a real ZSFV member the GTM base explicitly forbids showing publicly,
+  and it prints AVESOL's demo price for a 245 kWp job. It was already placed on
+  a slide before it was looked at. Folder names are not evidence: the picture is.
+- **ASCII transliteration is not German.** The first draft wrote "fuer" and
+  "Stueckliste" out of habit around encoding. In a document going to an Austrian
+  buyer that reads as amateur work. Fixed with an explicit stem map and then
+  audited by grepping for every remaining `ae`, `oe` and `ue` sequence and
+  reading the list, which is what caught `Saetze`, `laesst` and `stuetzt`.
+- **A horizontal scroll area inside a swipe deck is a bug by default.** The two
+  long documents are wider than a phone. Dragging them sideways to read the
+  table turned the page instead. Found by sizing the viewport to a phone and
+  looking, not by reasoning about it.
+- **Claims are cheap to check against the code and expensive to get wrong.** Four
+  were wrong or overstated. The one about expiry notifications turned out to be
+  true, and only checking told the difference.
+
+## Failed
+
+- **Shipped a slide built on an unexamined image.** The Slovenian PO went onto
+  slide 3 on the strength of its folder name. It was caught in the browser walk
+  through, which is the only reason it was caught at all.
+- **Opened with a process objection the founder did not want.** Three of the
+  listed features do not exist in the product. That was worth saying once. It
+  was said at the length of a design review, in the middle of a deadline, and it
+  cost a round trip and the founder's patience. Say it in two sentences and keep
+  building.
+
+## Succeeded
+
+- The two invented documents are indistinguishable in style from the real PDFs,
+  because they were built from the measured values in `lib/pdf/theme.tsx` and
+  from looking at the rendered Abnahmeprotokoll, rather than approximated.
+- The Strangmessprotokoll numbers hold up to arithmetic. 19 modules at 51,85 V
+  is 985 V at STC, about 944 V at the 42 °C the protocol records, and 1071 V at
+  minus ten, under the 1100 V system limit. An electrician can check it.
+- Austrian law and norm references verified before printing: § 14 ASchG,
+  OVE EN 62446-1, OVE E 8101-7-712.
+
+## Next
+
+- **The three promises.** If Salzburg lands, the Strangmessprotokoll and the
+  pre-start Sicherheitsunterweisung have to become real modules, and the flights
+  have to be flown. Logged in CHANGELOG and DECISIONS.
+- **The founder's calls on the built file**: whether to keep the invoice mockup,
+  which carries AVESOL's demo price and a demo IBAN in readable type; whether
+  the contact block should carry a phone number and address; and whether the
+  Ingolstadt reference project should stay or be re-shot as Salzburg.
+- **A German Bestellung in the pipeline.** `marketing:germanize` does not produce
+  one, which is why this deck renders its own.

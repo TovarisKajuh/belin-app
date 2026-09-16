@@ -32,7 +32,8 @@
     "marketing:germanize": "node --env-file=.env.local scripts/marketing/germanize.mjs",
     "marketing:pipeline": "node scripts/marketing/pipeline.mjs",
     "marketing:sl": "node scripts/marketing/pipeline.mjs sl",
-    "marketing:de": "node scripts/marketing/pipeline.mjs de"
+    "marketing:de": "node scripts/marketing/pipeline.mjs de",
+    "marketing:salzburg": "node scripts/marketing/salzburg.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

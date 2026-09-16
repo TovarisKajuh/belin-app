@@ -4,9 +4,20 @@
     {
       "name": "belin-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "marketing-preview",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "scripts/marketing/serve.mjs"
+      ],
+      "port": 4173
     }
   ]
 }
