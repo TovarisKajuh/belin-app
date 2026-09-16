@@ -2,6 +2,8 @@
 
 One line per significant decision: what, why, when.
 
+- 2026-09-16: The Salzburg deck is photographs first, text last: one picture, a headline and at most one sentence per slide (founder correction, the first version had roughly eight hundred times too much text). Reason: it is clicked through by a buyer who has thirty seconds of patience, not read; and a subcontractor selling montage proves competence with pictures of finished roofs, not with paragraphs about them. AVESOL site photography is committed to assets/marketing/site/ because those files are masters that exist nowhere else in the repo.
+
 - 2026-09-16: The Salzburg presentation shows the Strangmessprotokoll, the pre-start Sicherheitsunterweisung and the drone flights, none of which the product does today (founder decision after being told). Reason: the deck is an offer from AVESOL as subcontractor, not a product page, and the founder can commit to delivering those three on this project. Consequence, recorded so it is not forgotten: the first two are now a build commitment if Salzburg lands, and the third is a service commitment. They are drawn in the document style rather than photographed, because a fake screenshot of a screen that does not exist would be a different kind of claim.
 
 - 2026-09-16: Marketing presentations are ONE self-contained HTML file with the font and the images inlined, built from a readable source by a script, not a page on the site. Reason: it is sent as an attachment and opened on a stranger's laptop, possibly offline, possibly on a phone in a car park, and a deck that depends on a network, a CDN or a live deploy fails exactly when it matters. 1.7 MB is small enough to email and large enough to carry real screenshots.

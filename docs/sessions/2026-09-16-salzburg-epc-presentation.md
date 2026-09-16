@@ -76,3 +76,39 @@ subcontractor and gives the software away as the reason to pick us.
   Ingolstadt reference project should stay or be re-shot as Salzburg.
 - **A German Bestellung in the pipeline.** `marketing:germanize` does not produce
   one, which is why this deck renders its own.
+
+---
+
+## Second pass: the founder cut the text
+
+**"800x too much text. LESS TEXT, SIMPLER. IT EXPLAINS THE WORKFLOW."** He was
+right, and the correction is worth keeping.
+
+The first deck was written the way a spec is written: every claim justified in
+its own sentence, every module given its paragraph. That is the right density
+for DECISIONS.md and the wrong density for a page someone clicks through on a
+phone before a call. 2189 words became 656, and most of the 656 is inside the
+two document tables rather than on a slide. Sixteen slides became thirteen.
+
+- **Nine real AVESOL photographs** now carry the deck, from the founder's own
+  `avesolsi/CnI` folder. Committed to `assets/marketing/site/`, rotated by
+  their EXIF orientation, capped at 2000px.
+- **The Tolmin drone set carries its dates in the filenames**, so the same
+  installation appears as bare substructure on 12.05, half covered on 22.05 and
+  finished on 20.06. Three photographs replaced a drawn flight plan and a
+  paragraph. Real evidence beats an illustration of evidence.
+- **The central slide is photo, arrow, log entry**, three times down the page.
+  Sixteen words of prose. That is the founder's brief rendered literally: show
+  how the crew takes photos and how they are logged.
+
+### Learned
+
+- **Density belongs to the medium, not to the content.** The same facts were
+  right in CHANGELOG and wrong on a slide. Nothing was cut for being untrue;
+  everything was cut because nobody would read it there.
+- **sharp does not apply EXIF orientation unless you call `.rotate()`.** Every
+  contact sheet built before that was wrong about half the photographs, and the
+  mistake is invisible unless you look at the pictures.
+- **Photographs are the expensive thing in a self-contained file.** The first
+  photo build was 6 MB, which is not an attachment. Per-image quality brought it
+  to 3.9 MB.
