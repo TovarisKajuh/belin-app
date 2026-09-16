@@ -151,6 +151,10 @@ The founder asked for it on Vercel and to do as much of it myself as possible.
   the file tree inline; a 3.8 MB deck is about 5 MB of base64 through the model.
   The repo already auto-deploys from main, which moves the same bytes over git.
   Checked the connector before reaching for git rather than after.
+- **Live at https://belin-app.vercel.app/p/salzburg.html.** Verified after the
+  deploy: 200 and 3.9 MB on the URL, the deck rendering in a browser, the
+  robots meta in the served bytes, and all four app routes still correct,
+  because a push to main deploys the product and not just the file.
 - **Build output moved to `public/p/salzburg.html`**, and the old copy in
   `assets/marketing/` is deleted. Two copies of a 3.8 MB artifact in git is
   waste that compounds on every rebuild.
