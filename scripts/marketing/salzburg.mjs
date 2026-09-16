@@ -11,6 +11,10 @@
  *
  *     npm run marketing:salzburg
  *
+ * It is written to public/p/salzburg.html, so pushing main publishes it at
+ * /p/salzburg.html on the Vercel project. The same file is what gets attached
+ * to an email: one artifact, one build, no second copy to drift.
+ *
  * Every screenshot is a real app screen shot by the marketing pipeline, and
  * every document picture is rasterized from real PDF bytes. Nothing here is
  * drawn by hand, which is the point: the picture cannot drift from the product.
@@ -23,7 +27,7 @@ import sharp from "sharp";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SRC = path.join(root, "assets", "marketing", "source", "salzburg-de.html");
-const OUT = path.join(root, "assets", "marketing", "belin-salzburg-de.html");
+const OUT = path.join(root, "public", "p", "salzburg.html");
 const FONT = path.join(root, "public", "fonts", "InterVariable.ttf");
 
 /**
@@ -102,6 +106,7 @@ async function main() {
   const left = html.match(/\{\{[^}]+\}\}/g);
   if (left) throw new Error(`Unfilled placeholders remain: ${[...new Set(left)].join(", ")}`);
 
+  await fs.mkdir(path.dirname(OUT), { recursive: true });
   await fs.writeFile(OUT, html, "utf8");
   const out = await fs.stat(OUT);
   console.log(`\n  assets  ${kb(total)}`);

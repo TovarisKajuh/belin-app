@@ -140,3 +140,32 @@ that is roughly about the right subject is not a photograph of the subject.
   `unterkonstruktion.jpg` was correctly named and still wrong in place.
 - **A thumbnail is a different photograph.** Every one of these read fine at full
   size and wrong at the size the deck actually renders them.
+
+---
+
+## Fourth pass: hosting it
+
+The founder asked for it on Vercel and to do as much of it myself as possible.
+
+- **The Vercel connector was the wrong tool for it.** `deploy_to_vercel` takes
+  the file tree inline; a 3.8 MB deck is about 5 MB of base64 through the model.
+  The repo already auto-deploys from main, which moves the same bytes over git.
+  Checked the connector before reaching for git rather than after.
+- **Build output moved to `public/p/salzburg.html`**, and the old copy in
+  `assets/marketing/` is deleted. Two copies of a 3.8 MB artifact in git is
+  waste that compounds on every rebuild.
+- **Checked the middleware before assuming the route worked.** The matcher is
+  `/((?!api|_next|_vercel|.*\..*).*)`, so a path with a dot is excluded and the
+  static file is served. That is why the deck keeps `.html`: a prettier dotless
+  URL would need the i18n matcher rewritten, which is foundation code and not
+  worth touching for a marketing asset.
+- **Another session was working in this repo at the same time**, building a
+  Slovenian workflow deck. Its half-finished `package.json` scripts and
+  untracked files were in the working tree. Committed by path rather than with
+  `git add -A`, which is the only reason they did not go out in this commit.
+
+### Learned
+
+- **`git add -A` is unsafe in a repo someone else is also working in.** The
+  habit was already there from three commits earlier in this same session; it
+  happened to be harmless then and would not have been now.
