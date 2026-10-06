@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { resolveTokenActorFromSession } from "@/lib/auth";
 import { listProjectsForOrg } from "@/lib/data/projects-list";
 import { BelinMark } from "@/components/BelinMark";
+import { fmtKwp } from "@/lib/format";
 import { LocaleSwitch } from "@/components/LocaleSwitch";
 
 // The EPC's project list. It exists because identity is still a project token:
@@ -61,7 +62,7 @@ export default async function ProjectsPage({
               {projects.map((p) => {
                 const facts = [
                   p.city,
-                  p.kwp !== null ? `${p.kwp} kWp` : null,
+                  p.kwp !== null ? fmtKwp(p.kwp, locale) : null,
                   p.subName,
                 ]
                   .filter(Boolean)

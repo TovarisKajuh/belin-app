@@ -1,6 +1,6 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { IncidentRow } from "@/lib/data/incidents";
-import { ddmm } from "@/lib/dashboard-shared";
+import { fmtDate } from "@/lib/format";
 import { IncidentPhotos } from "./IncidentPhotos";
 
 // What went wrong on site, in the EPC's field of view.
@@ -12,6 +12,7 @@ import { IncidentPhotos } from "./IncidentPhotos";
 // need a phone call. Colour carries that faster than a word does.
 export async function IncidentsPanel({ incidents }: { incidents: IncidentRow[] }) {
   const t = await getTranslations("dashboard");
+  const locale = await getLocale();
   const tKinds = await getTranslations("incident.kinds");
 
   return (
@@ -26,7 +27,7 @@ export async function IncidentsPanel({ incidents }: { incidents: IncidentRow[] }
             <li key={incident.id} className={`ip-row k-${incident.kind}`}>
               <div className="ip-head">
                 <span className="ip-kind">{tKinds(incident.kind)}</span>
-                <span className="ip-date">{ddmm(incident.occurredOn)}</span>
+                <span className="ip-date">{fmtDate(incident.occurredOn, locale, { style: "dayMonth" })}</span>
               </div>
 
               {/* An empty note is normal for rain and obstructions: the kind is
@@ -38,7 +39,7 @@ export async function IncidentsPanel({ incidents }: { incidents: IncidentRow[] }
               {incident.photoUrls.length > 0 ? (
                 <IncidentPhotos
                   urls={incident.photoUrls}
-                  label={`${tKinds(incident.kind)} ${ddmm(incident.occurredOn)}`}
+                  label={`${tKinds(incident.kind)} ${fmtDate(incident.occurredOn, locale, { style: "dayMonth" })}`}
                 />
               ) : null}
             </li>

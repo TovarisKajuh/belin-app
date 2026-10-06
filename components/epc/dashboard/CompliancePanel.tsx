@@ -1,6 +1,6 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { ComplianceDoc } from "@/lib/data/epc-dashboard";
-import { ddmm } from "@/lib/dashboard-shared";
+import { fmtDate } from "@/lib/format";
 
 // Whether the crew on the roof is legally allowed to be there.
 //
@@ -25,6 +25,7 @@ export async function CompliancePanel({
 }) {
   const t = await getTranslations("dashboard");
   const tVault = await getTranslations("vault");
+  const locale = await getLocale();
 
   const byType = new Map(docs.map((doc) => [doc.type, doc]));
   const lead = LEAD_TYPES.map((type) => ({ type, doc: byType.get(type) ?? null }));
@@ -34,7 +35,7 @@ export async function CompliancePanel({
     if (!doc) return t("docMissing");
     if (doc.state === "expired") return tVault("expired");
     if (doc.state === "expiringSoon") return tVault("expiringSoon");
-    return doc.validUntil ? `${tVault("validUntil")} ${ddmm(doc.validUntil)}` : tVault("noExpiry");
+    return doc.validUntil ? `${tVault("validUntil")} ${fmtDate(doc.validUntil, locale)}` : tVault("noExpiry");
   };
 
   const dotClass = (doc: ComplianceDoc | null) =>

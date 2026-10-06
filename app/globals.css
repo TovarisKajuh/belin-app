@@ -3091,3 +3091,6 @@ html [data-sonner-toast][data-styled="true"] [data-button].bt-action {
 }
 .bt-spin { animation: bt-spin 1s linear infinite; }
 @keyframes bt-spin { to { transform: rotate(360deg); } }
+
+/* === 5.5: One tempo, labelled === */
+.belin-dark .e-chip .s { margin-top: 4px; font-size: var(--fs-11); color: var(--e-muted); font-weight: 600; }

@@ -1,7 +1,8 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { fmtDate } from "@/lib/format";
 import {
   generateCompletionReportAction,
   requestFinalizationAction,
@@ -47,7 +48,7 @@ export function FinalHub({
   locale: "sl" | "de" | "en";
 }) {
   const t = useTranslations("final");
-  const format = useFormatter();
+  const uiLocale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
@@ -87,11 +88,7 @@ export function FinalHub({
             <p className="fn-state ok">
               {requestedAt
                 ? t("requested", {
-                    date: format.dateTime(new Date(requestedAt), {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    }),
+                    date: fmtDate(requestedAt, uiLocale),
                   })
                 : t("requestedPlain")}
             </p>
@@ -135,11 +132,7 @@ export function FinalHub({
             <>
               <p className="fn-state ok">
                 {t("generatedAt", {
-                  date: format.dateTime(new Date(report.createdAt), {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  }),
+                  date: fmtDate(report.createdAt, uiLocale),
                 })}
               </p>
               <a

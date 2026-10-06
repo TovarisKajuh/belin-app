@@ -1,5 +1,6 @@
 import { getTranslations, getLocale } from "next-intl/server";
 import type { ScopeItemStatus } from "@/lib/data/project-core";
+import { fmtNumber, fmtPct } from "@/lib/format";
 
 // Every scope item as a flat row: installed against target, with the same
 // per-item percentage the weighted project progress is built from.
@@ -7,8 +8,6 @@ export async function ScopeByPhase({ scope }: { scope: ScopeItemStatus[] }) {
   const t = await getTranslations("dashboard");
   const locale = await getLocale();
   if (scope.length === 0) return null;
-
-  const nf = new Intl.NumberFormat(locale);
 
   return (
     <section className="e-sec e-reveal">
@@ -26,10 +25,10 @@ export async function ScopeByPhase({ scope }: { scope: ScopeItemStatus[] }) {
                 <span className="e-sfill" style={{ width: `${percent}%` }} />
               </span>
               <span className="e-snums e-mono">
-                <b>{nf.format(s.installedQty)}</b> / {nf.format(s.targetQty)} {s.unit}
+                <b>{fmtNumber(s.installedQty, locale)}</b> / {fmtNumber(s.targetQty, locale)} {s.unit}
               </span>
               <span className={percent === 0 ? "e-spct z e-mono" : "e-spct e-mono"}>
-                {percent}%
+                {fmtPct(percent, locale, 0)}
               </span>
             </div>
           );

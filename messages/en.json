@@ -129,7 +129,7 @@
     "noEntries": "No daily entries yet.",
     "noPhotos": "No site photos yet.",
     "workingDaysSub": "Mon to Fri on site",
-    "tempoSub": "last 6 working days",
+    "tempoSub": "average of the last 6 reports",
     "photosSub": "site documentation",
     "endOfOverview": "end of overview",
     "dailyTempo": "Daily pace",

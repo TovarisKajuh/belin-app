@@ -1,4 +1,5 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { fmtKwp, fmtNumber } from "@/lib/format";
 import type { DashboardRoof } from "@/lib/data/epc-dashboard";
 
 // The roofs as the plan describes them. A solar site is scheduled and built
@@ -8,6 +9,7 @@ export async function RoofPanel({ roofs }: { roofs: DashboardRoof[] }) {
   if (roofs.length === 0) return null;
 
   const t = await getTranslations("dashboard.roofs");
+  const locale = await getLocale();
   const total = roofs.reduce((n, r) => n + (r.moduleCount ?? 0), 0);
 
   return (
@@ -18,10 +20,10 @@ export async function RoofPanel({ roofs }: { roofs: DashboardRoof[] }) {
           <div className="rp-card" key={roof.name}>
             <div className="rp-name">{roof.name}</div>
             <div className="rp-n e-mono">
-              {roof.moduleCount ?? "?"}
+              {roof.moduleCount != null ? fmtNumber(roof.moduleCount, locale) : "?"}
               <span className="u">{t("modules")}</span>
             </div>
-            {roof.kwp !== null && <div className="rp-kwp e-mono">{roof.kwp} kWp</div>}
+            {roof.kwp !== null && <div className="rp-kwp e-mono">{fmtKwp(roof.kwp, locale)}</div>}
             {(roof.pitchDeg !== null || roof.covering) && (
               <div className="rp-spec">
                 {[roof.pitchDeg !== null ? `${roof.pitchDeg}°` : null, roof.covering]
@@ -32,7 +34,7 @@ export async function RoofPanel({ roofs }: { roofs: DashboardRoof[] }) {
           </div>
         ))}
       </div>
-      <div className="rp-total">{t("total", { n: total })}</div>
+      <div className="rp-total">{t("total", { n: fmtNumber(total, locale) })}</div>
     </section>
   );
 }

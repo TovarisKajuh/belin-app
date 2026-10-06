@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { fmtDate } from "@/lib/format";
 import { SignaturePad } from "@/components/SignaturePad";
 import { DECLARATIONS, type AcceptanceView, type Declaration } from "@/lib/acceptance-view";
 import {
@@ -44,6 +45,7 @@ export function AcceptanceFlow({
   defaultSubSignerName: string | null;
 }) {
   const t = useTranslations("final");
+  const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -143,7 +145,7 @@ export function AcceptanceFlow({
         <span className="b-label">{t("acceptanceCard")}</span>
         <p className="fn-state ok">
           {acceptance.conductedAt
-            ? t("acceptanceSigned", { date: acceptance.conductedAt.slice(0, 10) })
+            ? t("acceptanceSigned", { date: fmtDate(acceptance.conductedAt, locale) })
             : t("acceptanceOpen")}
         </p>
         <p className="fn-note">

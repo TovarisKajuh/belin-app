@@ -1,6 +1,7 @@
 import { getTranslations, getLocale } from "next-intl/server";
 import type { DashboardDay } from "@/lib/data/epc-dashboard";
-import { ddmm, weekdayShort, quantitySummary } from "@/lib/dashboard-shared";
+import { weekdayShort, quantitySummary } from "@/lib/dashboard-shared";
+import { fmtDate } from "@/lib/format";
 
 // Day by day, newest first: who was there, what was installed, the note and the
 // weather it was done in. This is the record that later backs a Nachtrag or a
@@ -29,7 +30,7 @@ export async function DailyLogFeed({ days }: { days: DashboardDay[] }) {
               <div className="e-day" key={day.entryId}>
                 <div className="e-day-date">
                   {weekdayShort(day.date, locale)}
-                  <span className="dn e-mono">{ddmm(day.date)}</span>
+                  <span className="dn e-mono">{fmtDate(day.date, locale, { style: "dayMonth" })}</span>
                 </div>
                 <div className="e-day-mid">
                   <div className="mt">

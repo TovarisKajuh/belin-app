@@ -47,6 +47,7 @@ export async function ProjectionPanel({
 
         <TempoChart
           history={history}
+          rate={projection.ratePctPerDay}
           today={today}
           plannedStart={plannedStart}
           plannedEnd={plannedEnd}

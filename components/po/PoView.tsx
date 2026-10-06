@@ -1,7 +1,8 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { fmtDate, fmtNumber } from "@/lib/format";
 import { formatMoney } from "@/lib/po-shared";
 import { acceptPoAction, rejectPoAction } from "@/app/[locale]/app/[projectId]/po/actions";
 import type { PoView as PoData } from "@/lib/data/purchase-orders";
@@ -30,7 +31,7 @@ export function PoView({
   isSubSide: boolean;
 }) {
   const t = useTranslations("po");
-  const format = useFormatter();
+  const uiLocale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export function PoView({
   const [note, setNote] = useState("");
 
   const day = (value: string | null) =>
-    value ? format.dateTime(new Date(value), { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+    value ? fmtDate(value, uiLocale) : "";
 
   const run = (work: () => Promise<unknown>) => {
     setError(null);
@@ -82,7 +83,7 @@ export function PoView({
             <div className="po-view-row" key={index}>
               <span className="po-view-desc">{line.description}</span>
               <span className="po-view-qty">
-                {line.qty === null ? "" : `${line.qty}${line.unit ? ` ${line.unit}` : ""}`}
+                {line.qty === null ? "" : `${fmtNumber(line.qty, locale)}${line.unit ? ` ${line.unit}` : ""}`}
               </span>
               <span className="po-num">{formatMoney(line.total, locale)}</span>
             </div>

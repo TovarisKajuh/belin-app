@@ -17,7 +17,7 @@ import { PhotoGallery } from "@/components/epc/dashboard/PhotoGallery";
 import { RevealController } from "@/components/epc/dashboard/RevealController";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { projectTopic } from "@/lib/realtime-shared";
-import { ddmm } from "@/lib/dashboard-shared";
+import { fmtDate, fmtKwp, fmtNumber } from "@/lib/format";
 
 // The dark EPC dashboard: the shell and hero, then the path to completion,
 // the scope by phase, the headline numbers, the newest report, the day by day
@@ -38,8 +38,8 @@ export async function EpcDashboard({
   const core = data.core;
   const sub = data.subName;
   const proj = data.projection;
-  const finish = ddmm(proj.projectedFinish);
-  const facts = [core.kwp != null ? `${core.kwp} kWp` : null, sub].filter(Boolean).join(" · ");
+  const finish = proj.projectedFinish ? fmtDate(proj.projectedFinish, locale, { style: "dayMonth" }) : null;
+  const facts = [core.kwp != null ? fmtKwp(core.kwp, locale) : null, sub].filter(Boolean).join(" · ");
 
   return (
     <div className="belin-dark">
@@ -70,13 +70,14 @@ export async function EpcDashboard({
                 <div className="v e-mono">
                   {proj.ratePctPerDay != null ? (
                     <>
-                      {proj.ratePctPerDay}
+                      {fmtNumber(proj.ratePctPerDay, locale, { decimals: 1 })}
                       <span className="u"> %{t("perDay")}</span>
                     </>
                   ) : (
                     t("gathering")
                   )}
                 </div>
+                {proj.ratePctPerDay != null ? <div className="s">{t("tempoSub")}</div> : null}
               </div>
               <div className="e-chip">
                 <div className="l">{t("plannedFinish")}</div>

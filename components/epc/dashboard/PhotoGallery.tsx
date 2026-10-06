@@ -1,8 +1,8 @@
 "use client";
 import { useCallback, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { DashboardPhoto } from "@/lib/data/epc-dashboard";
-import { ddmm } from "@/lib/dashboard-shared";
+import { fmtDate } from "@/lib/format";
 import { Lightbox } from "./Lightbox";
 
 // Every site photo, newest day first, opening into the shared lightbox. Photos
@@ -10,6 +10,7 @@ import { Lightbox } from "./Lightbox";
 // only as thumbnails buried in the log.
 export function PhotoGallery({ photos }: { photos: DashboardPhoto[] }) {
   const t = useTranslations("dashboard");
+  const locale = useLocale();
   const [open, setOpen] = useState<number | null>(null);
 
   const close = useCallback(() => setOpen(null), []);
@@ -20,7 +21,7 @@ export function PhotoGallery({ photos }: { photos: DashboardPhoto[] }) {
     [photos.length]
   );
 
-  const items = photos.map((p) => ({ url: p.url, label: ddmm(p.date) ?? "" }));
+  const items = photos.map((p) => ({ url: p.url, label: fmtDate(p.date, locale, { style: "dayMonth" }) }));
 
   return (
     <section className="e-sec e-reveal">
@@ -33,7 +34,7 @@ export function PhotoGallery({ photos }: { photos: DashboardPhoto[] }) {
           {photos.map((photo, i) => (
             <button className="e-gi" key={`${photo.url}-${i}`} type="button" onClick={() => setOpen(i)}>
               <img src={photo.url} alt="" />
-              <span className="l">{ddmm(photo.date)}</span>
+              <span className="l">{fmtDate(photo.date, locale, { style: "dayMonth" })}</span>
             </button>
           ))}
         </div>

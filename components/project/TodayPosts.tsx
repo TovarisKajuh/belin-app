@@ -1,10 +1,12 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { fmtNumber } from "@/lib/format";
 import type { TodayPost } from "@/lib/reports-shared";
 
 // Shared today's-entries list, used by both the crew screen and the EPC view
 // (audit finding M5), so the post markup lives in one place.
 export async function TodayPosts({ posts }: { posts: TodayPost[] }) {
   const t = await getTranslations("crew");
+  const locale = await getLocale();
   if (posts.length === 0) return <p className="b-sub">{t("noPostsYet")}</p>;
 
   return (
@@ -22,7 +24,7 @@ export async function TodayPosts({ posts }: { posts: TodayPost[] }) {
             {post.author && <div className="b-sub b-author">{post.author}</div>}
             {post.quantities.map((q, i) => (
               <div key={i} className="b-sub">
-                {q.name}: {q.qty} {q.unit}
+                {q.name}: {fmtNumber(q.qty, locale)} {q.unit}
               </div>
             ))}
             {post.note && (

@@ -1,7 +1,8 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { fmtDate } from "@/lib/format";
 import { formatMoney } from "@/lib/po-shared";
 import type { InvoiceView } from "@/lib/invoice-view";
 import {
@@ -35,7 +36,7 @@ export function InvoiceCard({
   accountantEmail: string | null;
 }) {
   const t = useTranslations("invoice");
-  const format = useFormatter();
+  const uiLocale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +45,7 @@ export function InvoiceCard({
 
   const day = (value: string | null) =>
     value
-      ? format.dateTime(new Date(value), { day: "2-digit", month: "2-digit", year: "numeric" })
+      ? fmtDate(value, uiLocale)
       : "";
 
   const run = (work: () => Promise<unknown>) => {

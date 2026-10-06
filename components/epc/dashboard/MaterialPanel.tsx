@@ -1,7 +1,7 @@
 import { getTranslations, getLocale } from "next-intl/server";
 import type { MaterialPanelData } from "@/lib/data/epc-dashboard";
-import { ddmm } from "@/lib/dashboard-shared";
-import { hhmm } from "@/lib/project-time";
+import { fmtDate, fmtNumber } from "@/lib/format";
+import { hhmm, projectZone } from "@/lib/project-time";
 import { MaterialDocs } from "./MaterialDocs";
 import { AddMaterialItem } from "./AddMaterialItem";
 
@@ -21,7 +21,7 @@ export async function MaterialPanel({
 }) {
   const t = await getTranslations("dashboard.material");
   const locale = await getLocale();
-  const nf = new Intl.NumberFormat(locale);
+  const nf = { format: (n: number) => fmtNumber(n, locale) };
 
   const latest = material.latest;
   const byId = new Map(material.items.map((i) => [i.id, i]));
@@ -72,7 +72,7 @@ export async function MaterialPanel({
       {latest !== null && (
         <>
           <div className="mp-meta">
-            {t("checkedOn", { date: ddmm(latest.checkedAt) ?? "", time: hhmm(latest.checkedAt, country) })}
+            {t("checkedOn", { date: fmtDate(latest.checkedAt, locale, { style: "dayMonth", timeZone: projectZone(country) }), time: hhmm(latest.checkedAt, country) })}
             {latest.note && (
               <>
                 {" · "}

@@ -1,7 +1,8 @@
 "use client";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { fmtDate, fmtNumber } from "@/lib/format";
 import { PhotoCapture } from "./PhotoCapture";
 import { createBrowserClient } from "@/lib/supabase/client";
 import {
@@ -19,7 +20,7 @@ import {
   type MaterialCheckStatus,
   type CheckDraft,
 } from "@/lib/materials-shared";
-import { hhmm } from "@/lib/project-time";
+import { hhmm, projectZone } from "@/lib/project-time";
 
 const STATUSES: MaterialCheckStatus[] = ["present", "partial", "missing"];
 
@@ -43,6 +44,7 @@ export function MaterialCheck({
     ? submitMaterialCheckByToken
     : submitMaterialCheckBySession;
   const t = useTranslations("crew.material");
+  const locale = useLocale();
   const tCrew = useTranslations("crew");
   const router = useRouter();
 
@@ -185,7 +187,7 @@ export function MaterialCheck({
     const shortfall = latest.items.filter((i) => i.status !== "present").length;
     const empty = latest.items.length === 0;
     const when = t("checkedOn", {
-      date: latest.checkedAt.slice(8, 10) + "." + latest.checkedAt.slice(5, 7),
+      date: fmtDate(latest.checkedAt, locale, { style: "dayMonth", timeZone: projectZone(country) }),
       time: hhmm(latest.checkedAt, country),
     });
     return (
@@ -252,7 +254,7 @@ export function MaterialCheck({
                       {isNovo(item.id, item.updatedAt) && <span className="mc-badge">{t("newBadge")}</span>}
                     </div>
                     <div className="mc-qty">
-                      {item.qty} {item.unit}
+                      {fmtNumber(item.qty, locale)} {item.unit}
                     </div>
                   </div>
                   <div className="mc-seg" role="radiogroup" aria-label={item.name}>

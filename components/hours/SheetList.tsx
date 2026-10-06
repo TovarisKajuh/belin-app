@@ -1,7 +1,8 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { fmtDate, fmtNumber } from "@/lib/format";
 import {
   effectiveStatus,
   workingDaysLeft,
@@ -42,7 +43,7 @@ export function SheetList({
   sheets: HourSheet[];
 }) {
   const t = useTranslations("hours");
-  const format = useFormatter();
+  const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +65,7 @@ export function SheetList({
   };
 
   const day = (value: string | null) =>
-    value ? format.dateTime(new Date(value), { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+    value ? fmtDate(value, locale) : "";
 
   const statusLabel = (status: SheetStatus) =>
     status === "deemed_approved" ? t("deemed") : t(`status.${status}`);
@@ -110,7 +111,7 @@ export function SheetList({
               <li key={sheet.id} className={`hr-sheet s-${status}`}>
                 <div className="ip-head">
                   <span className="ip-kind">
-                    {t("sheetNo", { number: sheet.number })} · {t("total", { hours: sheet.totalHours })}
+                    {t("sheetNo", { number: sheet.number })} · {t("total", { hours: fmtNumber(sheet.totalHours, locale) })}
                   </span>
                   <span className={`hr-badge s-${status}`}>{statusLabel(status)}</span>
                 </div>
@@ -151,9 +152,9 @@ export function SheetList({
                   <ul className="hr-lines">
                     {sheet.lines.map((line) => (
                       <li key={line.id}>
-                        <span className="hr-l-date">{line.workDate.slice(8, 10)}.{line.workDate.slice(5, 7)}</span>
+                        <span className="hr-l-date">{fmtDate(line.workDate, locale, { style: "dayMonth" })}</span>
                         <span className="hr-l-desc">{line.description}</span>
-                        <span className="hr-l-h">{line.hours} h</span>
+                        <span className="hr-l-h">{fmtNumber(line.hours, locale)} h</span>
                       </li>
                     ))}
                   </ul>

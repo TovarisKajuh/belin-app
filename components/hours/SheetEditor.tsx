@@ -1,7 +1,8 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { fmtDate, fmtNumber } from "@/lib/format";
 import type { HourSheet } from "@/lib/hours-view";
 import {
   addLineAction,
@@ -36,6 +37,7 @@ export function SheetEditor({
   onSubmitSheet: () => void;
 }) {
   const t = useTranslations("hours");
+  const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -65,10 +67,10 @@ export function SheetEditor({
         {sheet.lines.map((line) => (
           <li key={line.id}>
             <span className="hr-l-date">
-              {line.workDate.slice(8, 10)}.{line.workDate.slice(5, 7)}
+              {fmtDate(line.workDate, locale, { style: "dayMonth" })}
             </span>
             <span className="hr-l-desc">{line.description}</span>
-            <span className="hr-l-h">{line.hours} h</span>
+            <span className="hr-l-h">{fmtNumber(line.hours, locale)} h</span>
             <button
               type="button"
               className="po-x"
@@ -117,7 +119,7 @@ export function SheetEditor({
               >
                 −
               </button>
-              <span className="b-step-val">{hours}</span>
+              <span className="b-step-val">{fmtNumber(hours, locale)}</span>
               <button
                 type="button"
                 className="b-step-btn"

@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { fmtDate } from "@/lib/format";
 import {
   requestVaultUploadAction,
   addVaultDocAction,
@@ -16,6 +17,7 @@ import type { VaultDoc } from "@/lib/data/org-settings";
 // expires first and says so in colour before anyone has to read a date.
 export function VaultPanel({ docs, today }: { docs: VaultDoc[]; today: string }) {
   const t = useTranslations("vault");
+  const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [busy, setBusy] = useState(false);
@@ -151,7 +153,7 @@ export function VaultPanel({ docs, today }: { docs: VaultDoc[]; today: string })
                     </div>
                     <div className="vt-meta">
                       {t(`types.${doc.type}`)}
-                      {doc.validUntil ? ` · ${t("validUntil")} ${doc.validUntil}` : ""}
+                      {doc.validUntil ? ` · ${t("validUntil")} ${fmtDate(doc.validUntil, locale)}` : ""}
                     </div>
                   </div>
                   {state !== "none" && state !== "valid" && (
