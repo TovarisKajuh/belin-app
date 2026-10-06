@@ -126,7 +126,10 @@ export async function requestMagicLink(
   // path, without detaching a promise the serverless runtime could freeze.
   const to = person.email;
   after(async () => {
-    await sendEmail({ to, kind: "login", projectId: null, subject: t("loginSubject"), html });
+    const result = await sendEmail({ to, kind: "login", projectId: null, subject: t("loginSubject"), html });
+    // Loud on purpose: on 05.10.2026 no login link had left for days and the
+    // form kept saying "sent". The answer to the user stays the same.
+    if (!result.sent) console.error(`[email] login link NOT delivered: ${result.reason}`);
   });
 
   return { sent: true };

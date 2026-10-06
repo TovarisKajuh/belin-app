@@ -1,7 +1,8 @@
 {
   "common": {
     "appName": "Belin",
-    "tagline": "Collaboration between EPCs and installation crews"
+    "tagline": "Collaboration between EPCs and installation crews",
+    "sendFailed": "Sending failed. Please try again in a few minutes."
   },
   "project": {
     "roleEpc": "EPC view",

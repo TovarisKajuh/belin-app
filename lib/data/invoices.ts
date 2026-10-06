@@ -406,9 +406,13 @@ export async function shareToAccountant(
   const bytes = Buffer.from(await file.data.arrayBuffer());
 
   // One conditional update: a second click cannot send the same invoice twice.
+  // It is a CLAIM, not the record of delivery: if the mail fails below, it is
+  // released so the subcontractor can try again and the screen never says the
+  // accountant has an invoice that never left.
+  const markedAt = new Date().toISOString();
   const { data: marked } = await db
     .from("invoices")
-    .update({ sent_to_accountant_at: new Date().toISOString(), accountant_email: to })
+    .update({ sent_to_accountant_at: markedAt, accountant_email: to })
     .eq("id", invoiceId)
     .is("sent_to_accountant_at", null)
     .select("id")
@@ -430,7 +434,7 @@ export async function shareToAccountant(
     `${appBaseUrl() ?? "https://getbelin.com"}/${locale}/app/${projectId}/final`,
   );
 
-  await sendEmail({
+  const sent = await sendEmail({
     to,
     kind: "invoice-accountant",
     projectId,
@@ -438,6 +442,14 @@ export async function shareToAccountant(
     html,
     attachments: [{ filename: `${invoice.number}.pdf`, content: bytes }],
   });
+  if (!sent.sent) {
+    await db
+      .from("invoices")
+      .update({ sent_to_accountant_at: null })
+      .eq("id", invoiceId)
+      .eq("sent_to_accountant_at", markedAt);
+    throw new Error("common.sendFailed");
+  }
 
   await emitEventDeferred({
     projectId,

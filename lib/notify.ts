@@ -258,18 +258,19 @@ async function sendEmails(
       `${base}/${project.language}/app/${project.id}`,
     );
 
-    await sendEmail({
+    const result = await sendEmail({
       to: person.email,
       kind: `notify:${kind}`,
       projectId: project.id,
       subject,
       html,
-    }).catch(() => {});
+    });
+    if (!result.sent && result.reason !== "demo-domain") logFailure("email", `${kind}: ${result.reason}`);
   }
 }
 
+// Logs in every environment: a notification that silently fails in production
+// is exactly the failure that went unnoticed for days in October 2026.
 function logFailure(stage: string, message: string): void {
-  if (process.env.NODE_ENV !== "production") {
-    console.error(`[notify] ${stage}: ${message}`);
-  }
+  console.error(`[notify] ${stage}: ${message}`);
 }

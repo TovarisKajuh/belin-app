@@ -1,7 +1,8 @@
 {
   "common": {
     "appName": "Belin",
-    "tagline": "Zusammenarbeit zwischen EPC und Montageteams"
+    "tagline": "Zusammenarbeit zwischen EPC und Montageteams",
+    "sendFailed": "Der Versand ist fehlgeschlagen. Bitte versuchen Sie es in ein paar Minuten erneut."
   },
   "project": {
     "roleEpc": "EPC-Ansicht",

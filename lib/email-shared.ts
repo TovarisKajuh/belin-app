@@ -70,3 +70,8 @@ export function renderEmail(
   </tr>
 </table>`;
 }
+
+/** The domain of a From address, lowercased: what Resend must report as verified. */
+export function senderDomain(from: string): string {
+  return (from.match(/@([A-Za-z0-9.-]+)/)?.[1] ?? "").toLowerCase();
+}

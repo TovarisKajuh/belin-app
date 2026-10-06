@@ -1,7 +1,8 @@
 {
   "common": {
     "appName": "Belin",
-    "tagline": "Sodelovanje med EPC in monterskimi ekipami"
+    "tagline": "Sodelovanje med EPC in monterskimi ekipami",
+    "sendFailed": "Pošiljanje ni uspelo. Poskusite znova čez nekaj minut."
   },
   "project": {
     "roleEpc": "Pogled EPC",
