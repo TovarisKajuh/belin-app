@@ -40,4 +40,9 @@ describe("demo seed identity", () => {
       );
     expect(ibans.filter((iban) => mod97(iban) !== 1)).toEqual([]);
   });
+
+  it("writes photos to a new path on every run, never with upsert", () => {
+    expect(seed).toMatch(/seed\/\$\{RUN_ID\}\/photo-/);
+    expect(seed).not.toMatch(/upsert:\s*true/);
+  });
 });

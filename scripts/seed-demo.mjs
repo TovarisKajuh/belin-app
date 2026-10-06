@@ -334,6 +334,21 @@ const PAST = [
 const NOT_STARTED = { n: 5, name: "Trgovski center Domžale", city: "Domžale",
   street: "Ljubljanska cesta 102", zip: "1230", kwp: 265.2, modules: 589, roof: "Ravna streha" };
 
+const SITE_PHOTOS = path.join(process.cwd(), "assets", "marketing", "site");
+/**
+ * One site photo exactly as a phone would upload it: EXIF orientation applied,
+ * at most 1600 px on the long side, JPEG quality 80 (components/crew/PhotoCapture.tsx
+ * MAX_DIM and QUALITY). sharp drops all metadata unless asked, so no camera GPS
+ * position leaves with the file.
+ */
+async function sitePhoto(file) {
+  return sharp(readFileSync(path.join(SITE_PHOTOS, file)))
+    .rotate()
+    .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 80, mozjpeg: true })
+    .toBuffer({ resolveWithObject: true });
+}
+
 // ---- purge, then (dry run) report and stop ----
 const purged = await purgeDemo(db, { dry: DRY });
 console.log(`purge${DRY ? " (dry run, nothing deleted)" : ""}:`, purged);
@@ -348,7 +363,14 @@ if (DRY) {
   console.log(`sheet 2 submitted ${SHEET2_SUBMITTED}, deadline ${SHEET2_DEADLINE}, countdown ${countdown}`);
   console.log(`blocked access ${OBSTRUCTION_DAY}, rain ${dates[RAIN_INDEX]}`);
   console.log(`Dan 1 starts ${startPlannedStart}, its order sent ${PO_START_SENT}`);
-  // [2.2b] dry photo render goes here
+  const dryDir = path.join(os.tmpdir(), "belin-seed-dry");
+  mkdirSync(dryDir, { recursive: true });
+  for (const [i, p] of PHOTO_PLAN.entries()) {
+    const { data, info } = await sitePhoto(p.file);
+    writeFileSync(path.join(dryDir, `photo-${i}-day${p.entry}.jpg`), data);
+    console.log(`photo ${i}: ${p.file} -> day ${p.entry} (${dates[p.entry]}), ${info.width}x${info.height}, ${Math.round(data.length / 1024)} KB`);
+  }
+  console.log(`dry photos written to ${dryDir}`);
   console.log("Dry run complete. Nothing was written to the database or to Storage.");
   process.exit(0);
 }
@@ -433,7 +455,19 @@ await upsert(
   "entry_id,scope_item_id",
 );
 
-// [2.2b] site photos upload goes here
+const photoRows = [];
+for (const [i, p] of PHOTO_PLAN.entries()) {
+  const { data, info } = await sitePhoto(p.file);
+  const storagePath = `${PROJECT}/seed/${RUN_ID}/photo-${i}.jpg`;
+  const { error } = await db.storage.from("photos").upload(storagePath, data, { contentType: "image/jpeg", upsert: false });
+  if (error) throw new Error(`photos: ${p.file}: ${error.message}`);
+  photoRows.push({
+    id: `88888888-8888-4888-8888-8888888888${String(i).padStart(2, "0")}`,
+    entry_id: entryId(p.entry), storage_path: storagePath, sort_order: i,
+    width: info.width, height: info.height, taken_at: at(dates[p.entry], `${String(9 + i).padStart(2, "0")}:30`),
+  });
+}
+await insertRows("entry_photos", photoRows);
 
 // ---- Stückliste and the delivery check ----
 // Real hardware for a 245,7 kWp flat-roof job, so the check reads like a real delivery.
