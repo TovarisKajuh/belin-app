@@ -2,6 +2,8 @@
 
 One line per significant decision: what, why, when.
 
+- 2026-10-06: The naročilnica prints the režijske ure clause (six days after submission, Monday to Saturday except the site country's non-working days, deemed approved) and a contract-basis line by site country (SI: OZ and PGU 2020; DE: VOB/B; AT: ÖNORM B 2110). Reason: D9 makes the deemed approval a term the subcontractor accepts; PGU uzanca 10 counts calendar days unless agreed, so the count is spelled out, and it names the dela prosti dnevi because that is the list the clock skips (tests/hours-clause.test.ts).
+
 - 2026-10-06: The demo client is the invented "Svetlogradnja d.o.o." (Dunajska cesta 151, 1000 Ljubljana, SI53814266), not "Lumora Energija d.o.o.". Reason: the Task 2.2a re-check on bizi.si found a real active LUMORA d.o.o. in Ljubljana; Svetlogradnja has no bizi.si result and the VAT id is not in VIES.
 
 - 2026-10-06: AVESOL keeps its public register address and VAT id in the demo, with an invented IBAN that passes the checksum (SI56 0201 0001 2345 641), never its real account; every invented IBAN in the seed must pass mod-97. Reason: founder default to question 0.6 r; an account failing the check is the first thing an accountant's software rejects.

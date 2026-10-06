@@ -44,7 +44,7 @@ describe("body text line spacing", () => {
   }, 60000);
 
   it("the naročilnica acceptance paragraph is single spaced in the real template", async () => {
-    const s = poStrings("sl");
+    const s = poStrings("sl", "si");
     const buffer = await renderDocument(
       NarocilnicaDocument({
         number: 1,
