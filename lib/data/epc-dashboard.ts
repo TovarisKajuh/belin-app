@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import type { ProjectActor } from "@/lib/actor";
 import { listIncidents, type IncidentRow } from "@/lib/data/incidents";
 import { listRequests, type RequestRow } from "@/lib/data/requests";
@@ -148,8 +149,11 @@ export async function getEpcDashboard(actor: ProjectActor): Promise<EpcDashboard
       .order("sort_order"),
   ]);
 
-  if (entriesRes.error || qtyRes.error || photoRes.error || matItemsRes.error || matCheckRes.error)
-    return null;
+  throwIfReadFailed(entriesRes.error, "getEpcDashboard.entries");
+  throwIfReadFailed(qtyRes.error, "getEpcDashboard.quantities");
+  throwIfReadFailed(photoRes.error, "getEpcDashboard.photos");
+  throwIfReadFailed(matItemsRes.error, "getEpcDashboard.materialItems");
+  throwIfReadFailed(matCheckRes.error, "getEpcDashboard.materialCheck");
 
   // A roof read failure degrades to no roof panel rather than killing the whole
   // dashboard: it is context, not the point of the screen.

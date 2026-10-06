@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import { isUuid } from "@/lib/actor-shared";
 import type { ProjectActor } from "@/lib/actor";
 import { emitEventDeferred } from "@/lib/notify";
@@ -52,11 +53,12 @@ export async function getHoursPageData(
 ): Promise<HoursPageData | null> {
   const db = createAdminClient();
 
-  const { data: project } = await db
+  const { data: project, error } = await db
     .from("projects")
     .select("id, country")
     .eq("id", actor.projectId)
     .maybeSingle();
+  throwIfReadFailed(error, "getHoursPageData.project");
   if (!project) return null;
 
   // Deemed approvals are written down before anything is shown, so the page and
@@ -75,13 +77,14 @@ export async function getHoursPageData(
 
 export async function listSheets(actor: ProjectActor): Promise<HourSheet[]> {
   const db = createAdminClient();
-  const { data } = await db
+  const { data, error } = await db
     .from("hour_sheets")
     .select(
       "id, number, status, submitted_at, deadline_at, decided_at, people:decided_by_person (full_name), hour_sheet_lines (id, work_date, hours, description, person_id, people (full_name))",
     )
     .eq("project_id", actor.projectId)
     .order("number", { ascending: false });
+  throwIfReadFailed(error, "listSheets");
 
   return (data ?? []).map((row) => {
     const lines = (row.hour_sheet_lines ?? [])

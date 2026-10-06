@@ -2,17 +2,12 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Wordmark } from "@/components/landing/Wordmark";
 
-// The generic not-found for every route under a locale: an unknown path, a
-// project that is not yours (deliberately indistinguishable from one that does
-// not exist), a tab your role does not see. It no longer borrows the
-// project-link sentence ("this link was revoked"): that copy now lives only in
-// app/[locale]/p/[token]/not-found.tsx, where it is true.
-//
-// "Home" is /<locale>: the landing forwards anyone with a session to /app, so
-// one link is the way back for a signed-in office and a stranger alike.
-export default async function NotFound() {
+// Reached only when a project link really does not resolve: a missing or
+// revoked token. An outage throws past this to the error page.
+export default async function ProjectLinkNotFound() {
   const locale = await getLocale();
   const t = await getTranslations("errors");
+  const tProject = await getTranslations("project");
   return (
     <main className="belin-dark lp">
       <div className="e-grain" aria-hidden />
@@ -24,9 +19,9 @@ export default async function NotFound() {
           <section className="lp-card" aria-labelledby="nf-title">
             <div className="lp-card-glow" aria-hidden />
             <h1 id="nf-title" className="lp-card-title">
-              {t("notFoundTitle")}
+              {tProject("notFoundTitle")}
             </h1>
-            <p className="lp-card-sub">{t("notFoundBody")}</p>
+            <p className="lp-card-sub">{tProject("notFoundBody")}</p>
             <Link className="lp-enter er-home" href={`/${locale}`}>
               {t("home")}
             </Link>

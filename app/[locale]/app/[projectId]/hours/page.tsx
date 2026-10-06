@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { resolveActorFromSession } from "@/lib/auth";
 import { requireProjectActor } from "@/lib/actor";
 import { isUuid } from "@/lib/actor-shared";
+import { rethrowIfUnavailable } from "@/lib/db-error";
 import { getHoursPageData } from "@/lib/data/hours";
 import { getProjectCore } from "@/lib/data/project-core";
 import { CommandBar } from "@/components/project/CommandBar";
@@ -43,7 +44,8 @@ export default async function HoursPage({
       projectActor.role === "epc" &&
       ["admin", "owner", "bauleiter"].includes(actor.role);
     data = await getHoursPageData(projectActor, canDecide);
-  } catch {
+  } catch (err) {
+    rethrowIfUnavailable(err);
     notFound();
   }
   if (!data || !core) notFound();

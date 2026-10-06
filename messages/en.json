@@ -1263,5 +1263,15 @@
     "crewFailed": "The change could not be saved.",
     "subLinkReady": "The subcontractor link is ready.",
     "copied": "Link copied."
+  },
+  "errors": {
+    "title": "Temporary error",
+    "body": "The page could not be loaded just now. Your data is safe. Please try again in a few seconds.",
+    "retry": "Try again",
+    "home": "Go to the home page",
+    "code": "Error code: {digest}",
+    "notFoundTitle": "This page does not exist",
+    "notFoundBody": "The link may be old, or the address may contain a typo.",
+    "loading": "Loading"
   }
 }

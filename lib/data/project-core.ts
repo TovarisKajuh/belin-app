@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import type { ProjectActor } from "@/lib/actor";
 import { projectProgress } from "@/lib/progress";
 import { projectToday } from "@/lib/project-time";
@@ -60,15 +61,17 @@ export async function getProjectCore(actor: ProjectActor): Promise<ProjectCore |
     db.rpc("scope_installed", { p_project: actor.projectId }),
   ]);
 
-  if (projectRes.error || !projectRes.data) return null;
-  if (scopeRes.error || installedRes.error) return null;
+  throwIfReadFailed(projectRes.error, "getProjectCore.project");
+  throwIfReadFailed(scopeRes.error, "getProjectCore.scope");
+  throwIfReadFailed(installedRes.error, "getProjectCore.installed");
+  if (!projectRes.data) return null;
 
   const installedByItem = new Map<string, number>();
   for (const row of installedRes.data ?? []) {
     installedByItem.set(row.scope_item_id, Number(row.installed));
   }
 
-  const scope: ScopeItemStatus[] = scopeRes.data.map((s) => ({
+  const scope: ScopeItemStatus[] = (scopeRes.data ?? []).map((s) => ({
     id: s.id,
     name: s.name,
     unit: s.unit,

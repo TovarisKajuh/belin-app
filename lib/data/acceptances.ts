@@ -1,6 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import { isUuid } from "@/lib/actor-shared";
 import { requireOfficeActor, requireProjectActor, type Actor } from "@/lib/actor";
 import { emitEventDeferred } from "@/lib/notify";
@@ -53,7 +54,7 @@ export async function getAcceptance(
   await requireProjectActor(actor, projectId);
   const db = createAdminClient();
 
-  const { data } = await db
+  const { data, error } = await db
     .from("acceptances")
     .select(
       "id, kind, status, conducted_at, attendees, declaration, penalty_reserved, warranty_start, epc_signer_name, sub_signer_name, epc_signature_path, sub_signature_path, note, acceptance_defects (id, description, due_date, agreement, photo_path, sort_order)",
@@ -62,6 +63,8 @@ export async function getAcceptance(
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+  // A failed read must not offer to start an acceptance that already exists.
+  throwIfReadFailed(error, "getAcceptance");
   if (!data) return null;
 
   // The site's calendar, not the server's: the warranty may not start before

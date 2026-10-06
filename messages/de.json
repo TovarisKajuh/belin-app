@@ -1263,5 +1263,15 @@
     "crewFailed": "Die Änderung konnte nicht gespeichert werden.",
     "subLinkReady": "Der Link für den Nachunternehmer ist bereit.",
     "copied": "Link kopiert."
+  },
+  "errors": {
+    "title": "Vorübergehender Fehler",
+    "body": "Die Seite konnte gerade nicht geladen werden. Ihre Daten sind sicher. Bitte versuchen Sie es in ein paar Sekunden erneut.",
+    "retry": "Erneut versuchen",
+    "home": "Zur Startseite",
+    "code": "Fehlercode: {digest}",
+    "notFoundTitle": "Diese Seite gibt es nicht",
+    "notFoundBody": "Der Link ist vielleicht veraltet, oder die Adresse enthält einen Tippfehler.",
+    "loading": "Wird geladen"
   }
 }

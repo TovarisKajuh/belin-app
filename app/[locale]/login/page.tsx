@@ -39,7 +39,8 @@ export default async function Login({
   // Door persona, or a project-link session, is not an account of its own: it
   // gets the form, so the "Prijavite se" links from the signup errors work on
   // the buyer's phone. Only a real person session goes to the app.
-  const actor = await resolveActorFromSession();
+  // An outage must not take this form down with it: the visitor simply stays.
+  const actor = await resolveActorFromSession().catch(() => null);
   if (actor?.kind === "person" && personaForPersonId(actor.personId) === null) redirect(`/${locale}/app`);
 
   const { next } = await searchParams;

@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { resolveActorFromSession } from "@/lib/auth";
 import { requireProjectActor } from "@/lib/actor";
 import { isUuid } from "@/lib/actor-shared";
+import { rethrowIfUnavailable } from "@/lib/db-error";
 import { getCrewHome } from "@/lib/data/reports";
 import { getMaterialState } from "@/lib/data/materials";
 import { getEpcDashboard } from "@/lib/data/epc-dashboard";
@@ -37,7 +38,8 @@ export default async function ProjectPage({
   let project;
   try {
     project = await requireProjectActor(actor, projectId);
-  } catch {
+  } catch (err) {
+    rethrowIfUnavailable(err);
     // Not a party to this project. Deliberately indistinguishable from a
     // project that does not exist: otherwise this page would answer "which
     // project ids are real" for anyone who asks.

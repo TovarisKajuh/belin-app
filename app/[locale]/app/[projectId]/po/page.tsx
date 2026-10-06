@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 import { resolveActorFromSession } from "@/lib/auth";
 import { isUuid } from "@/lib/actor-shared";
+import { rethrowIfUnavailable } from "@/lib/db-error";
 import { getPoPageData } from "@/lib/data/purchase-orders";
 import { getProjectCore } from "@/lib/data/project-core";
 import { requireProjectActor } from "@/lib/actor";
@@ -43,7 +44,8 @@ export default async function PoPage({
     if (actor.kind === "person" && actor.role === "crew") notFound();
     data = await getPoPageData(actor, projectId);
     core = await getProjectCore(projectActor);
-  } catch {
+  } catch (err) {
+    rethrowIfUnavailable(err);
     notFound();
   }
   if (!data || !core) notFound();
