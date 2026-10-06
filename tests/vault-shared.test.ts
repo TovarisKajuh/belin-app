@@ -3,6 +3,7 @@ import {
   expiryState,
   extensionForMime,
   isVaultType,
+  requiredVaultTypes,
   VAULT_TYPES,
   EXPIRY_WARN_DAYS,
 } from "@/lib/vault-shared";
@@ -84,5 +85,16 @@ describe("extensionForMime", () => {
     expect(extensionForMime("application/x-msdownload")).toBeNull();
     expect(extensionForMime("text/html")).toBeNull();
     expect(extensionForMime("")).toBeNull();
+  });
+});
+
+// The Slovenian demo listed the German Freistellungsbescheinigung as missing
+// (production verification, 2026-10-06): it is required on German sites only.
+describe("requiredVaultTypes", () => {
+  it("asks for the Freistellungsbescheinigung on a German site only", () => {
+    expect(requiredVaultTypes("de")).toEqual(["a1", "freistellungsbescheinigung"]);
+    expect(requiredVaultTypes("si")).toEqual(["a1"]);
+    expect(requiredVaultTypes("at")).toEqual(["a1"]);
+    expect(requiredVaultTypes(null)).toEqual(["a1"]);
   });
 });

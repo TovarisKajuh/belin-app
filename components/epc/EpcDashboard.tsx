@@ -173,7 +173,7 @@ export async function EpcDashboard({
 
         <RoofPanel roofs={data.roofs} />
 
-        <CompliancePanel docs={data.compliance} subName={sub} />
+        <CompliancePanel docs={data.compliance} subName={sub} country={core.country} />
 
         <StatRow projection={proj} photoCount={data.photoCount} delivered={core.status === "finished"} />
 
