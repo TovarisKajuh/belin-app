@@ -33,7 +33,7 @@ export async function Story({ locale }: { locale: string }) {
             <p className="lp-aside">{t("dropAside")}</p>
           </div>
           <div className="lp-sec-media">
-            <Shot src="/landing/wizard-review.webp" caption={t("dropShot")} ratio="1500 / 1354" priority />
+            <Shot src="/landing/wizard-review-r1.webp" caption={t("dropShot")} ratio="1500 / 1146" priority />
           </div>
         </div>
       </section>
@@ -103,9 +103,9 @@ export async function Story({ locale }: { locale: string }) {
               Captions became alt text: with the actual pages on screen, a label
               under each one is describing what the reader is already looking at. */}
           <div className="lp-sec-media lp-papers">
-            <Image src="/landing/doc-report.webp" alt={t("paperDoc1")} width={920} height={852} sizes="(max-width: 900px) 78vw, 400px" />
-            <Image src="/landing/doc-abnahme.webp" alt={t("paperDoc2")} width={920} height={818} sizes="(max-width: 900px) 78vw, 450px" />
-            <Image src="/landing/doc-invoice.webp" alt={t("paperDoc3")} width={920} height={852} sizes="(max-width: 900px) 78vw, 400px" />
+            <Image src="/landing/doc-report-r1.webp" alt={t("paperDoc1")} width={920} height={852} sizes="(max-width: 900px) 78vw, 400px" />
+            <Image src="/landing/doc-abnahme-r1.webp" alt={t("paperDoc2")} width={920} height={818} sizes="(max-width: 900px) 78vw, 450px" />
+            <Image src="/landing/doc-invoice-r1.webp" alt={t("paperDoc3")} width={920} height={852} sizes="(max-width: 900px) 78vw, 400px" />
           </div>
           <p className="lp-aside lp-aside--center">{t("paperAside")}</p>
         </div>
