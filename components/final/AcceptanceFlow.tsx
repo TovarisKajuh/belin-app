@@ -51,6 +51,13 @@ export function AcceptanceFlow({
   const [defectDue, setDefectDue] = useState("");
   const [defectAgreement, setDefectAgreement] = useState<"agreed" | "disputed">("agreed");
 
+  const messageFor = (err: unknown): string => {
+    const key = err instanceof Error ? err.message : "";
+    if (key.startsWith("final.err.")) return t(`err.${key.slice("final.err.".length)}`);
+    if (key === "final.alreadySigned") return t("alreadySigned");
+    return t("conflict");
+  };
+
   const run = (work: () => Promise<unknown>) => {
     setError(null);
     startTransition(async () => {
@@ -58,10 +65,7 @@ export function AcceptanceFlow({
         await work();
         router.refresh();
       } catch (err) {
-        const key = err instanceof Error ? err.message : "";
-        if (key.startsWith("final.err.")) setError(t(`err.${key.slice("final.err.".length)}`));
-        else if (key === "final.alreadySigned") setError(t("alreadySigned"));
-        else setError(t("conflict"));
+        setError(messageFor(err));
       }
     });
   };
@@ -69,6 +73,25 @@ export function AcceptanceFlow({
   const save = (payload: Parameters<typeof saveAcceptanceStepAction>[2]) => {
     if (!acceptance) return;
     run(() => saveAcceptanceStepAction(projectId, acceptance.id, payload));
+  };
+
+  // One upload per signature, when the signer confirms. Returns whether it was
+  // stored, so the pad only locks once the server holds the image.
+  const saveSignature = async (side: "epc" | "sub", png: Blob): Promise<boolean> => {
+    if (!acceptance) return false;
+    setError(null);
+    try {
+      // Task 1.5 (ActionResult and unwrap) is not merged today: the action
+      // still THROWS on failure, so a bare await rejects and the pad stays
+      // open. When 1.5 lands, this line becomes unwrap(await ...), or the pad
+      // would lock on "Podpis je shranjen." while the server holds nothing.
+      await saveSignatureAction(projectId, acceptance.id, side, await blobToBase64(png));
+      router.refresh();
+      return true;
+    } catch (err) {
+      setError(messageFor(err));
+      return false;
+    }
   };
 
   // A prefilled default is not a stored value. The sub signer's name is
@@ -262,6 +285,10 @@ export function AcceptanceFlow({
         <p className="fn-note">{t("penaltyHint")}</p>
       </div>
 
+      {/* The pads are NOT disabled while another field saves (pending): a
+          signer who starts right after ticking a box would otherwise lose the
+          strokes drawn during that round trip, silently. Each pad uploads on its
+          own confirm, independent of the field saves. */}
       <div className="ac-signs">
         <div>
           <label className="hr-f hr-f-wide">
@@ -275,12 +302,8 @@ export function AcceptanceFlow({
           </label>
           <SignaturePad
             name={acceptance.epcSignerName ?? ""}
-            onCapture={(png) => {
-              if (!png) return;
-              run(async () =>
-                saveSignatureAction(projectId, acceptance.id, "epc", await blobToBase64(png)),
-              );
-            }}
+            saved={acceptance.hasEpcSignature}
+            onConfirm={(png) => saveSignature("epc", png)}
           />
         </div>
 
@@ -297,12 +320,8 @@ export function AcceptanceFlow({
           </label>
           <SignaturePad
             name={acceptance.subSignerName ?? defaultSubSignerName ?? ""}
-            onCapture={(png) => {
-              if (!png) return;
-              run(async () =>
-                saveSignatureAction(projectId, acceptance.id, "sub", await blobToBase64(png)),
-              );
-            }}
+            saved={acceptance.hasSubSignature}
+            onConfirm={(png) => saveSignature("sub", png)}
           />
         </div>
       </div>
@@ -311,11 +330,12 @@ export function AcceptanceFlow({
         <button
           type="button"
           className="b-btn"
-          disabled={pending}
+          disabled={pending || !acceptance.hasEpcSignature || !acceptance.hasSubSignature}
           onClick={() => run(() => signAcceptanceAction(projectId, acceptance.id))}
         >
           {t("signAndClose")}
         </button>
+        {!acceptance.hasEpcSignature || !acceptance.hasSubSignature ? <p className="fn-note">{t("signFirst")}</p> : null}
       </div>
     </div>
   );
