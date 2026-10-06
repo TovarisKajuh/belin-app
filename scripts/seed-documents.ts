@@ -16,6 +16,9 @@
 import { createClient } from "@supabase/supabase-js";
 import { createHash, randomUUID } from "node:crypto";
 import { renderPoPdf } from "@/lib/pdf/render-po";
+import { DEMO_PO_CURRENT, DEMO_PO_START } from "@/lib/demo/ids";
+
+const DRY = process.argv.includes("--dry-run");
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -27,9 +30,17 @@ if (!url || !key) {
 const db = createClient(url, key, { auth: { persistSession: false } });
 
 async function main(): Promise<void> {
+  if (DRY) {
+    console.log("seed-documents: dry run, naročilnice not rendered");
+    return;
+  }
+  // ONLY the two demo naročilnice. This used to select every sent or accepted
+  // order in the database, which in a shared database would one day re-render
+  // and re-hash a real customer's accepted, legally bound document.
   const { data: orders, error } = await db
     .from("purchase_orders")
     .select("id, project_id, number, status, accepted_by_name, accepted_at")
+    .in("id", [DEMO_PO_CURRENT, DEMO_PO_START])
     .in("status", ["sent", "accepted"]);
 
   if (error) throw new Error(`Could not read purchase orders: ${error.message}`);
@@ -51,24 +62,13 @@ async function main(): Promise<void> {
 
     const { buffer, sha256 } = await renderPoPdf(db, order.project_id, order.id, acceptance);
 
-    const path = `${order.project_id}/po/${order.id}.pdf`;
-
-    // Removed before uploading, AND the removal is waited for. Supabase's
-    // upsert reports success on an existing path while keeping the old bytes,
-    // and the delete is eventually consistent, so uploading straight after it
-    // races and silently keeps the previous file. Re-seeding then bound a hash
-    // matching nothing, which is exactly the failure this script exists to
-    // prevent. See docs/known-issues.md entry 2.
-    await db.storage.from("reports").remove([path]);
-    for (let attempt = 0; attempt < 10; attempt++) {
-      const probe = await db.storage.from("reports").download(path);
-      if (probe.error || !probe.data) break;
-      await new Promise((resolve) => setTimeout(resolve, 150));
-    }
+    // A NEW path on every run: the purge removed the old file, and Storage upsert
+    // on an existing path keeps the old bytes (docs/known-issues.md entry 2).
+    const path = `${order.project_id}/po/${order.id}-seed-${Date.now().toString(36)}.pdf`;
 
     const { error: uploadError } = await db.storage
       .from("reports")
-      .upload(path, buffer, { contentType: "application/pdf", upsert: true });
+      .upload(path, buffer, { contentType: "application/pdf", upsert: false });
     if (uploadError) throw new Error(`Could not store ${path}: ${uploadError.message}`);
 
     // The hash is taken over the bytes that were actually stored, which is the

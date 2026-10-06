@@ -1,113 +1,113 @@
+// The demo seed. It rewrites the demo world, and only the demo world, in the
+// one database that local development, the demo and production all share.
+//
+//   npm run seed       writes: guard, purge, the story, then seed:documents
+//   npm run seed:dry   reads only: runs the guard, prints what the purge would
+//                      delete and the dates the story would carry
+//
+// It runs under tsx (package.json), so it imports the app's own demo ids and
+// calendar rules instead of keeping copies that drift.
+
 import { createClient } from "@supabase/supabase-js";
 import sharp from "sharp";
+import {
+  DEMO_EPC_ORG as EPC_ORG,
+  DEMO_SUB_ORG as SUB_ORG,
+  DEMO_SUB_ORG_2 as SUB_ORG_2,
+  DEMO_SUB_ORG_3 as SUB_ORG_3,
+  DEMO_ORG_IDS,
+  DEMO_PROJECT_TRENUTNO as PROJECT,
+  DEMO_PROJECT_DAN1 as PROJECT_START,
+  DEMO_PERSON,
+  DEMO_TOKEN_IDS,
+  DEMO_PO_CURRENT as PO_CURRENT,
+  DEMO_PO_START as PO_START,
+  DEMO_SHEET_APPROVED as SHEET_APPROVED,
+  DEMO_SHEET_OPEN as SHEET_OPEN,
+  DEMO_CO_APPROVED as CO_APPROVED,
+} from "@/lib/demo/ids";
+import { purgeDemo } from "./seed-purge.mjs";
+
+const DRY = process.argv.includes("--dry-run");
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) {
-  console.error("Missing Supabase env vars. Run via: npm run seed");
+  console.error("Missing Supabase env vars. Run via: npm run seed (or npm run seed:dry)");
   process.exit(1);
 }
 const db = createClient(url, key, { auth: { persistSession: false } });
 
-const EPC_ORG = "11111111-1111-4111-8111-111111111111";
-const SUB_ORG = "22222222-2222-4222-8222-222222222222";
-// An EPC works with several subcontractors, and a subcontractor sees only its
-// own jobs. With one sub on every project both companies saw an identical book,
-// which reads as a bug and hides the whole point of the two sided model.
-const SUB_ORG_2 = "22222222-2222-4222-8222-222222222223";
-const SUB_ORG_3 = "22222222-2222-4222-8222-222222222224";
-// The founder's own company, deliberately separate from both demo companies.
+// The founder's own company. NOT demo: created once when missing, never
+// rewritten, never purged. The demo companies keep their staged projects; the
+// two never mix.
 const FOUNDER_ORG = "12121212-1212-4121-8121-121212121212";
-const PROJECT = "33333333-3333-4333-8333-333333333333";
+const PERSON_FOUNDER = "66666666-6666-4666-8666-666666666604";
+
 const SCOPE_UK = "44444444-4444-4444-8444-444444444401";
 const SCOPE_MODULES = "44444444-4444-4444-8444-444444444402";
 const SCOPE_DC = "44444444-4444-4444-8444-444444444403";
-const PERSON_EPC = "66666666-6666-4666-8666-666666666601";
-const PERSON_SUB = "66666666-6666-4666-8666-666666666602";
-const PERSON_SUB_ADMIN = "66666666-6666-4666-8666-666666666603";
-const PERSON_SUB_2 = "66666666-6666-4666-8666-666666666606";
-const PERSON_FOUNDER = "66666666-6666-4666-8666-666666666604";
-// The EPC office. A Bauleiter runs the site but does not sign orders, so the
-// demo company needs the person who does: without an admin on the EPC side
-// nobody can price a naročilnica, which is most of what an EPC buys Belin for.
-const PERSON_EPC_ADMIN = "66666666-6666-4666-8666-666666666605";
-const TOKEN_EPC = "77777777-7777-4777-8777-777777777701";
-const TOKEN_SUB = "77777777-7777-4777-8777-777777777702";
-
-// Second demo project: a job at day zero, nothing logged yet. It exists so the
-// founder can show, and test, what the app looks like at the start of a project
-// (empty log, no progress, material check still to do) and switch back to the
-// half-built state without destroying either.
-//
-// It carries its OWN name and site. It used to be a copy of Kranj, on the
-// theory that it would read as one project at two points in time. On the
-// project list it did not: it read as the same row printed twice.
-const PROJECT_START = "33333333-3333-4333-8333-333333333334";
 const SCOPE_START_UK = "44444444-4444-4444-8444-444444444411";
 const SCOPE_START_MODULES = "44444444-4444-4444-8444-444444444412";
 const SCOPE_START_DC = "44444444-4444-4444-8444-444444444413";
-const TOKEN_START_EPC = "77777777-7777-4777-8777-777777777703";
-const TOKEN_START_SUB = "77777777-7777-4777-8777-777777777704";
+
+const PERSON_EPC = DEMO_PERSON.bauleiter;
+const PERSON_SUB = DEMO_PERSON.crew;
+const PERSON_SUB_ADMIN = DEMO_PERSON.subOffice;
+const PERSON_SUB_2 = DEMO_PERSON.guest;
+const PERSON_EPC_ADMIN = DEMO_PERSON.epcAdmin;
+const [TOKEN_EPC, TOKEN_SUB, TOKEN_START_EPC, TOKEN_START_SUB] = DEMO_TOKEN_IDS;
 
 // ---------------------------------------------------------------------------
-// THE TRIPWIRE
+// THE GUARD
 //
-// One database serves local development, the demo and production, which is
-// fine while the only rows in it are these fixed demo UUIDs. It stops being
-// fine the day a real EPC has real projects in there: this script deletes and
-// rewrites, the runbook asks the founder to run it before every demo, and it
-// is two words long. Nothing else in the repo would stop it.
-//
-// So it refuses to run at all once an organization it does not recognise
-// exists, and says which one. The escape hatch is deliberately ugly to type
-// and impossible to run by accident or by habit.
-//
-// The real fix is a separate Supabase project for the demo. This is the guard
-// that has to hold until then.
+// The old tripwire refused to run once ANY organization it did not know
+// existed, which is to say the evening the first customer signs up, and its
+// only way out was a flag typed by habit. The rule is now the narrow true one:
+// refuse only when one of the FIXED demo ids belongs to an organization the
+// database does not mark as demo. Everything the seed deletes is scoped to
+// those ids (scripts/seed-purge.mjs), so a real customer is out of reach by
+// construction, not by a list of who exists.
 // ---------------------------------------------------------------------------
-// The founder's OWN account, created through the invite flow on 2026-08-10 and
-// carrying the Planung Engelmeier project he made while testing the K2 parser.
-// Allowlisted by id rather than by a rule, because a guard that cries wolf on
-// every run is a guard somebody deletes. Every delete in this script is scoped
-// to the demo project and org ids below, so this org is not at risk today; the
-// point of the check is the day that stops being true, or the day the first
-// real EPC has rows in here.
-const FOUNDER_OWN_ORG = "cebcb3df-cf6a-4367-82a6-fd22278cb1da";
-
-const DEMO_ORGS = [EPC_ORG, SUB_ORG, SUB_ORG_2, SUB_ORG_3, FOUNDER_ORG];
-const KNOWN_ORGS = [...DEMO_ORGS, FOUNDER_OWN_ORG];
-
-const { data: strangers, error: strangerError } = await db
+const { data: demoOrgs, error: guardError } = await db
   .from("organizations")
-  .select("id, name")
-  .not("id", "in", `(${KNOWN_ORGS.join(",")})`);
-
-if (strangerError) {
-  console.error(`Refusing to seed: could not check for real organizations (${strangerError.message}).`);
+  .select("id, name, is_demo")
+  .in("id", DEMO_ORG_IDS);
+if (guardError) {
+  console.error(`Refusing to seed: could not read the demo flags (${guardError.message}).`);
+  console.error("If the column is missing, apply supabase/migrations/20261006002100_organizations_is_demo.sql first.");
   process.exit(1);
 }
-
-if (strangers?.length && !process.argv.includes("--yes-destroy-real-data")) {
+const mislabelled = (demoOrgs ?? []).filter((org) => org.is_demo !== true);
+if (mislabelled.length) {
   console.error("");
-  console.error("REFUSING TO SEED. This database holds organizations that are not the demo:");
-  for (const org of strangers) console.error(`  ${org.name}  (${org.id})`);
+  console.error("REFUSING TO SEED. These fixed demo ids belong to organizations not flagged as demo:");
+  for (const org of mislabelled) console.error(`  ${org.name}  (${org.id})`);
   console.error("");
-  console.error("Seeding deletes and rewrites data. If those are real customers, running");
-  console.error("this would destroy their projects, reports, hours and documents.");
-  console.error("");
-  console.error("If you are certain this database is disposable, run:");
-  console.error("  npm run seed -- --yes-destroy-real-data");
+  console.error("The seed deletes and rewrites everything under these ids. Nothing was changed.");
   console.error("");
   process.exit(1);
 }
 
 async function upsert(table, rows, onConflict = "id") {
+  if (DRY) throw new Error(`dry run tried to write ${table}`);
   const { error } = await db.from(table).upsert(rows, { onConflict });
   if (error) {
     console.error(`${table}: ${error.message}`);
     process.exit(1);
   }
   console.log(`${table}: ${rows.length} row(s) upserted`);
+}
+
+async function insertRows(table, rows) {
+  if (DRY) throw new Error(`dry run tried to write ${table}`);
+  if (!rows.length) return;
+  const { error } = await db.from(table).insert(rows);
+  if (error) {
+    console.error(`${table}: ${error.message}`);
+    process.exit(1);
+  }
+  console.log(`${table}: ${rows.length} row(s) inserted`);
 }
 
 // ---- date helpers (site-local Slovenia; weekdays only) ----
@@ -132,6 +132,15 @@ dates.reverse();
 const plannedStart = dates[0];
 const plannedEnd = isoPlusDays(dates[0], 42); // ~30 working days: gives an "ahead" buffer
 
+// ---- purge: what demos and rehearsals left behind (scripts/seed-purge.mjs) ----
+const purged = await purgeDemo(db, { dry: DRY });
+console.log(`purge${DRY ? " (dry run, nothing deleted)" : ""}:`, purged);
+if (DRY) {
+  console.log(`Trenutno log: ${dates[0]} .. ${dates[dates.length - 1]}, ${dates.length} days`);
+  console.log("Dry run complete. Nothing was written.");
+  process.exit(0);
+}
+
 // ---- static rows ----
 // Both orgs carry the money fields from the start: an invoice cannot be
 // generated without a VAT id and an IBAN, so a demo project missing them would
@@ -139,6 +148,7 @@ const plannedEnd = isoPlusDays(dates[0], 42); // ~30 working days: gives an "ahe
 await upsert("organizations", [
   {
     id: EPC_ORG,
+    is_demo: true,
     type: "epc",
     name: "Sonce Energija d.o.o.",
     country: "si",
@@ -147,6 +157,7 @@ await upsert("organizations", [
   },
   {
     id: SUB_ORG,
+    is_demo: true,
     type: "sub",
     name: "AVESOL d.o.o.",
     country: "si",
@@ -156,6 +167,7 @@ await upsert("organizations", [
   },
   {
     id: SUB_ORG_2,
+    is_demo: true,
     type: "sub",
     name: "Montaža Kos d.o.o.",
     country: "si",
@@ -164,6 +176,7 @@ await upsert("organizations", [
   },
   {
     id: SUB_ORG_3,
+    is_demo: true,
     type: "sub",
     name: "Elektro Vrhnika d.o.o.",
     country: "si",
@@ -185,14 +198,11 @@ const founderEmail = process.env.SEED_FOUNDER_EMAIL?.trim().toLowerCase();
 // staged data. The demo companies keep their staged projects and stay reachable
 // through the demo links for showing prospects; the two never mix.
 if (founderEmail) {
-  await upsert("organizations", [
-    {
-      id: FOUNDER_ORG,
-      type: "epc",
-      name: process.env.SEED_FOUNDER_ORG?.trim() || "Moje podjetje d.o.o.",
-      country: "si",
-    },
-  ]);
+  const { error } = await db.from("organizations").upsert(
+    [{ id: FOUNDER_ORG, type: "epc", name: process.env.SEED_FOUNDER_ORG?.trim() || "Moje podjetje d.o.o.", country: "si" }],
+    { onConflict: "id", ignoreDuplicates: true },
+  );
+  if (error) throw new Error(`founder org: ${error.message}`);
 }
 
 const people = [
@@ -205,12 +215,17 @@ const people = [
   { id: PERSON_SUB_2, org_id: SUB_ORG, full_name: "Miha Oblak", role: "crew", email: null },
   { id: PERSON_SUB_ADMIN, org_id: SUB_ORG, full_name: "Boštjan Novak", role: "admin", email: "bostjan@avesol-demo.si" },
 ];
+await upsert("people", people);
+
 if (founderEmail) {
-  people.push({ id: PERSON_FOUNDER, org_id: FOUNDER_ORG, full_name: "Jan", role: "admin", email: founderEmail });
+  const { error } = await db.from("people").upsert(
+    [{ id: PERSON_FOUNDER, org_id: FOUNDER_ORG, full_name: "Jan", role: "admin", email: founderEmail }],
+    { onConflict: "id", ignoreDuplicates: true },
+  );
+  if (error) throw new Error(`founder person: ${error.message}`);
 } else {
   console.log("people: SEED_FOUNDER_EMAIL not set, founder person skipped");
 }
-await upsert("people", people);
 
 await upsert("projects", [
   {
@@ -257,15 +272,6 @@ const days = [
   { headcount: 5, note: "Popoldne prekinitev zaradi dežja.", weather: { code: 61, tempC: 20 }, adds: [[SCOPE_MODULES, 40], [SCOPE_DC, 80]] },
   { headcount: 6, note: "Moduli in DC, dober tempo.", weather: { code: 2, tempC: 23 }, adds: [[SCOPE_MODULES, 30], [SCOPE_DC, 120]] },
 ];
-
-// Clean the project's prior entries (and their children) so re-runs are deterministic.
-const { data: existing } = await db.from("daily_entries").select("id").eq("project_id", PROJECT);
-const oldIds = (existing ?? []).map((r) => r.id);
-if (oldIds.length) {
-  await db.from("entry_photos").delete().in("entry_id", oldIds);
-  await db.from("entry_quantities").delete().in("entry_id", oldIds);
-  await db.from("daily_entries").delete().in("id", oldIds);
-}
 
 const entryRows = [];
 const quantityRows = [];
@@ -396,20 +402,6 @@ await upsert("scope_items", [
   { id: SCOPE_START_DC, project_id: PROJECT_START, name: "DC kabliranje", unit: "m", target_qty: 1200, weight: 1, sort_order: 3 },
 ]);
 
-// Ground zero means zero: clear anything the founder logged while testing, so
-// re-running the seed always returns this project to a true day one.
-const { data: startExisting } = await db
-  .from("daily_entries")
-  .select("id")
-  .eq("project_id", PROJECT_START);
-const startOldIds = (startExisting ?? []).map((r) => r.id);
-if (startOldIds.length) {
-  await db.from("entry_photos").delete().in("entry_id", startOldIds);
-  await db.from("entry_quantities").delete().in("entry_id", startOldIds);
-  await db.from("daily_entries").delete().in("id", startOldIds);
-  console.log(`daily_entries: ${startOldIds.length} ground-zero row(s) cleared`);
-}
-
 await upsert("material_items", [
   ...materialRows(PROJECT, "aaaaaaaa"),
   ...materialRows(PROJECT_START, "bbbbbbbb"),
@@ -425,17 +417,6 @@ await upsert("material_items", [
 // timestamps on the DB clock, check inserted after the items, guarantees
 // checked_at postdates every item's updated_at. The prior checks are deleted
 // just above, so this is always a fresh insert and the default applies.
-const { data: priorChecks } = await db
-  .from("material_checks")
-  .select("id")
-  .in("project_id", [PROJECT, PROJECT_START]);
-const priorIds = (priorChecks ?? []).map((r) => r.id);
-if (priorIds.length) {
-  await db.from("material_check_docs").delete().in("check_id", priorIds);
-  await db.from("material_check_items").delete().in("check_id", priorIds);
-  await db.from("material_checks").delete().in("id", priorIds);
-}
-
 const CHECK_CURRENT = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01";
 await upsert("material_checks", [
   {
@@ -484,11 +465,7 @@ await upsert("project_tokens", [
 // a demo that breaks on the first click.
 // ============================================================
 
-const PO_CURRENT = "88888888-8888-4888-8888-888888888801";
-const PO_START = "88888888-8888-4888-8888-888888888802";
-const SHEET_APPROVED = "99999999-9999-4999-8999-999999999901";
-const SHEET_OPEN = "99999999-9999-4999-8999-999999999902";
-const CO_APPROVED = "aaaaaaaa-9999-4999-8999-999999999903";
+// The fixed ids PO_CURRENT, PO_START, SHEET_APPROVED, SHEET_OPEN and CO_APPROVED come from lib/demo/ids.ts.
 
 const daysAgoIso = (n) => new Date(Date.now() - n * 86400000).toISOString();
 
@@ -621,7 +598,6 @@ await upsert("change_orders", [
 
 // Two incidents and one answered request: the running project should look like
 // a job that has actually been worked on, not a clean room.
-await db.from("incidents").delete().eq("project_id", PROJECT);
 const { data: seededIncidents } = await db
   .from("incidents")
   .insert([
@@ -643,7 +619,6 @@ const { data: seededIncidents } = await db
   .select("id");
 console.log(`incidents: ${(seededIncidents ?? []).length} row(s) inserted`);
 
-await db.from("requests").delete().eq("project_id", PROJECT);
 await db.from("requests").insert([
   {
     project_id: PROJECT,
@@ -666,7 +641,6 @@ console.log("requests: 2 row(s) inserted");
 
 // The subcontractor's compliance documents, including one expiring soon, so
 // the traffic light on the EPC dashboard is showing something real.
-await db.from("documents").delete().eq("org_id", SUB_ORG);
 await db.from("documents").insert([
   {
     org_id: SUB_ORG,
@@ -827,71 +801,12 @@ bookProjects.push({
   name: row[0], unit: row[1], target_qty: row[2], weight: row[3], sort_order: j + 1,
 }));
 
-// Rebuilt each run, like the live project's history, so re-running the seed
-// cannot leave a delivered project sitting at 140 percent.
-const bookIds = bookProjects.map((row) => row.id);
-const { data: priorBook } = await db.from("daily_entries").select("id").in("project_id", bookIds);
-const priorBookIds = (priorBook ?? []).map((row) => row.id);
-if (priorBookIds.length) {
-  await db.from("entry_photos").delete().in("entry_id", priorBookIds);
-  await db.from("entry_quantities").delete().in("entry_id", priorBookIds);
-  await db.from("daily_entries").delete().in("id", priorBookIds);
-}
-
 await upsert("projects", bookProjects);
 await upsert("scope_items", bookScope);
 await upsert("daily_entries", bookEntries);
 await upsert("entry_quantities", bookQuantities, "entry_id,scope_item_id");
 
-// Documents that no longer describe anything: a leftover invoice or protocol
-// from a previous seed would contradict the freshly staged state.
-await db.from("invoices").delete().in("project_id", [PROJECT, PROJECT_START]);
-await db.from("acceptances").delete().in("project_id", [PROJECT, PROJECT_START]);
-await db.from("notifications").delete().in("project_id", [PROJECT, PROJECT_START]);
-
-// And the two records that made the reset a lie.
-//
-// The upsert above puts status back to "active", but the final page does not
-// read status to decide whether the handover was requested: it reads the
-// ACTIVITY TRAIL, deliberately, so that fact has one home. A leftover
-// finalization_requested row therefore left a freshly seeded, active project
-// insisting it had already been handed over, with the acceptance step open
-// underneath it. Likewise a completion report from a previous run reappeared on
-// the card, dated and downloadable, describing days this seed had just deleted.
-//
-// Found on 2026-08-12 by walking the whole finalization chain on production and
-// then re-seeding, which is the exact sequence the runbook's prep ritual asks
-// the founder to perform before every demo.
-//
-// Only the closing events are cleared, never the trail the demo is made of:
-// entry_submitted and material_check_completed are the live feed on the
-// dashboard, and deleting those would empty the screen the demo opens on.
-const CLOSING_EVENTS = [
-  "finalization_requested",
-  "acceptance_signed",
-  "invoice_generated",
-  "invoice_sent",
-];
-await db
-  .from("activity")
-  .delete()
-  .in("project_id", [PROJECT, PROJECT_START])
-  .in("kind", CLOSING_EVENTS);
-
-const { data: staleDocs } = await db
-  .from("generated_documents")
-  .select("id, storage_path")
-  .in("project_id", [PROJECT, PROJECT_START]);
-
-if (staleDocs?.length) {
-  const paths = staleDocs.map((row) => row.storage_path).filter((p) => p && p !== "pending");
-  if (paths.length) await db.storage.from("reports").remove(paths);
-  await db
-    .from("generated_documents")
-    .delete()
-    .in("id", staleDocs.map((row) => row.id));
-  console.log(`reset: ${staleDocs.length} generated document(s) removed`);
-}
+// Closing records (handover, acceptance, invoice, completion report) are removed by the purge, with every other activity row of the fixed projects.
 
 console.log("Seed complete.");
 console.log(`Current project: ${plannedStart} .. ${plannedEnd}, ${dates.length} working days logged.`);
