@@ -1260,5 +1260,15 @@
     "crewFailed": "Spremembe ni bilo mogoče shraniti.",
     "subLinkReady": "Povezava za podizvajalca je pripravljena.",
     "copied": "Povezava kopirana."
+  },
+  "errors": {
+    "title": "Začasna napaka",
+    "body": "Strani trenutno ni bilo mogoče naložiti. Vaši podatki so varni. Poskusite znova čez nekaj sekund.",
+    "retry": "Poskusi znova",
+    "home": "Na začetno stran",
+    "code": "Koda napake: {digest}",
+    "notFoundTitle": "Te strani ni",
+    "notFoundBody": "Povezava je morda stara ali pa je v naslovu tipkarska napaka.",
+    "loading": "Nalaganje"
   }
 }

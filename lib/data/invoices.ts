@@ -1,6 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import type { Json } from "@/lib/database.types";
 import { isUuid } from "@/lib/actor-shared";
 import { requireOfficeActor, requireProjectActor, type Actor } from "@/lib/actor";
@@ -59,13 +60,15 @@ function localeOf(value: string | null): DocLocale {
 export async function getInvoice(actor: Actor, projectId: string): Promise<InvoiceView | null> {
   await requireProjectActor(actor, projectId);
 
-  const { data } = await createAdminClient()
+  const { data, error } = await createAdminClient()
     .from("invoices")
     .select(
       "id, number, issue_date, total_net, total_vat, total_gross, vat_mode, accountant_email, sent_to_accountant_at, pdf_path",
     )
     .eq("project_id", projectId)
     .maybeSingle();
+  // A failed read must not offer to issue a second invoice.
+  throwIfReadFailed(error, "getInvoice");
   if (!data) return null;
 
   return {

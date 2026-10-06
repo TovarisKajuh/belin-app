@@ -1,6 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import { requireOfficeActor, requireProjectActor, type Actor } from "@/lib/actor";
 import { emitEventDeferred } from "@/lib/notify";
 import { getSignedReportUrl, storeReportPdf } from "@/lib/storage";
@@ -74,11 +75,12 @@ export async function getPoPageData(actor: Actor, projectId: string): Promise<Po
   const projectActor = await requireProjectActor(actor, projectId);
   const db = createAdminClient();
 
-  const { data: project } = await db
+  const { data: project, error } = await db
     .from("projects")
     .select("id, name, language, sub_org_id")
     .eq("id", projectId)
     .maybeSingle();
+  throwIfReadFailed(error, "getPoPageData.project");
   if (!project) return null;
 
   const office = actor.kind === "person" && (actor.role === "admin" || actor.role === "owner");
@@ -99,7 +101,7 @@ async function loadPo(
   db: ReturnType<typeof createAdminClient>,
   projectId: string,
 ): Promise<PoView | null> {
-  const { data } = await db
+  const { data, error } = await db
     .from("purchase_orders")
     .select(
       "id, number, status, total_net, regie_hourly_rate, payment_terms, deadline, pdf_path, sent_at, accepted_at, accepted_by_name, rejected_at, rejection_note",
@@ -108,13 +110,15 @@ async function loadPo(
     .order("number", { ascending: false })
     .limit(1)
     .maybeSingle();
+  throwIfReadFailed(error, "loadPo.latest");
   if (!data) return null;
 
-  const { data: lineRows } = await db
+  const { data: lineRows, error: linesError } = await db
     .from("purchase_order_lines")
     .select("description, qty, unit, unit_price, total, sort_order")
     .eq("purchase_order_id", data.id)
     .order("sort_order", { ascending: true });
+  throwIfReadFailed(linesError, "loadPo.lines");
 
   return {
     id: data.id,

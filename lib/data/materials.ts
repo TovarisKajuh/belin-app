@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import type { ProjectActor } from "@/lib/actor";
 import type { Json } from "@/lib/database.types";
 import {
@@ -38,7 +39,8 @@ export async function getMaterialState(actor: ProjectActor): Promise<MaterialSta
       .maybeSingle(),
   ]);
 
-  if (itemsRes.error || checkRes.error) return null;
+  throwIfReadFailed(itemsRes.error, "getMaterialState.items");
+  throwIfReadFailed(checkRes.error, "getMaterialState.check");
 
   const items: MaterialItemRow[] = (itemsRes.data ?? []).map((r) => ({
     id: r.id,

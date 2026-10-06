@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import type { ProjectActor } from "@/lib/actor";
 import type { Json } from "@/lib/database.types";
 import { fetchWeatherSnapshot } from "@/lib/weather";
@@ -84,7 +85,10 @@ export async function getCrewHome(actor: ProjectActor): Promise<CrewHomeData | n
       .limit(10),
   ]);
 
-  if (entriesRes.error || qtyRes.error || photoRes.error || priorRes.error) return null;
+  throwIfReadFailed(entriesRes.error, "getCrewHome.entries");
+  throwIfReadFailed(qtyRes.error, "getCrewHome.quantities");
+  throwIfReadFailed(photoRes.error, "getCrewHome.photos");
+  throwIfReadFailed(priorRes.error, "getCrewHome.prior");
 
   const scopeById: Record<string, { name: string; unit: string }> = {};
   for (const s of core.scope) scopeById[s.id] = { name: s.name, unit: s.unit };
@@ -106,7 +110,7 @@ export async function getCrewHome(actor: ProjectActor): Promise<CrewHomeData | n
   }
 
   const todayPosts = summarizeTodayPosts(
-    entriesRes.data,
+    entriesRes.data ?? [],
     quantitiesByEntry,
     photoUrlsByEntry,
     scopeById
@@ -121,7 +125,7 @@ export async function getCrewHome(actor: ProjectActor): Promise<CrewHomeData | n
         .select("entry_id, scope_item_id, qty")
         .in("entry_id", lastDay.map((e) => e.id))
     : { data: [] as { entry_id: string; scope_item_id: string; qty: number }[], error: null };
-  if (lastQty.error) return null;
+  throwIfReadFailed(lastQty.error, "getCrewHome.lastQuantities");
   const lastReport = summarizeLastReport(
     lastDay,
     (lastQty.data ?? []).map((q) => ({ ...q, qty: Number(q.qty) }))

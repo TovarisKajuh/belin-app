@@ -2,6 +2,7 @@
 
 One line per significant decision: what, why, when.
 
+- 2026-10-06: A failed database read and a missing row are different answers: loaders throw DataUnavailableError for the first and return null for the second, and only null becomes a not-found page. Reason: the paused database on 05.10 told every production link holder that the link had been revoked.
 - 2026-10-06: The completion report route answers 302 to a 60 second signed URL after authorization; the small documents keep streaming. Reason: weeks of photographs exceed what a function should buffer and may pass Vercel's response limit.
 
 - 2026-10-06: The completion report states approved hours (by a person or by the clock) and lists open and rejected hours apart. Reason: it must agree with the invoice (DOC-H3).

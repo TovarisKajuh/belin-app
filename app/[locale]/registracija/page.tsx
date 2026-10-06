@@ -30,7 +30,8 @@ export default async function SignupPage({ params }: { params: Promise<{ locale:
   // gets the form. In beat 9 the buyer signs up on the phone that still holds
   // the 2 h guest crew session from beat 4. Only a real person session goes
   // to the app.
-  const actor = await resolveActorFromSession();
+  // An outage must not take this form down with it: the visitor simply stays.
+  const actor = await resolveActorFromSession().catch(() => null);
   if (actor?.kind === "person" && personaForPersonId(actor.personId) === null) redirect(`/${locale}/app`);
 
   const t = await getTranslations("signup");

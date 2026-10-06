@@ -28,7 +28,9 @@ export default async function Home({
   // otherwise bounce here, get sent to /app, fail to resolve there, and be sent
   // straight back: an infinite redirect. A signed-out visitor has no cookie at
   // all and still costs no database round trip.
-  if (await resolveActorFromSession()) redirect(`/${locale}/app`);
+  // An outage must not take the landing page down with it: a visitor with an
+  // old cookie simply stays here instead of being forwarded.
+  if (await resolveActorFromSession().catch(() => null)) redirect(`/${locale}/app`);
 
   // A guarded route now sends signed-out visitors to /login directly, so `next`
   // reaching the landing page is an older link or a hand-typed URL. It is still

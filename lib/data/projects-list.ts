@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import type { OrgActor } from "@/lib/actor";
 import { isUuid } from "@/lib/actor-shared";
 
@@ -49,7 +50,9 @@ export async function listProjectsForPerson(actor: OrgActor): Promise<ProjectLis
     .or(`epc_org_id.eq.${actor.orgId},sub_org_id.eq.${actor.orgId}`)
     .order("created_at", { ascending: false });
 
-  if (error || !data) return [];
+  // An outage must not look like an empty portfolio: that reads as data loss.
+  throwIfReadFailed(error, "listProjectsForPerson");
+  if (!data) return [];
 
   return data.map((row) => ({
     id: row.id,
@@ -74,7 +77,8 @@ export async function listProjectsForOrg(actor: OrgActor): Promise<ProjectListRo
     .eq("epc_org_id", actor.orgId)
     .order("created_at", { ascending: false });
 
-  if (error || !data) return [];
+  throwIfReadFailed(error, "listProjectsForOrg");
+  if (!data) return [];
 
   return data.map((row) => {
     const tokens = (row.project_tokens ?? []) as {

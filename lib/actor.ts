@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isPlausibleToken, resolveProjectRole } from "@/lib/actor-shared";
+import { DataUnavailableError, throwIfReadFailed } from "@/lib/db-error";
 
 // The actor abstraction (DECISIONS.md 2026-07-17 evening): every data
 // access resolves "who is acting" into an Actor first. Until M1 the
@@ -86,7 +87,8 @@ export async function requireProjectActor(
     .eq("id", projectId)
     .maybeSingle();
 
-  if (error || !project) throw new Error("Forbidden: no such project.");
+  if (error) throw new DataUnavailableError("requireProjectActor", error.message);
+  if (!project) throw new Error("Forbidden: no such project.");
 
   const role = resolveProjectRole(actor, project);
   if (!role) throw new Error("Forbidden: not a party to this project.");
@@ -130,7 +132,8 @@ export async function resolvePersonActor(personId: string): Promise<PersonActor 
     .eq("id", personId)
     .maybeSingle();
 
-  if (error || !data || !data.organizations) return null;
+  throwIfReadFailed(error, "resolvePersonActor");
+  if (!data || !data.organizations) return null;
 
   // A removed crew member stops existing here, which is what makes the boss's
   // remove button mean anything: his session dies on the next navigation
@@ -161,7 +164,8 @@ export async function resolveActorFromToken(token: string): Promise<TokenActor |
     .eq("token", token)
     .maybeSingle();
 
-  if (error || !data || data.revoked || !data.projects) return null;
+  throwIfReadFailed(error, "resolveActorFromToken");
+  if (!data || data.revoked || !data.projects) return null;
 
   const role = data.role as "epc" | "sub";
   const orgId = role === "epc" ? data.projects.epc_org_id : data.projects.sub_org_id;

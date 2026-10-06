@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import { isUuid } from "@/lib/actor-shared";
 import type { ProjectActor } from "@/lib/actor";
 import { emitEventDeferred } from "@/lib/notify";
@@ -35,13 +36,14 @@ const CONFLICT = "co.conflict";
 
 export async function listChangeOrders(actor: ProjectActor): Promise<ChangeOrderRow[]> {
   const db = createAdminClient();
-  const { data } = await db
+  const { data, error } = await db
     .from("change_orders")
     .select(
       "id, number, title, description, amount, status, created_at, decided_at, people:created_by_person (full_name), decider:decided_by_person (full_name), change_order_photos (storage_path, sort_order)",
     )
     .eq("project_id", actor.projectId)
     .order("number", { ascending: false });
+  throwIfReadFailed(error, "listChangeOrders");
 
   const rows = data ?? [];
   const signed = await getSignedPhotoUrlMap(

@@ -9,6 +9,7 @@ import {
   type SessionActor,
 } from "@/lib/actor";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import { hashToken, newRawToken, SESSION_TTL_DAYS, shouldRenewSession } from "@/lib/auth-core";
 
 // The session cookie. One cookie, two kinds of session: see PERSON_PREFIX below.
@@ -126,7 +127,8 @@ export const resolveActorFromSession = cache(async (): Promise<SessionActor | nu
       .gt("expires_at", new Date().toISOString())
       .maybeSingle();
 
-    if (error || !data) return null;
+    throwIfReadFailed(error, "resolveActorFromSession");
+    if (!data) return null;
 
     // Rolling session: a device that is used keeps being signed in, and only an
     // abandoned one ever expires. This matters most for crew, whose whole

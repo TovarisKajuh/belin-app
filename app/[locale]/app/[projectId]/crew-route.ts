@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { resolveActorFromSession } from "@/lib/auth";
 import { requireProjectActor } from "@/lib/actor";
 import { isUuid } from "@/lib/actor-shared";
+import { rethrowIfUnavailable } from "@/lib/db-error";
 import { getCrewHome } from "@/lib/data/reports";
 import { getMaterialState } from "@/lib/data/materials";
 
@@ -29,7 +30,8 @@ export async function requireCrewSurface(locale: string, projectId: string) {
   let project;
   try {
     project = await requireProjectActor(actor, projectId);
-  } catch {
+  } catch (err) {
+    rethrowIfUnavailable(err);
     notFound();
   }
 

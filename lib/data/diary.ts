@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { throwIfReadFailed } from "@/lib/db-error";
 import type { ProjectActor } from "@/lib/actor";
 import { getSignedPhotoUrlMap } from "@/lib/storage";
 import type { TodayPost } from "@/lib/reports-shared";
@@ -44,7 +45,8 @@ export async function getCrewDiary(
     // several crews can file several reports on one day.
     .limit(days * 8);
 
-  if (error || !data) return [];
+  throwIfReadFailed(error, "getCrewDiary");
+  if (!data) return [];
 
   // Signed in ONE batch for the whole page. Minting them per entry would be a
   // request per photo on the connection least able to afford it.

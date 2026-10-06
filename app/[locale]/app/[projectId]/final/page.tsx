@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { resolveActorFromSession } from "@/lib/auth";
 import { requireProjectActor } from "@/lib/actor";
 import { isUuid } from "@/lib/actor-shared";
+import { rethrowIfUnavailable } from "@/lib/db-error";
 import { getProjectCore } from "@/lib/data/project-core";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CommandBar } from "@/components/project/CommandBar";
@@ -40,7 +41,8 @@ export default async function FinalPage({
     const projectActor = await requireProjectActor(actor, projectId);
     role = projectActor.role;
     core = await getProjectCore(projectActor);
-  } catch {
+  } catch (err) {
+    rethrowIfUnavailable(err);
     notFound();
   }
   if (!core) notFound();
