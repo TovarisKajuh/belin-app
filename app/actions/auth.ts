@@ -21,6 +21,7 @@ import {
 } from "@/lib/auth-core";
 import { sendEmail, renderEmail } from "@/lib/email";
 import { appBaseUrl } from "@/lib/app-url";
+import { clearDemoCookie } from "@/lib/demo/session";
 
 export type LoginState = { error: "invalid" | null };
 export type MagicLinkState = { sent: boolean };
@@ -149,5 +150,6 @@ export async function logoutAction(formData: FormData): Promise<void> {
   // Revokes the session row when this is a person session, then clears the
   // cookie either way. Deleting the cookie alone is not logout.
   await endPersonSession();
+  await clearDemoCookie();
   redirect(`/${locale}`);
 }

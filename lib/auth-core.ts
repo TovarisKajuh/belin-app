@@ -48,3 +48,22 @@ export function loginTokenValid(
   if (row.used_at !== null) return false;
   return new Date(row.expires_at).getTime() > now.getTime();
 }
+
+/**
+ * Whether a person session should be rolled forward.
+ *
+ * Only a session issued at the standard lifetime rolls. A deliberately short
+ * one (a Demo Door presenter or guest session) must end when it said it would:
+ * the old rule, "less than half of thirty days left", is true of every short
+ * session from its first second and would have turned a two hour guest pass
+ * into a thirty day one on its first page view.
+ */
+export function shouldRenewSession(row: { createdAt: string; expiresAt: string }, now: Date): boolean {
+  const created = Date.parse(row.createdAt);
+  const expires = Date.parse(row.expiresAt);
+  if (Number.isNaN(created) || Number.isNaN(expires)) return false;
+  const standardMs = SESSION_TTL_DAYS * 86400000;
+  // An hour of slack: expires_at is computed in Node, created_at by the database clock.
+  const issuedStandard = expires - created >= standardMs - 3600000;
+  return issuedStandard && expires - now.getTime() < standardMs / 2;
+}
