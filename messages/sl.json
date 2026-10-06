@@ -1123,5 +1123,20 @@
     "noAccount": "Še niste registrirani?",
     "startFree": "Začnite brezplačno",
     "ctaStart": "Začnite brezplačno"
+  },
+  "onboarding": {
+    "welcome": "Dobrodošli, {name}",
+    "created": "Podjetje {company} je registrirano v Belinu.",
+    "lead": "Trije koraki do prvega poročila z gradbišča. Prvi traja dve minuti.",
+    "step1Title": "Ustvarite prvi projekt",
+    "step1Body": "Naložite K2 načrt in iz njega preberemo naslov, moč, strehe in material.",
+    "step1Cta": "Ustvari projekt",
+    "step2Title": "Povabite podizvajalca",
+    "step2Body": "Ko je projekt ustvarjen, podizvajalcu pošljete povezavo. Zanj je Belin vedno brezplačen.",
+    "step3Title": "Prvo poročilo z gradbišča",
+    "step3Body": "Ekipa podizvajalca poroča s telefona v pol minute: napredek, fotografije in število ljudi. Vi vidite vse takoj.",
+    "later": "Nato",
+    "helpTitle": "Pomoč",
+    "helpBody": "Prvi projekt lahko nastavimo skupaj z vami. Pišite ali pokličite."
   }
 }

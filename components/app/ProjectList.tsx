@@ -18,10 +18,13 @@ export async function ProjectList({
   locale,
   actor,
   projects,
+  emptyState,
 }: {
   locale: string;
   actor: PersonActor;
   projects: ProjectListRow[];
+  /** Replaces the one-line empty state: the EPC's first-run screen (Task 4.6). */
+  emptyState?: React.ReactNode;
 }) {
   const t = await getTranslations("projects");
   const tApp = await getTranslations("app");
@@ -83,7 +86,7 @@ export async function ProjectList({
           <div className="e-eyebrow">{tApp("signedInAs", { name: actor.fullName })}</div>
 
           {projects.length === 0 ? (
-            <p className="pl-empty">{t("empty")}</p>
+            (emptyState ?? <p className="pl-empty">{t("empty")}</p>)
           ) : (
             <>
               <PortfolioHeader data={portfolio} />

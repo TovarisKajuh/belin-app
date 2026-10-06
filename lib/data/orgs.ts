@@ -17,3 +17,11 @@ export async function orgCountry(orgId: string): Promise<string | null> {
   if (error || !data?.country) return null;
   return data.country.toLowerCase();
 }
+
+/** The organization's display name, for greetings and invitations. */
+export async function getOrgName(orgId: string): Promise<string | null> {
+  const db = createAdminClient();
+  const { data, error } = await db.from("organizations").select("name").eq("id", orgId).maybeSingle();
+  if (error || !data) return null;
+  return data.name;
+}

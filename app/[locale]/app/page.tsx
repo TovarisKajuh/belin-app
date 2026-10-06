@@ -10,6 +10,7 @@ import { EpcDashboard } from "@/components/epc/EpcDashboard";
 import { DevSwapBar } from "@/components/dev/DevSwapBar";
 import { LogoutPill } from "@/components/auth/LogoutPill";
 import { ProjectList } from "@/components/app/ProjectList";
+import { Onboarding } from "@/components/app/Onboarding";
 import { CrewProjectPicker } from "@/components/crew/CrewProjectPicker";
 import { listProjectsForPerson } from "@/lib/data/projects-list";
 import { crewPickable } from "@/lib/crew-shared";
@@ -20,7 +21,13 @@ import { ScenarioPill } from "@/components/auth/ScenarioPill";
 // components as a prop because their server actions take it; removing that
 // last hop is the remainder of the transport refactor and belongs with
 // magic-link auth in phase 3.
-export default async function AppPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function AppPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ dobrodoslica?: string }>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -50,9 +57,17 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
       );
     }
 
+    // The first-run screen is server-decided from server facts only: the
+    // organization type, whether projects exist, and a URL parameter.
+    const { dobrodoslica } = await searchParams;
+    const emptyState =
+      actor.orgType === "epc" && projects.length === 0 ? (
+        <Onboarding locale={locale} actor={actor} welcome={dobrodoslica === "1"} />
+      ) : undefined;
+
     return (
       <>
-        <ProjectList locale={locale} actor={actor} projects={projects} />
+        <ProjectList locale={locale} actor={actor} projects={projects} emptyState={emptyState} />
         <LogoutPill locale={locale} />
       </>
     );

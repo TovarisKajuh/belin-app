@@ -1123,5 +1123,20 @@
     "noAccount": "Not registered yet?",
     "startFree": "Start for free",
     "ctaStart": "Start for free"
+  },
+  "onboarding": {
+    "welcome": "Welcome, {name}",
+    "created": "{company} is now registered in Belin.",
+    "lead": "Three steps to the first report from site. The first one takes two minutes.",
+    "step1Title": "Create your first project",
+    "step1Body": "Upload the K2 plan and we read the address, capacity, roofs and material from it.",
+    "step1Cta": "Create project",
+    "step2Title": "Invite your subcontractor",
+    "step2Body": "Once the project exists, you send the subcontractor a link. Belin is always free for them.",
+    "step3Title": "The first report from site",
+    "step3Body": "The subcontractor's crew reports from a phone in half a minute: progress, photos and headcount. You see it all at once.",
+    "later": "Next",
+    "helpTitle": "Help",
+    "helpBody": "We can set up the first project together with you. Write or call."
   }
 }
