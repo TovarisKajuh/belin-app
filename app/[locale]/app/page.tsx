@@ -8,7 +8,6 @@ import { getSiblingToken } from "@/lib/data/tokens";
 import { CrewHome } from "@/components/crew/CrewHome";
 import { EpcDashboard } from "@/components/epc/EpcDashboard";
 import { DevSwapBar } from "@/components/dev/DevSwapBar";
-import { LogoutPill } from "@/components/auth/LogoutPill";
 import { ProjectList } from "@/components/app/ProjectList";
 import { Onboarding } from "@/components/app/Onboarding";
 import { CrewProjectPicker } from "@/components/crew/CrewProjectPicker";
@@ -48,12 +47,7 @@ export default async function AppPage({
     if (actor.role === "crew") {
       const pickable = projects.filter((p) => crewPickable(p.status));
       if (pickable.length === 1) redirect(`/${locale}/app/${pickable[0].id}`);
-      return (
-        <>
-          <CrewProjectPicker locale={locale} projects={pickable} />
-          <LogoutPill locale={locale} />
-        </>
-      );
+      return <CrewProjectPicker locale={locale} projects={pickable} />;
     }
 
     // The first-run screen is server-decided from server facts only: the
@@ -64,12 +58,7 @@ export default async function AppPage({
         <Onboarding locale={locale} actor={actor} welcome={dobrodoslica === "1"} />
       ) : undefined;
 
-    return (
-      <>
-        <ProjectList locale={locale} actor={actor} projects={projects} emptyState={emptyState} />
-        <LogoutPill locale={locale} />
-      </>
-    );
+    return <ProjectList locale={locale} actor={actor} projects={projects} emptyState={emptyState} />;
   }
 
   const token = await sessionToken();
@@ -90,14 +79,13 @@ export default async function AppPage({
     view = <EpcDashboard token={token} projectId={actor.projectId} data={data} locale={locale} />;
   }
 
-  // The crew screen has a fixed submit bar along the bottom, so both pills lift
-  // clear of it there.
+  // The crew screen has a fixed submit bar along the bottom, so the DEV pill
+  // lifts clear of it there. Odjava is in the command bar.
   const raised = actor.role === "sub";
   const sibling = await siblingPromise;
   return (
     <>
       {view}
-      <LogoutPill locale={locale} raised={raised} />
       {sibling && (
         <DevSwapBar
           locale={locale}

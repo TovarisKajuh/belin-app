@@ -293,6 +293,7 @@
     "submitting": "Anmeldung läuft",
     "invalid": "Benutzername oder Passwort ist falsch.",
     "logout": "Abmelden",
+    "accountMenu": "Benutzermenü",
     "scenarioCurrent": "Aktuell",
     "scenarioStart": "Tag 1",
     "scenarioSwitch": "Projektstand wechseln",

@@ -50,10 +50,13 @@ export function Wizard({
   locale,
   subs,
   defaultCountry,
+  session,
 }: {
   locale: string;
   subs: SubOption[];
   defaultCountry: string;
+  /** The command bar's account menu and role switch, rendered by the server page. */
+  session?: React.ReactNode;
 }) {
   const t = useTranslations("wizard");
   const tInvite = useTranslations("invite");
@@ -214,6 +217,7 @@ export function Wizard({
             <Link href={`/${locale}/app/projects`} className="wz-exit">
               {t("back")}
             </Link>
+            {session}
           </div>
         </div>
       </header>

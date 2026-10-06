@@ -293,6 +293,7 @@
     "submitting": "Signing in",
     "invalid": "Wrong username or password.",
     "logout": "Sign out",
+    "accountMenu": "Account menu",
     "scenarioCurrent": "Current",
     "scenarioStart": "Day 1",
     "scenarioSwitch": "Switch project state",

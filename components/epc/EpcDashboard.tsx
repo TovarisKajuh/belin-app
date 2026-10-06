@@ -180,7 +180,7 @@ export async function EpcDashboard({
         <div className="e-foot">Belin · {t("endOfOverview")}</div>
       </div>
       <RevealController />
-      <LiveRefresh topic={projectTopic(core.id)} showBadge />
+      <LiveRefresh topic={projectTopic(core.id)} />
     </div>
   );
 }

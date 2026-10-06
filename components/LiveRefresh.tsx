@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { PING_EVENT } from "@/lib/realtime-shared";
+import { setLiveSubscribed } from "@/lib/live-store";
 import {
   reduceLive,
   initialLiveState,
@@ -15,11 +15,10 @@ import {
 
 // Subscribes to the project's realtime topic and re-runs the server components
 // on a contentless ping. All timing decisions live in the pure reduceLive core;
-// this only owns the timers, the router.refresh() call, and the live badge.
-export function LiveRefresh({ topic, showBadge = false }: { topic: string; showBadge?: boolean }) {
+// this only owns the timers and the router.refresh() call. Whether the channel
+// is up goes to lib/live-store, which the header's LiveBadge reads.
+export function LiveRefresh({ topic }: { topic: string }) {
   const router = useRouter();
-  const t = useTranslations("dashboard");
-  const [subscribed, setSubscribed] = useState(false);
 
   const stateRef = useRef<LiveState>(initialLiveState());
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -53,7 +52,7 @@ export function LiveRefresh({ topic, showBadge = false }: { topic: string; showB
         dispatch({ type: "ping", at: Date.now(), hidden: document.hidden })
       )
       .subscribe((status) => {
-        setSubscribed(status === "SUBSCRIBED");
+        setLiveSubscribed(status === "SUBSCRIBED");
         dispatch({ type: "status", value: status, at: Date.now() });
       });
 
@@ -67,13 +66,9 @@ export function LiveRefresh({ topic, showBadge = false }: { topic: string; showB
       if (debounceRef.current) clearTimeout(debounceRef.current);
       if (pollRef.current) clearInterval(pollRef.current);
       supabase.removeChannel(channel);
+      setLiveSubscribed(false);
     };
   }, [topic, router]);
 
-  if (!showBadge || !subscribed) return null;
-  return (
-    <div className="e-live-fixed">
-      <span className="e-live">{t("live")}</span>
-    </div>
-  );
+  return null;
 }

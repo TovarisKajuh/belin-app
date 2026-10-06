@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { ProjectStatusControl } from "@/components/project/ProjectStatusControl";
 import { BelinMark } from "@/components/BelinMark";
 import { LocaleSwitch } from "@/components/LocaleSwitch";
+import { LiveBadge } from "@/components/app/LiveBadge";
+import { HeaderSession } from "@/components/app/HeaderSession";
 import type { ProjectStatus } from "@/lib/project-status";
 
 // The shared header for both parties. The EPC and the crew get the identical
@@ -54,6 +56,9 @@ export async function CommandBar({
           <span className="e-bproj">
             <b>{projectName}</b>
           </span>
+          {/* The office side's "v živo", inside the bar rather than floating
+              under it. Renders only while LiveRefresh has its channel up. */}
+          {role === "epc" && <LiveBadge />}
         </div>
         <div className="e-br">
           {meta && <span className="e-upd">{meta}</span>}
@@ -64,6 +69,7 @@ export async function CommandBar({
           )}
           <LocaleSwitch label={languageLabel} />
           <ProjectStatusControl token={token} projectId={projectId} role={role} status={status} />
+          <HeaderSession locale={locale} />
         </div>
       </div>
 

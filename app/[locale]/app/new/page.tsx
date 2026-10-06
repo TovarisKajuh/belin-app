@@ -5,6 +5,7 @@ import { requireOfficeActor, type OrgActor } from "@/lib/actor";
 import { listKnownSubs } from "@/lib/data/plan-imports";
 import { orgCountry } from "@/lib/data/orgs";
 import { Wizard } from "@/components/wizard/Wizard";
+import { HeaderSession } from "@/components/app/HeaderSession";
 
 // The plan first project wizard. Step one is the K2 upload, deliberately:
 // design law 2 says the EPC reviews instead of types, so the very first thing
@@ -35,5 +36,12 @@ export default async function NewProjectPage({
 
   const [subs, country] = await Promise.all([listKnownSubs(actor), orgCountry(actor.orgId)]);
 
-  return <Wizard locale={locale} subs={subs} defaultCountry={country ?? "si"} />;
+  return (
+    <Wizard
+      locale={locale}
+      subs={subs}
+      defaultCountry={country ?? "si"}
+      session={<HeaderSession locale={locale} />}
+    />
+  );
 }

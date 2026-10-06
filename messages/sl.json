@@ -293,6 +293,7 @@
     "submitting": "Prijavljanje",
     "invalid": "Napačno uporabniško ime ali geslo.",
     "logout": "Odjava",
+    "accountMenu": "Uporabniški meni",
     "scenarioCurrent": "Trenutno",
     "scenarioStart": "Dan 1",
     "scenarioSwitch": "Preklopi stanje projekta",

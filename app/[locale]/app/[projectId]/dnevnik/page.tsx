@@ -2,7 +2,6 @@ import { setRequestLocale, getTranslations, getFormatter } from "next-intl/serve
 import { CommandBar } from "@/components/project/CommandBar";
 import { TodayPosts } from "@/components/project/TodayPosts";
 import { CrewTabs } from "@/components/crew/CrewTabs";
-import { LogoutPill } from "@/components/auth/LogoutPill";
 import { getCrewDiary } from "@/lib/data/diary";
 import { requireCrewSurface } from "../crew-route";
 
@@ -63,7 +62,6 @@ export default async function CrewDiaryPage({
       </div>
 
       <CrewTabs locale={locale} projectId={projectId} active="diary" />
-      <LogoutPill locale={locale} raised />
     </main>
   );
 }

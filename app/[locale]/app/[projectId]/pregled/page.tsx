@@ -1,6 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
 import { CrewHome } from "@/components/crew/CrewHome";
-import { LogoutPill } from "@/components/auth/LogoutPill";
 import { requireCrewSurface } from "../crew-route";
 
 // The read half of the roof screen: how far the job has got, what the material
@@ -17,15 +16,12 @@ export default async function CrewOverviewPage({
   const { data, material } = await requireCrewSurface(locale, projectId);
 
   return (
-    <>
-      <CrewHome
-        token={null}
-        projectId={projectId}
-        data={data}
-        material={material}
-        nav={{ locale, active: "overview" }}
-      />
-      <LogoutPill locale={locale} raised />
-    </>
+    <CrewHome
+      token={null}
+      projectId={projectId}
+      data={data}
+      material={material}
+      nav={{ locale, active: "overview" }}
+    />
   );
 }

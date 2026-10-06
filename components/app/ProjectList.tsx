@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BelinMark } from "@/components/BelinMark";
 import { LocaleSwitch } from "@/components/LocaleSwitch";
 import { NotificationBell } from "@/components/app/NotificationBell";
+import { HeaderSession } from "@/components/app/HeaderSession";
 import { getUnreadCount } from "@/lib/data/notifications";
 import { getPortfolio } from "@/lib/data/portfolio";
 import { PortfolioHeader, PortfolioFooter } from "./PortfolioHeader";
@@ -74,6 +75,7 @@ export async function ProjectList({
                 {t("new")}
               </Link>
             )}
+            <HeaderSession locale={locale} />
           </div>
         </div>
       </div>

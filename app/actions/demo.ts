@@ -25,8 +25,9 @@ export async function switchPersonaAction(formData: FormData): Promise<void> {
   const result = await startDemoPersonaSession(persona, { ttlMs: DEMO_SESSION_TTL_MS, presenter: true });
   if (result !== "ok") redirect(`/${locale}/app`);
 
-  // The switch itself lives in the /app layout, which a plain redirect would
-  // not re-render: it would keep showing the previous role.
+  // The switch lands on the same path, so the whole /app tree is revalidated:
+  // a plain redirect could serve the cached page with the previous role in
+  // its command bar.
   revalidatePath(`/${locale}/app`, "layout");
   redirect(switchTarget(locale, path, persona));
 }

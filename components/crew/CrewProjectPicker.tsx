@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { ProjectListRow } from "@/lib/data/projects-list";
+import { HeaderSession } from "@/components/app/HeaderSession";
 
 // Which roof today.
 //
@@ -23,6 +24,11 @@ export async function CrewProjectPicker({
     <main className="belin-dark cl-wrap">
       <div className="e-grain" aria-hidden />
       <div className="cl-card">
+        {/* No command bar on this one screen, so the account menu (and the
+            presenter's role switch) sit in a row of their own above the list. */}
+        <div className="cl-session">
+          <HeaderSession locale={locale} />
+        </div>
         <h1 className="cl-title">{t("pickProject")}</h1>
         {projects.length === 0 ? (
           <p className="cl-sub">{tCrew("pickerEmpty")}</p>

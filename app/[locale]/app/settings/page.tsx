@@ -21,6 +21,7 @@ import { VaultPanel } from "@/components/settings/VaultPanel";
 import { NotificationPrefs } from "@/components/settings/NotificationPrefs";
 import { BelinMark } from "@/components/BelinMark";
 import { LocaleSwitch } from "@/components/LocaleSwitch";
+import { HeaderSession } from "@/components/app/HeaderSession";
 
 // Settings. Task B5 gives it the invitations and the crew link; Task B6 adds
 // the company details and the compliance vault to the same page.
@@ -86,6 +87,7 @@ export default async function SettingsPage({
             <Link href={`/${locale}/app`} className="cb-nav">
               {t("backToProjects")}
             </Link>
+            <HeaderSession locale={locale} />
           </div>
         </div>
       </div>

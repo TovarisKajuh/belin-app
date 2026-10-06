@@ -6,6 +6,7 @@ import { listProjectsForOrg } from "@/lib/data/projects-list";
 import { BelinMark } from "@/components/BelinMark";
 import { fmtKwp } from "@/lib/format";
 import { LocaleSwitch } from "@/components/LocaleSwitch";
+import { HeaderSession } from "@/components/app/HeaderSession";
 
 // The EPC's project list. It exists because identity is still a project token:
 // without it, a project created in the wizard is reachable only through the
@@ -47,6 +48,7 @@ export default async function ProjectsPage({
             <Link href={`/${locale}/app/new`} className="pl-new">
               {t("new")}
             </Link>
+            <HeaderSession locale={locale} />
           </div>
         </div>
       </div>

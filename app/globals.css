@@ -1284,15 +1284,6 @@ button.gal-item {
   .lg-ident-row { grid-template-columns: 1fr; gap: 4px; }
 }
 
-/* logout control, paired with the DEV swap pill; goes with the demo login */
-.lp-logout { position: fixed; left: 12px; bottom: 12px; z-index: 60; }
-.lp-logout button {
-  padding: 7px 13px; border-radius: 999px; cursor: pointer;
-  background: rgba(8,14,22,.82); border: 1px solid rgba(255,255,255,.16);
-  color: #cfcabf; font: inherit; font-size: 11.5px; font-weight: 600;
-  letter-spacing: .05em; text-transform: uppercase; backdrop-filter: blur(8px);
-}
-.lp-logout button:hover { color: #fff; border-color: rgba(255,255,255,.3); }
 
 @media (max-width: 900px) {
   .lp-wrap { padding: 20px 20px 32px; }
@@ -1448,7 +1439,6 @@ button.gal-item {
    redefined here rather than given a third class: one place decides how high
    "raised" is on a tabbed screen. Placed after the base rules for the same
    source-order reason the comment above the original gives. */
-.b-tabbed .lp-logout--raised,
 .b-tabbed .b-devbar--raised {
   bottom: calc(var(--cr-tabs-h) + 96px + env(safe-area-inset-bottom));
 }
@@ -1613,7 +1603,6 @@ button.gal-item {
 }
 
 /* Pending state for the demo pills: dim while the form action is in flight. */
-.lp-logout button:disabled,
 .lp-scenario button:disabled { opacity: .55; cursor: default; }
 
 /* Keyboard focus. Buttons and links have no focus style otherwise; inputs and
@@ -1632,13 +1621,6 @@ button.gal-item {
   .belin-dark .mc-recheck-btn { transition: none; }
 }
 
-/* live-sync badge: sits just under the command bar while the channel is up */
-.belin-dark .e-live-fixed {
-  position: fixed; right: 16px; top: calc(58px + env(safe-area-inset-top)); z-index: 30;
-  background: rgba(8,14,22,.7); border: 1px solid var(--e-line); border-radius: 999px;
-  padding: 5px 11px; backdrop-filter: blur(8px); pointer-events: none;
-}
-
 /* ==========================================================================
    Installed-app safe areas. MUST stay last in this file: these override the
    padding set in the base rules and in the mobile media queries above, and
@@ -1655,17 +1637,15 @@ button.gal-item {
 .belin-dark .e-bar-in { padding-top: calc(13px + env(safe-area-inset-top)); }
 .b-screen { padding-top: calc(20px + env(safe-area-inset-top)); }
 .lp-wrap { padding-top: calc(26px + env(safe-area-inset-top)); }
-.lp-logout { bottom: calc(12px + env(safe-area-inset-bottom)); }
 
 @media (max-width: 900px) {
   .lp-wrap { padding-top: calc(20px + env(safe-area-inset-top)); }
 }
 
-/* Raised variants last of all, because the base .lp-logout and .b-devbar rules
-   above set the same property at the same specificity and would otherwise win
-   on source order. */
-.b-devbar--raised,
-.lp-logout--raised {
+/* Raised variants last of all, because the base .b-devbar rules above set
+   the same property at the same specificity and would otherwise win on
+   source order. */
+.b-devbar--raised {
   bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
@@ -2912,11 +2892,6 @@ button.gal-item {
 .belin-dark.ui-portal { position: static; min-height: 0; background: none; }
 /* Above the crew tab bar (z 50) and the floating pills (z 60). */
 .belin-dark .ic-sheet { z-index: 70; }
-/* The raised logout pill is rendered beside the tabbed crew screen, not inside
-   it, so the .b-tabbed rule above never matched and the pill sat inside the
-   send button. Lift it clear of tabs plus the send bar wherever a tabbed crew
-   screen is on the page. */
-body:has(.b-tabbed) .lp-logout--raised { bottom: calc(68px + 96px + env(safe-area-inset-bottom)); }
 /* Delno and Manjka reveal a quantity input: it may shrink, never widen the page. */
 .belin-dark .mc-miss input { flex: 1 1 0; min-width: 0; width: 100%; }
 .belin-dark .b-scope-row > :first-child { min-width: 0; }
@@ -3021,15 +2996,15 @@ body:has(.b-tabbed) .lp-logout--raised { bottom: calc(68px + 96px + env(safe-are
   .dm-guest-links { justify-content: center; }
   .dm-qr { width: 200px; height: 200px; }
 }
-/* The persona switch. Rendered by the /app layout OUTSIDE .belin-dark, so it
-   carries literal colours instead of the --e-* tokens. It sits bottom right,
-   clear of the logout pill (bottom left), the crew submit bar and the tabs. */
-.dm-switch { position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 61; }
-body:has(.b-submit-bar) .dm-switch { bottom: calc(96px + env(safe-area-inset-bottom)); }
-body:has(.b-tabbed) .dm-switch { bottom: calc(68px + 96px + env(safe-area-inset-bottom)); }
-.dm-chip { list-style: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; background: rgba(12,24,38,.92); border: 1px solid rgba(255,210,26,.55); color: #ffe488; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 26px -10px rgba(0,0,0,.6); backdrop-filter: blur(10px); }
+/* The persona switch, docked at the right end of the command bar (lane A,
+   06.10): floating bottom right it sat over the sub's "Potrdi podpis". It
+   keeps literal colours so it reads as presenter chrome, not product. The menu
+   drops down from the bar; on a phone it is pinned to the bar's full width. */
+.dm-switch { position: relative; display: flex; flex: none; }
+.dm-chip { list-style: none; display: inline-flex; align-items: center; height: 34px; padding: 0 12px; border-radius: 999px; background: rgba(255,210,26,.08); border: 1px solid rgba(255,210,26,.55); color: #ffe488; font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; }
 .dm-chip::-webkit-details-marker { display: none; }
-.dm-menu { position: absolute; right: 0; bottom: calc(100% + 8px); display: grid; gap: 4px; min-width: 240px; padding: 8px; border-radius: 14px; background: rgba(8,14,22,.97); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 40px -12px rgba(0,0,0,.7); }
+.dm-chip-ini { display: none; }
+.dm-menu { position: absolute; right: 0; top: calc(100% + 10px); z-index: 40; display: grid; gap: 4px; min-width: 240px; padding: 8px; border-radius: 14px; background: #0b121c; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 40px -12px rgba(0,0,0,.7); }
 .dm-opt { display: flex; flex-direction: column; align-items: flex-start; width: 100%; min-height: 44px; padding: 8px 12px; border-radius: 10px; border: 0; background: transparent; color: #f4f1ea; font: inherit; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }
 .dm-opt span { font-size: 12px; font-weight: 500; color: #8f8a7e; }
 .dm-opt:hover { background: rgba(255,255,255,.06); }
@@ -3318,3 +3293,65 @@ html [data-sonner-toast][data-styled="true"] [data-button].bt-action {
 .belin-dark .ip-row.k-incident .ip-kind .ui-icon { color: var(--e-danger); }
 .belin-dark .e-lb-btn .ui-icon { stroke-width: 1.75; }
 .belin-dark .hr-back a { display: inline-flex; align-items: center; min-width: 44px; min-height: 44px; }
+
+/* === Lane A 06.10: one place for the command bar's session controls ===
+   The account menu (Odjava inside it), the docked role switch and the live
+   badge all sit IN the bar now, not floating over the content. */
+.belin-dark .hs-acct { position: relative; display: flex; flex: none; }
+.belin-dark .hs-acct-btn {
+  list-style: none; position: relative; width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  background: var(--e-surface); border: 1px solid var(--e-line); color: var(--e-ink2);
+}
+.belin-dark .hs-acct-btn::-webkit-details-marker { display: none; }
+.belin-dark .hs-acct-btn:hover,
+.belin-dark .hs-acct[open] .hs-acct-btn { background: var(--e-surface-2); color: var(--e-ink); }
+/* The buttons stay small, the targets do not: 44 px of hit area on each. */
+.belin-dark .hs-acct-btn::after,
+.belin-dark .dm-chip::after { content: ""; position: absolute; left: -5px; right: -5px; top: 50%; height: 44px; transform: translateY(-50%); }
+.belin-dark .dm-chip { position: relative; }
+.belin-dark .hs-menu {
+  position: absolute; right: 0; top: calc(100% + 10px); z-index: 40; min-width: 200px;
+  padding: 6px; border-radius: 14px; background: #101a28; border: 1px solid var(--e-line);
+  box-shadow: 0 26px 60px -24px rgba(0,0,0,.85);
+}
+.belin-dark .hs-who {
+  margin: 0 0 6px; padding: 8px 10px 10px; border-bottom: 1px solid var(--e-line);
+  font-size: 12.5px; color: var(--e-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.belin-dark .hs-out {
+  display: flex; align-items: center; width: 100%; min-height: 44px; padding: 0 10px;
+  border: 0; border-radius: 10px; background: transparent; color: var(--e-ink);
+  font: inherit; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer;
+}
+.belin-dark .hs-out:hover { background: var(--e-surface-2); }
+.belin-dark .hs-out:disabled { opacity: .55; cursor: default; }
+/* The language row exists only on a phone, where it replaces the bar's copy. */
+.belin-dark .hs-lang { display: none; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 4px 6px 10px; margin-bottom: 6px; border-bottom: 1px solid var(--e-line); }
+.belin-dark .hs-lang-l { font-size: 12.5px; color: var(--e-muted); }
+.belin-dark .hs-lang .cb-locales a { padding: 9px 11px; font-size: 12px; }
+/* "v živo" right after the project name, inside the bar's column. */
+.belin-dark .hs-live { flex: none; margin-left: 2px; }
+/* The crew project picker has no bar: its controls get a row above the list. */
+.belin-dark .cl-session { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 18px; }
+
+/* Phone header: room between every item, so nothing touches the wordmark. */
+@media (max-width: 640px) {
+  .belin-dark .e-bar-in { padding-left: 16px; padding-right: 16px; gap: 10px; }
+  .belin-dark .e-br { gap: 8px; }
+  .belin-dark .e-brand { gap: 9px; }
+  .belin-dark .e-br:has(> .hs-acct) > .cb-locales { display: none; }
+  .belin-dark .hs-lang { display: flex; }
+  .dm-chip { width: 34px; padding: 0; justify-content: center; }
+  .dm-chip-role { display: none; }
+  .dm-chip-ini { display: inline; }
+  /* Menus drop from the bar across the screen, never off its left edge. */
+  .belin-dark .e-bar :is(.hs-menu, .dm-menu) {
+    position: fixed; top: calc(62px + env(safe-area-inset-top)); left: 12px; right: 12px; min-width: 0;
+  }
+}
+/* The narrowest phones keep the live dot and read the words to a screen reader
+   only: with the role switch in the bar, "V ŽIVO" would push into the wordmark. */
+@media (max-width: 380px) {
+  .belin-dark .hs-live-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}

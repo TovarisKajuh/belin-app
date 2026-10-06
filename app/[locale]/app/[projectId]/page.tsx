@@ -14,7 +14,6 @@ import { EpcDashboard } from "@/components/epc/EpcDashboard";
 import { SubHome } from "@/components/sub/SubHome";
 import { AddSubPanel } from "@/components/project/AddSubPanel";
 import { projectNeedsSub } from "@/lib/data/projects-list";
-import { LogoutPill } from "@/components/auth/LogoutPill";
 
 // One project, opened by a signed-in person. Same views as the link routes,
 // except that identity is proven rather than presented, so no token is threaded
@@ -70,17 +69,14 @@ export default async function ProjectPage({
     const isOffice = actor.kind === "person" && (actor.role === "admin" || actor.role === "owner");
     const waiting = await getSubWaiting(project, data, isOffice);
     return (
-      <>
-        <SubHome
-          locale={locale}
-          projectId={projectId}
-          data={data}
-          material={material}
-          crewToken={crewToken}
-          waiting={waiting}
-        />
-        <LogoutPill locale={locale} />
-      </>
+      <SubHome
+        locale={locale}
+        projectId={projectId}
+        data={data}
+        material={material}
+        crewToken={crewToken}
+        waiting={waiting}
+      />
     );
   }
 
@@ -91,16 +87,13 @@ export default async function ProjectPage({
     ]);
     if (!data || !material) notFound();
     return (
-      <>
-        <CrewHome
-          token={null}
-          projectId={projectId}
-          data={data}
-          material={material}
-          nav={{ locale, active: "report" }}
-        />
-        <LogoutPill locale={locale} raised />
-      </>
+      <CrewHome
+        token={null}
+        projectId={projectId}
+        data={data}
+        material={material}
+        nav={{ locale, active: "report" }}
+      />
     );
   }
 
@@ -125,7 +118,6 @@ export default async function ProjectPage({
           needsSub ? <AddSubPanel projectId={projectId} projectName={needsSub.name} locale={locale} /> : null
         }
       />
-      <LogoutPill locale={locale} />
     </>
   );
 }
