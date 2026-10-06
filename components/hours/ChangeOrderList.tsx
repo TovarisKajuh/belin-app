@@ -46,6 +46,7 @@ export function ChangeOrderList({
   showMoney?: boolean;
 }) {
   const t = useTranslations("co");
+  const tDoc = useTranslations("doc.ui");
   const uiLocale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -256,6 +257,13 @@ export function ChangeOrderList({
                 </p>
               ) : order.authorName ? (
                 <p className="ip-who">{order.authorName}</p>
+              ) : null}
+
+              {/* The PDF carries the amount, so it shows exactly where money shows (D11). */}
+              {showMoney ? (
+                <a className="hr-pdf" href={`/api/pdf/co/${order.id}`} target="_blank" rel="noreferrer">
+                  {tDoc("coPdf")}
+                </a>
               ) : null}
 
               {canDecide && status === "submitted" ? (

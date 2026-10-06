@@ -24,7 +24,7 @@ export interface CompletionStrings {
   period: string;
   power: string;
   days: string;
-  totalHours: string;
+  approvedHours: string;
   registers: string;
   hoursRegister: string;
   coRegister: string;
@@ -42,8 +42,6 @@ export interface CompletionStrings {
   photos: string;
   incidents: string;
   summary: string;
-  sheetsCount: string;
-  extrasCount: string;
   incidentsCount: string;
   dayList: string;
   crew: string;
@@ -59,9 +57,12 @@ export interface CompletionInput {
   periodLabel: string | null;
   powerLabel: string | null;
   dayCount: number;
-  totalHours: number;
+  /** Approved hours, formatted: the number the invoice bills. */
+  approvedHours: string;
+  /** Label and value pairs, assembled and worded by the data layer. */
+  summaryRows: { label: string; value: string }[];
   days: DayReportData[];
-  hoursRegister: { number: number; hours: number; status: string }[];
+  hoursRegister: { number: number; hours: string; status: string }[];
   coRegister: { number: number; title: string; amount: string; status: string }[];
   incidentRegister: { date: string; kindLabel: string; note: string }[];
   /** The subcontractor: the report is its account of the job. */
@@ -73,10 +74,6 @@ export function CompletionDocument(input: CompletionInput) {
   const { s } = input;
 
   const photoCount = input.days.reduce((sum, day) => sum + day.photos.length, 0);
-  // Extras carry their amount as an already formatted string, so the summary
-  // states how many were priced rather than inventing a total from text.
-  const priced = input.coRegister.filter((row) => row.amount && row.amount.trim() !== "");
-  const approvedExtras = priced.length > 0 ? priced.map((row) => row.amount).join(", ") : "";
 
   return (
     <Document title={`${s.title} ${input.projectName}`}>
@@ -99,7 +96,7 @@ export function CompletionDocument(input: CompletionInput) {
             is the page that gets filed, mailed and printed on its own. */}
         <View style={styles.statBand}>
           <StatTile label={s.days} value={input.dayCount} />
-          <StatTile label={s.totalHours} value={input.totalHours} />
+          <StatTile label={s.approvedHours} value={input.approvedHours} />
           <StatTile label={s.photos} value={photoCount} />
           <StatTile label={s.incidents} value={input.incidentRegister.length} />
         </View>
@@ -113,16 +110,7 @@ export function CompletionDocument(input: CompletionInput) {
             { label: "", widthPct: 62 },
             { label: "", widthPct: 38, align: "right" },
           ]}
-          rows={[
-            [s.sheetsCount, `${input.hoursRegister.length} · ${input.totalHours} h`],
-            [
-              s.extrasCount,
-              input.coRegister.length === 0
-                ? String(input.coRegister.length)
-                : `${input.coRegister.length} · ${approvedExtras}`,
-            ],
-            [s.incidentsCount, String(input.incidentRegister.length)],
-          ]}
+          rows={input.summaryRows.map((row) => [row.label, row.value])}
           emptyLabel={s.none}
           hideHeader
         />
@@ -158,7 +146,7 @@ export function CompletionDocument(input: CompletionInput) {
       {/* Every day that carried work or an incident, in order. The numbering
           comes from buildDayReports, so it can never skip. */}
       {input.days.map((day) => (
-        <DayReportPage key={day.reportNo} day={day} s={s.day} issuer={input.issuer} />
+        <DayReportPage key={day.reportNo} day={day} s={s.day} issuer={input.issuer} projectName={input.projectName} />
       ))}
 
       <Page size="A4" style={styles.page}>

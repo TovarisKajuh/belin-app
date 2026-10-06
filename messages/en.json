@@ -867,7 +867,15 @@
       "extrasCount": "Change orders",
       "incidentsCount": "Incidents",
       "dayList": "Work by day",
-      "crew": "Crew"
+      "crew": "Crew",
+      "approvedHours": "Approved hourly work",
+      "hoursApproved": "Hourly work, approved",
+      "hoursPending": "Hourly work, awaiting decision",
+      "hoursRejected": "Hourly work, rejected",
+      "extrasApproved": "Change orders, approved",
+      "extrasPending": "Change orders, awaiting decision",
+      "extrasRejected": "Change orders, rejected",
+      "extrasUnpriced": "{n} without amount"
     },
     "dayDoc": {
       "reportNo": "No.",
@@ -1090,7 +1098,30 @@
       "at": "public holidays in Austria"
     },
     "ui": {
-      "poTermsHint": "The order terms, including the deadline for day-work sheets, are printed at the end of the purchase order."
+      "poTermsHint": "The order terms, including the deadline for day-work sheets, are printed at the end of the purchase order.",
+      "coPdf": "Change order PDF"
+    },
+    "dateTime": "{date} at {time}",
+    "co": {
+      "title": "Change order",
+      "project": "Project",
+      "client": "Client",
+      "contractor": "Contractor",
+      "site": "Site",
+      "submitted": "Submitted",
+      "submittedBy": "Submitted by",
+      "status": "Status",
+      "decided": "Decided by",
+      "description": "Description of work",
+      "amount": "Amount (net)",
+      "noAmount": "No amount set. Without an amount the work is not invoiced.",
+      "photos": "Photos",
+      "photoCaption": "Photo {n}",
+      "basisSi": "The contract price includes neither additional work (usage 34 of the Slovenian Special Construction Usages 2020) nor unforeseen work that the contractor did not know of and could not have known of when the contract was concluded (usage 32); its price is agreed separately.",
+      "rejectedReason": "Reason for rejection",
+      "approvedNote": "The client approved this claim in Belin.",
+      "rejectedNote": "The client rejected this claim in Belin.",
+      "pendingNote": "This claim is waiting for a decision by the client."
     }
   },
   "toast": {

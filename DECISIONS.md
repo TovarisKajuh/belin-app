@@ -2,6 +2,10 @@
 
 One line per significant decision: what, why, when.
 
+- 2026-10-06: The completion report route answers 302 to a 60 second signed URL after authorization; the small documents keep streaming. Reason: weeks of photographs exceed what a function should buffer and may pass Vercel's response limit.
+
+- 2026-10-06: The completion report states approved hours (by a person or by the clock) and lists open and rejected hours apart. Reason: it must agree with the invoice (DOC-H3).
+
 - 2026-10-06: The naročilnica prints the režijske ure clause (six days after submission, Monday to Saturday except the site country's non-working days, deemed approved) and a contract-basis line by site country (SI: OZ and PGU 2020; DE: VOB/B; AT: ÖNORM B 2110). Reason: D9 makes the deemed approval a term the subcontractor accepts; PGU uzanca 10 counts calendar days unless agreed, so the count is spelled out, and it names the dela prosti dnevi because that is the list the clock skips (tests/hours-clause.test.ts).
 - 2026-10-06: The EPC's empty log shares the project link with the subcontractor, never the crew link, because the crew link stays the subcontractor office's to hand out.
 

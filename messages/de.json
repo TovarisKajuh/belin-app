@@ -867,7 +867,15 @@
       "extrasCount": "Nachträge",
       "incidentsCount": "Vorfälle",
       "dayList": "Bauablauf nach Tagen",
-      "crew": "Mannschaft"
+      "crew": "Mannschaft",
+      "approvedHours": "Genehmigte Regiestunden",
+      "hoursApproved": "Regiestunden, genehmigt",
+      "hoursPending": "Regiestunden, offen",
+      "hoursRejected": "Regiestunden, abgelehnt",
+      "extrasApproved": "Nachträge, genehmigt",
+      "extrasPending": "Nachträge, offen",
+      "extrasRejected": "Nachträge, abgelehnt",
+      "extrasUnpriced": "{n} ohne Betrag"
     },
     "dayDoc": {
       "reportNo": "Nr.",
@@ -1090,7 +1098,30 @@
       "at": "die gesetzlichen Feiertage in Österreich"
     },
     "ui": {
-      "poTermsHint": "Die Bestellbedingungen, auch die Frist für Regieberichte, stehen am Ende der Bestellung."
+      "poTermsHint": "Die Bestellbedingungen, auch die Frist für Regieberichte, stehen am Ende der Bestellung.",
+      "coPdf": "Nachtrag als PDF"
+    },
+    "dateTime": "{date} um {time} Uhr",
+    "co": {
+      "title": "Nachtrag",
+      "project": "Bauvorhaben",
+      "client": "Auftraggeber",
+      "contractor": "Auftragnehmer",
+      "site": "Baustelle",
+      "submitted": "Eingereicht",
+      "submittedBy": "Eingereicht von",
+      "status": "Status",
+      "decided": "Entschieden von",
+      "description": "Leistungsbeschreibung",
+      "amount": "Betrag (netto)",
+      "noAmount": "Kein Betrag angegeben. Ohne Betrag wird die Leistung nicht abgerechnet.",
+      "photos": "Fotos",
+      "photoCaption": "Foto {n}",
+      "basisSi": "Der Vertragspreis umfasst weder Zusatzleistungen (Usance 34 der slowenischen Besonderen Bauusancen 2020) noch unvorhergesehene Leistungen, von denen der Auftragnehmer bei Vertragsschluss weder wusste noch wissen konnte (Usance 32); ihr Preis wird gesondert vereinbart.",
+      "rejectedReason": "Ablehnungsgrund",
+      "approvedNote": "Der Auftraggeber hat den Nachtrag in Belin bestätigt.",
+      "rejectedNote": "Der Auftraggeber hat den Nachtrag in Belin abgelehnt.",
+      "pendingNote": "Der Nachtrag wartet auf die Entscheidung des Auftraggebers."
     }
   },
   "toast": {
