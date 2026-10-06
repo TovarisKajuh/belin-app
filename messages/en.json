@@ -936,5 +936,8 @@
     "installTitle": "Add Belin to your home screen",
     "installBody": "One tap and it opens. No hunting for the link.",
     "installDismiss": "Close"
+  },
+  "doc": {
+    "page": "Page {n} of {total}"
   }
 }

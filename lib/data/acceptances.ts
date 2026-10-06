@@ -5,6 +5,7 @@ import { requireOfficeActor, requireProjectActor, type Actor } from "@/lib/actor
 import { emitEventDeferred } from "@/lib/notify";
 import { getSignedPhotoUrlMap, storeReportPdf } from "@/lib/storage";
 import { renderDocument } from "@/lib/pdf/theme";
+import { loadIssuer } from "@/lib/pdf/issuer";
 import { AbnahmeDocument } from "@/lib/pdf/abnahme";
 import { abnahmeStrings, docString, type DocLocale } from "@/lib/pdf/strings";
 import type {
@@ -347,7 +348,7 @@ async function renderAndStoreProtocol(projectId: string, acceptanceId: string): 
   const { data: project } = await db
     .from("projects")
     .select(
-      "name, language, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)",
+      "name, language, epc_org_id, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)",
     )
     .eq("id", projectId)
     .maybeSingle();
@@ -407,6 +408,7 @@ async function renderAndStoreProtocol(projectId: string, acceptanceId: string): 
         })),
       epcSigner: { name: row.epc_signer_name ?? "", image: await signature(row.epc_signature_path) },
       subSigner: { name: row.sub_signer_name ?? "", image: await signature(row.sub_signature_path) },
+      issuer: await loadIssuer(db, project.epc_org_id),
       s: abnahmeStrings(locale),
     }),
   );

@@ -23,6 +23,7 @@ import {
 import { InvoiceDocument } from "@/lib/pdf/invoice";
 import { invoiceStrings, docString, type DocLocale } from "@/lib/pdf/strings";
 import { renderDocument } from "@/lib/pdf/theme";
+import { loadIssuer } from "@/lib/pdf/issuer";
 import type { InvoiceView } from "@/lib/invoice-view";
 
 export type { InvoiceView, InvoiceWarning } from "@/lib/invoice-view";
@@ -281,6 +282,9 @@ async function renderAndStore(projectId: string, invoiceId: string): Promise<str
       totalVat: invoice.total_vat === null ? null : money(Number(invoice.total_vat)),
       totalGross: money(Number(invoice.total_gross)),
       reverseChargeNote: invoice.reverse_charge_note,
+      // The supplier issues its own invoice: the name and address are the
+      // snapshot printed in the parties block, the logo is the company's current one.
+      issuer: { name: supplier.name, address: supplier.address, logo: (await loadIssuer(db, invoice.sub_org_id)).logo },
       s: invoiceStrings(locale),
     }),
   );

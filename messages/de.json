@@ -936,5 +936,8 @@
     "installTitle": "Belin zum Startbildschirm hinzufügen",
     "installBody": "Ein Wisch, und sie ist offen. Kein Suchen nach dem Link.",
     "installDismiss": "Schließen"
+  },
+  "doc": {
+    "page": "Seite {n} von {total}"
   }
 }

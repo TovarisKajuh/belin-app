@@ -8,7 +8,7 @@
 // they are the same would misrepresent the record.
 
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { C, FlexTable, Footer, Header, LabelValue, styles } from "@/lib/pdf/theme";
+import { C, FlexTable, Footer, Header, LabelValue, RunningHeader, styles, type DocIssuer } from "@/lib/pdf/theme";
 
 export interface RegieberichtStrings {
   title: string;
@@ -26,6 +26,7 @@ export interface RegieberichtStrings {
   deemedNote: string;
   generated: string;
   hoursUnit: string;
+  page: string;
 }
 
 export interface RegieberichtInput {
@@ -40,6 +41,8 @@ export interface RegieberichtInput {
   decidedOn: string | null;
   totalHours: number;
   lines: { date: string; person: string | null; hours: number; description: string }[];
+  /** The subcontractor. */
+  issuer: DocIssuer;
   s: RegieberichtStrings;
 }
 
@@ -49,10 +52,12 @@ export function RegieberichtDocument(input: RegieberichtInput) {
   return (
     <Document title={`${s.title} ${input.number}`}>
       <Page size="A4" style={styles.page}>
+        <RunningHeader title={s.title} docNo={`${s.docNo} ${input.number}`} projectName={input.projectName} />
         <Header
           title={s.title}
           docNo={`${s.docNo} ${input.number}`}
           projectName={input.projectName}
+          issuer={input.issuer}
         />
 
         <View style={{ marginBottom: 14 }}>
@@ -101,12 +106,12 @@ export function RegieberichtDocument(input: RegieberichtInput) {
         {/* Printed only when silence is what approved it. An approval nobody
             actively gave has to say so on its face. */}
         {input.deemed ? (
-          <Text style={{ marginTop: 18, fontSize: 8.5, color: C.muted, lineHeight: 1.5 }}>
+          <Text style={[styles.small, { marginTop: 18, color: C.muted }]}>
             {s.deemedNote}
           </Text>
         ) : null}
 
-        <Footer generatedLabel={s.generated} />
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
       </Page>
     </Document>
   );

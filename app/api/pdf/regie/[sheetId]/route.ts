@@ -8,6 +8,7 @@ import { RegieberichtDocument } from "@/lib/pdf/regiebericht";
 import { regieStrings, sheetStatusLabel, type DocLocale } from "@/lib/pdf/strings";
 import { persistDeemed } from "@/lib/data/hours";
 import { renderDocument } from "@/lib/pdf/theme";
+import { loadIssuer } from "@/lib/pdf/issuer";
 
 // The Regiebericht is rendered ON DEMAND and never stored.
 //
@@ -54,7 +55,7 @@ export async function GET(
 
   const { data: project } = await db
     .from("projects")
-    .select("name, language, organizations:sub_org_id (name)")
+    .select("name, language, sub_org_id, organizations:sub_org_id (name)")
     .eq("id", sheet.project_id)
     .maybeSingle();
 
@@ -100,6 +101,7 @@ export async function GET(
         ...line,
         date: `${line.date.slice(8, 10)}.${line.date.slice(5, 7)}.`,
       })),
+      issuer: await loadIssuer(db, project?.sub_org_id),
       s: regieStrings(locale),
     }),
   );

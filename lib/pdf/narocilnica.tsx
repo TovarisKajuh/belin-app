@@ -11,7 +11,7 @@
 // hooks. The caller resolves them in the PROJECT's language, not the reader's.
 
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { C, FlexTable, Footer, Header, LabelValue, styles } from "@/lib/pdf/theme";
+import { C, FlexTable, Footer, Header, LabelValue, RunningHeader, styles, type DocIssuer } from "@/lib/pdf/theme";
 import { formatMoney } from "@/lib/po-shared";
 
 export interface NarocilnicaParty {
@@ -51,6 +51,7 @@ export interface NarocilnicaStrings {
   hashLabel: string;
   generated: string;
   perHour: string;
+  page: string;
 }
 
 export interface NarocilnicaInput {
@@ -75,6 +76,8 @@ export interface NarocilnicaInput {
   acceptance?: { name: string; at: string } | null;
   /** sha256 of the sent bytes, printed once known. */
   sha256?: string | null;
+  /** The EPC: the orderer issues the naročilnica. */
+  issuer: DocIssuer;
   s: NarocilnicaStrings;
 }
 
@@ -85,10 +88,12 @@ export function NarocilnicaDocument(input: NarocilnicaInput) {
   return (
     <Document title={`${s.title} ${input.number}`}>
       <Page size="A4" style={styles.page}>
+        <RunningHeader title={s.title} docNo={`${s.docNo} ${input.number}`} projectName={input.projectName} />
         <Header
           title={s.title}
           docNo={`${s.docNo} ${input.number}`}
           projectName={input.projectName}
+          issuer={input.issuer}
         />
 
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -155,7 +160,7 @@ export function NarocilnicaDocument(input: NarocilnicaInput) {
 
         <View style={{ marginTop: 22 }}>
           <Text style={styles.sectionTitle}>{s.acceptanceTitle}</Text>
-          <Text style={{ color: C.inkSoft, lineHeight: 1.5 }}>{s.acceptanceBody}</Text>
+          <Text style={[styles.body, { color: C.inkSoft }]}>{s.acceptanceBody}</Text>
 
           {input.acceptance ? (
             <View style={{ marginTop: 8 }}>
@@ -171,7 +176,7 @@ export function NarocilnicaDocument(input: NarocilnicaInput) {
           ) : null}
         </View>
 
-        <Footer generatedLabel={s.generated} />
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
       </Page>
     </Document>
   );

@@ -38,6 +38,7 @@ function invoice(mode: "reverse_charge" | "standard") {
     totalVat: mode === "standard" ? "26.070,00 EUR" : null,
     totalGross: mode === "standard" ? "144.570,00 EUR" : "118.500,00 EUR",
     reverseChargeNote: mode === "reverse_charge" ? reverseChargeNote("si") : null,
+    issuer: { name: "AVESOL d.o.o.", logo: null },
     s: invoiceStrings("sl"),
   });
 }

@@ -936,5 +936,8 @@
     "installTitle": "Dodajte Belin na začetni zaslon",
     "installBody": "Odpre se z eno potezo, brez iskanja povezave.",
     "installDismiss": "Zapri"
+  },
+  "doc": {
+    "page": "Stran {n} od {total}"
   }
 }

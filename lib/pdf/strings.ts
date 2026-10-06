@@ -28,6 +28,28 @@ export function docString(locale: DocLocale, key: string): string {
   return lookupKey(CATALOGS[locale], key) ?? lookupKey(CATALOGS.sl, key) ?? key;
 }
 
+/**
+ * A document string with its {placeholders} filled. Plain replacement, not ICU:
+ * document strings carry no plurals, and a value that itself contains braces
+ * (a project named "{x}") must print as typed rather than be parsed.
+ */
+export function docText(
+  locale: DocLocale,
+  key: string,
+  values: Record<string, string | number> = {},
+): string {
+  let out = docString(locale, key);
+  for (const [name, value] of Object.entries(values)) {
+    out = out.split(`{${name}}`).join(String(value));
+  }
+  return out;
+}
+
+/** The project's language as a document locale; anything unknown prints Slovenian. */
+export function docLocaleOf(language: string | null | undefined): DocLocale {
+  return language === "de" || language === "en" ? language : "sl";
+}
+
 export function poStrings(locale: DocLocale): NarocilnicaStrings {
   const t = (key: string) => docString(locale, key);
   return {
@@ -53,6 +75,7 @@ export function poStrings(locale: DocLocale): NarocilnicaStrings {
     acceptedAt: t("po.doc.acceptedAt"),
     hashLabel: t("po.doc.hashLabel"),
     generated: t("po.doc.generated"),
+    page: t("doc.page"),
   };
 }
 
@@ -74,6 +97,7 @@ export function regieStrings(locale: DocLocale): RegieberichtStrings {
     hoursUnit: t("hours.doc.hoursUnit"),
     deemedNote: t("hours.doc.deemedNote"),
     generated: t("hours.doc.generated"),
+    page: t("doc.page"),
   };
 }
 
@@ -116,6 +140,7 @@ export function completionStrings(locale: DocLocale): CompletionStrings {
     incidentsCount: t("final.doc.incidentsCount"),
     dayList: t("final.doc.dayList"),
     crew: t("final.doc.crew"),
+    page: t("doc.page"),
     day: {
       // Overwritten by the caller with the site-appropriate diary title.
       title: t("final.diaryTitleSi"),
@@ -132,6 +157,7 @@ export function completionStrings(locale: DocLocale): CompletionStrings {
       noWeather: t("final.dayDoc.noWeather"),
       people: t("final.dayDoc.people"),
       generated: t("final.dayDoc.generated"),
+      page: t("doc.page"),
     },
   };
 }
@@ -162,6 +188,7 @@ export function abnahmeStrings(locale: DocLocale): AbnahmeStrings {
     signEpc: t("final.doc.signEpc"),
     signSub: t("final.doc.signSub"),
     generated: t("final.doc.generated"),
+    page: t("doc.page"),
   };
 }
 
@@ -188,5 +215,6 @@ export function invoiceStrings(locale: DocLocale): InvoiceStrings {
     reverseChargeTitle: t("invoice.doc.reverseChargeTitle"),
     generated: t("invoice.doc.generated"),
     regieLine: t("invoice.doc.regieLine"),
+    page: t("doc.page"),
   };
 }
