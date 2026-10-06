@@ -44,6 +44,16 @@ export const VAULT_TYPES = [
 
 export type VaultType = (typeof VAULT_TYPES)[number];
 
+/**
+ * The documents whose ABSENCE is the finding on a site in this country, listed
+ * even when nothing was uploaded. The Freistellungsbescheinigung is German law
+ * (§ 48b EStG): asking for it on a Slovenian roof reads as a product built for
+ * somebody else, and the EPC there owes nobody that certificate.
+ */
+export function requiredVaultTypes(siteCountry: string | null | undefined): VaultType[] {
+  return siteCountry === "de" ? ["a1", "freistellungsbescheinigung"] : ["a1"];
+}
+
 export function isVaultType(value: string): value is VaultType {
   return (VAULT_TYPES as readonly string[]).includes(value);
 }

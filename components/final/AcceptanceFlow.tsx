@@ -226,7 +226,7 @@ export function AcceptanceFlow({
               <li key={defect.id}>
                 <span className="ac-d-text">{defect.description}</span>
                 <span className="ac-d-meta">
-                  {defect.dueDate ?? ""} · {t(defect.agreement === "disputed" ? "disputed" : "agreed")}
+                  {defect.dueDate ? `${fmtDate(defect.dueDate, locale)} · ` : ""}{t(defect.agreement === "disputed" ? "disputed" : "agreed")}
                 </span>
                 <button
                   type="button"

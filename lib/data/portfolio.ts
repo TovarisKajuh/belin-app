@@ -25,7 +25,11 @@ export interface PortfolioProject {
   city: string | null;
   status: string;
   kwp: number | null;
-  subName: string | null;
+  /**
+   * The other party: the subcontractor on an EPC's card, the client on a
+   * subcontractor's. A card naming the reader's own company tells them nothing.
+   */
+  partyName: string | null;
   progressPercent: number;
   /** Cumulative progress per reported day, oldest first. */
   trend: number[];
@@ -73,7 +77,7 @@ export async function getPortfolio(actor: OrgActor): Promise<PortfolioData> {
   const { data: projects } = await db
     .from("projects")
     .select(
-      "id, name, status, address_city, kwp, created_at, planned_start, planned_end, organizations!projects_sub_org_id_fkey (name)",
+      "id, name, status, address_city, kwp, created_at, planned_start, planned_end, epc_org_id, sub_org:organizations!projects_sub_org_id_fkey (name), epc_org:organizations!projects_epc_org_id_fkey (name)",
     )
     .or(`epc_org_id.eq.${actor.orgId},sub_org_id.eq.${actor.orgId}`)
     .order("created_at", { ascending: false });
@@ -211,7 +215,9 @@ export async function getPortfolio(actor: OrgActor): Promise<PortfolioData> {
       city: project.address_city,
       status: project.status,
       kwp: project.kwp === null ? null : Number(project.kwp),
-      subName: (project.organizations as { name: string } | null)?.name ?? null,
+      partyName:
+        ((project.epc_org_id === actor.orgId ? project.sub_org : project.epc_org) as { name: string } | null)
+          ?.name ?? null,
       progressPercent,
       trend,
       scheduleDays,

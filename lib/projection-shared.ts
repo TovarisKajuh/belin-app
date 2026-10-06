@@ -10,6 +10,12 @@ export interface ProjectionInput {
   today: string;
   plannedStart: string | null;
   plannedEnd: string | null;
+  /**
+   * A delivered project's last reported day. When set, the finish is that
+   * fact rather than a projection from today: a job finished in June must not
+   * read as a hundred days late in October.
+   */
+  deliveredOn?: string | null;
 }
 
 export interface Projection {
@@ -68,9 +74,11 @@ function addWorkingDays(startIso: string, n: number): string {
 // signal (fewer than 2 points) or no upward movement. Working-day totals and
 // the deadline buffer are only computed when the planned dates are set.
 export function computeProjection(input: ProjectionInput): Projection {
-  const { history, currentPercent, today, plannedStart, plannedEnd } = input;
+  const { history, currentPercent, today, plannedStart, plannedEnd, deliveredOn } = input;
+  // The clock of a delivered project stopped on its last reported day.
+  const asOf = deliveredOn ?? today;
 
-  const workingDaysElapsed = plannedStart ? businessDaysBetween(plannedStart, today) : null;
+  const workingDaysElapsed = plannedStart ? businessDaysBetween(plannedStart, asOf) : null;
   const workingDaysTotal =
     plannedStart && plannedEnd ? businessDaysBetween(plannedStart, plannedEnd) : null;
 
@@ -92,6 +100,9 @@ export function computeProjection(input: ProjectionInput): Projection {
       projectedFinish = daysNeeded <= 0 ? today : addWorkingDays(today, daysNeeded);
     }
   }
+  // Delivered: the answer is a fact, not a forecast, and the same one
+  // scheduleVarianceDays gives the portfolio card.
+  if (deliveredOn) projectedFinish = deliveredOn;
 
   let daysVsDeadline: number | null = null;
   if (projectedFinish && plannedEnd) {

@@ -7,9 +7,12 @@ import { fmtDate, fmtNumber } from "@/lib/format";
 export async function StatRow({
   projection,
   photoCount,
+  delivered = false,
 }: {
   projection: Projection;
   photoCount: number;
+  /** A finished project: the finish tile is the actual day, not a forecast. */
+  delivered?: boolean;
 }) {
   const t = await getTranslations("dashboard");
   const locale = await getLocale();
@@ -52,7 +55,7 @@ export async function StatRow({
 
         {finish && (
           <div className="e-stat">
-            <div className="l">{t("plannedFinish")}</div>
+            <div className="l">{t(delivered ? "finishedOn" : "plannedFinish")}</div>
             <div className="v e-mono">{finish}</div>
             {buffer && (
               <div className="s">

@@ -230,12 +230,18 @@ export async function getEpcDashboard(actor: ProjectActor): Promise<EpcDashboard
     ([date, cumulativePercent]) => ({ date, cumulativePercent })
   );
 
+  // A delivered project is judged on where it actually landed: its last day
+  // with reported quantities, the same day the portfolio card uses
+  // (scheduleVarianceDays), so the card and this overview cannot disagree.
+  const lastReportedDate =
+    entries.find((e) => (rawQtyByEntry[e.id] ?? []).length > 0)?.entry_date ?? null;
   const projection = computeProjection({
     history,
     currentPercent: core.progressPercent,
     today: core.today,
     plannedStart: core.plannedStart,
     plannedEnd: core.plannedEnd,
+    deliveredOn: core.status === "finished" ? lastReportedDate : null,
   });
 
   // Material panel: reduce the list and latest check to the gate/re-check state,
