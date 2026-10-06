@@ -624,6 +624,7 @@
     "unit": "Unit",
     "unitPrice": "Unit price",
     "lineTotal": "Row total",
+    "totalNet": "Total (excl. VAT)",
     "regieRate": "Hourly rate for hourly work",
     "paymentTerms": "Payment terms",
     "deadlineField": "Completion deadline",

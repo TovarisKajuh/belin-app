@@ -198,7 +198,7 @@ export function PoBuilder({
         </button>
 
         <div className="po-total">
-          <span>{t("lineTotal")}</span>
+          <span>{t("totalNet")}</span>
           <b>{formatMoney(total, locale)}</b>
         </div>
       </div>

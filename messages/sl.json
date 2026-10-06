@@ -624,6 +624,7 @@
     "unit": "Enota",
     "unitPrice": "Cena na enoto",
     "lineTotal": "Vrstica skupaj",
+    "totalNet": "Skupaj (brez DDV)",
     "regieRate": "Urna postavka za režijske ure",
     "paymentTerms": "Plačilni pogoji",
     "deadlineField": "Rok izvedbe",

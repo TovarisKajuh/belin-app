@@ -98,7 +98,7 @@ export function PoView({
         </div>
 
         <div className="po-total">
-          <span>{t("lineTotal")}</span>
+          <span>{t("totalNet")}</span>
           <b>{formatMoney(po.totalNet, locale)}</b>
         </div>
 

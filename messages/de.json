@@ -624,6 +624,7 @@
     "unit": "Einheit",
     "unitPrice": "Einzelpreis",
     "lineTotal": "Zeilensumme",
+    "totalNet": "Gesamt (ohne MwSt.)",
     "regieRate": "Stundensatz für Regiestunden",
     "paymentTerms": "Zahlungsbedingungen",
     "deadlineField": "Ausführungsfrist",
