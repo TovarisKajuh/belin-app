@@ -1119,6 +1119,9 @@
     "founderNoPhone": "ni podan",
     "founderTime": "Čas: {value}",
     "founderVatDuplicate": "Pozor: ta davčna številka je že pri organizaciji {value}.",
-    "founderCta": "Odgovori po e-pošti"
+    "founderCta": "Odgovori po e-pošti",
+    "noAccount": "Še niste registrirani?",
+    "startFree": "Začnite brezplačno",
+    "ctaStart": "Začnite brezplačno"
   }
 }

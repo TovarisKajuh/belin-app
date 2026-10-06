@@ -1119,6 +1119,9 @@
     "founderNoPhone": "nicht angegeben",
     "founderTime": "Zeit: {value}",
     "founderVatDuplicate": "Achtung: diese USt-IdNr. gehört bereits zur Organisation {value}.",
-    "founderCta": "Per E-Mail antworten"
+    "founderCta": "Per E-Mail antworten",
+    "noAccount": "Noch nicht registriert?",
+    "startFree": "Kostenlos starten",
+    "ctaStart": "Kostenlos starten"
   }
 }

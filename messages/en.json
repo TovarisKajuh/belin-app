@@ -1119,6 +1119,9 @@
     "founderNoPhone": "not given",
     "founderTime": "Time: {value}",
     "founderVatDuplicate": "Note: this VAT number already belongs to the organization {value}.",
-    "founderCta": "Reply by email"
+    "founderCta": "Reply by email",
+    "noAccount": "Not registered yet?",
+    "startFree": "Start for free",
+    "ctaStart": "Start for free"
   }
 }

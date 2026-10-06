@@ -3073,3 +3073,13 @@ body:has(.b-tabbed) .dm-switch { bottom: calc(68px + 96px + env(safe-area-inset-
 @media (max-width: 420px) {
   .lp .su-sum-row { grid-template-columns: 1fr; gap: 2px; }
 }
+
+/* === 4.9: front doors === */
+.lp .lp-enter.su-enter-quiet {
+  background: transparent; color: var(--e-ink2);
+  border: 1px solid var(--e-line); box-shadow: none;
+}
+.lp .lp-enter.su-enter-quiet:hover { color: var(--e-ink); background: var(--e-surface); box-shadow: none; }
+@media (max-width: 560px) {
+  .lp .su-hide-narrow { display: none; }
+}

@@ -8,6 +8,8 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { MagicLinkForm } from "@/components/auth/MagicLinkForm";
 import { Wordmark } from "@/components/landing/Wordmark";
 import { LegalLinks } from "@/components/landing/LegalLinks";
+import { signupOpen } from "@/lib/data/signups";
+import { personaForPersonId } from "@/lib/demo/personas";
 
 /**
  * Signing in, on its own screen.
@@ -33,13 +35,20 @@ export default async function Login({
   // Already signed in: there is nothing to do here. Resolved, not read from the
   // cookie, for the same reason the landing page resolves it: a stale cookie
   // that bounces between here and /app is an infinite redirect.
-  if (await resolveActorFromSession()) redirect(`/${locale}/app`);
+  //
+  // A phone that joined the meeting through the guest QR (D18), or any Demo
+  // Door persona, or a project-link session, is not an account of its own: it
+  // gets the form, so the "Prijavite se" links from the signup errors work on
+  // the buyer's phone. Only a real person session goes to the app.
+  const actor = await resolveActorFromSession();
+  if (actor?.kind === "person" && personaForPersonId(actor.personId) === null) redirect(`/${locale}/app`);
 
   const { next } = await searchParams;
   const safe = safeNext(next) ?? "";
   const demoLogin = process.env.DEMO_LOGIN === "1";
 
   const t = await getTranslations("landing");
+  const tSignup = await getTranslations("signup");
 
   return (
     <main className="belin-dark lp">
@@ -76,6 +85,14 @@ export default async function Login({
             {/* The demo password path is opt IN and fail closed: it appears only
                 when DEMO_LOGIN is exactly "1". Task J4 deletes it outright. */}
             {demoLogin && <LoginForm locale={locale} />}
+            {/* Last in the card, so it never sits between two forms while the
+                demo password path still exists (Task 2.4 removes it). */}
+            {signupOpen() && (
+              <p className="su-alt">
+                {tSignup("noAccount")}{" "}
+                <Link href={`/${locale}/registracija`}>{tSignup("startFree")}</Link>
+              </p>
+            )}
           </section>
         </div>
 
