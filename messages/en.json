@@ -200,7 +200,11 @@
       "withdrawReview": "Withdraw request",
       "acceptReview": "Accept and finish",
       "sendBack": "Send back to work"
-    }
+    },
+    "confirmCancel": "A cancelled project cannot be reopened. Do you really want to cancel it?",
+    "confirmYes": "Yes, cancel the project",
+    "confirmNo": "No, go back",
+    "finishViaAcceptance": "Finish: sign the acceptance record"
   },
   "landing": {
     "eyebrow": "SOLAR SITES",
@@ -738,7 +742,7 @@
       "colDescription": "Description of the work",
       "totalHours": "Total hours",
       "hoursUnit": "h",
-      "deemedNote": "This sheet was approved after the response deadline passed: the client did not respond within the agreed period of six working days, so it counts as approved.",
+      "deemedNote": "This sheet is deemed approved because the period ended: the client did not respond within six days of submission, counted as the order terms define them (Monday to Saturday, excluding public holidays), so under those terms it counts as approved.",
       "generated": "Generated in Belin"
     },
     "tabHours": "Hourly work",
@@ -910,11 +914,17 @@
       "declaration": "Please choose the acceptance declaration.",
       "signatures": "One side's signature is missing.",
       "signerNames": "Please enter the names of both signers.",
-      "signature": "The signature could not be saved."
+      "signature": "The signature could not be saved.",
+      "refusedNeedsDefects": "To refuse the acceptance, enter at least one defect that is the reason for the refusal.",
+      "reservationsNeedDefects": "To accept with reservations, enter at least one defect the reservation covers.",
+      "warrantyBeforeAcceptance": "The warranty cannot start before the day of acceptance."
     },
     "noAcceptance": "The acceptance has not started yet.",
     "acceptanceByClient": "The acceptance is carried out by the client.",
-    "acceptanceSignedShort": "The acceptance is done."
+    "acceptanceSignedShort": "The acceptance is done.",
+    "warrantyHint": "The default is the day of acceptance. The warranty cannot start earlier.",
+    "needsDefect": "With this declaration, enter at least one defect.",
+    "startFinal": "Start the final acceptance"
   },
   "invoice": {
     "title": "Invoice",
@@ -1045,10 +1055,25 @@
   },
   "doc": {
     "page": "Page {n} of {total}",
-    "dateTime": "{date} at {time}",
+    "po": {
+      "termsTitle": "Order terms",
+      "regieClause": "Day-work hours. The contractor records day-work on hour sheets in Belin. The client approves or rejects a submitted sheet within six days of submission, counting Monday to Saturday excluding {holidays}; the day of submission does not count. If the client does not respond within that period, the sheet is deemed approved. Approved hours are charged at the hourly rate in this order.",
+      "basis": {
+        "si": "Matters not covered by this order are governed by the Slovenian Obligations Code (Obligacijski zakonik) and the Special Construction Usages 2020 (Posebne gradbene uzance 2020).",
+        "de": "Matters not covered by this order are governed by the VOB/B in the version in force when the contract is concluded.",
+        "at": "Matters not covered by this order are governed by ÖNORM B 2110 in the version in force when the contract is concluded."
+      }
+    },
+    "holidays": {
+      "si": "public non-working days in Slovenia",
+      "de": "public holidays observed throughout Germany",
+      "at": "public holidays in Austria"
+    },
     "ui": {
+      "poTermsHint": "The order terms, including the deadline for day-work sheets, are printed at the end of the purchase order.",
       "coPdf": "Change order PDF"
     },
+    "dateTime": "{date} at {time}",
     "co": {
       "title": "Change order",
       "project": "Project",

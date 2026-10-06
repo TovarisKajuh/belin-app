@@ -36,7 +36,7 @@ export async function renderPoPdf(
   const { data: project } = await db
     .from("projects")
     .select(
-      "id, name, language, address_street, address_zip, address_city, epc_org_id, sub_org_id",
+      "id, name, language, country, address_street, address_zip, address_city, epc_org_id, sub_org_id",
     )
     .eq("id", projectId)
     .maybeSingle();
@@ -100,7 +100,7 @@ export async function renderPoPdf(
       },
       acceptance,
       issuer: { name: epc?.name ?? "", address: epc?.address ?? null, logo: await loadLogo(db, epc?.logo_path) },
-      s: poStrings(locale),
+      s: poStrings(locale, project.country),
     }),
   );
 

@@ -3044,3 +3044,18 @@ body:has(.b-tabbed) .dm-switch { bottom: calc(68px + 96px + env(safe-area-inset-
   height: 150px; border-radius: 12px; border: 1px dashed var(--e-line);
   color: var(--e-ok); font-weight: 700; font-size: 14px;
 }
+
+/* === 3.5: Status menu confirm === */
+.b-status-confirm { padding: 6px 6px 2px; max-width: 260px; }
+.b-status-confirm-t { margin: 0 0 8px; font-size: 13px; line-height: 1.45; color: var(--ink); }
+.belin-dark .b-status-confirm-t { color: var(--e-ink2); }
+.b-status-opt.b-status-danger { color: #c2410c; }
+.belin-dark .b-status-opt.b-status-danger { color: #ff9f6b; }
+.b-status-opt.b-status-link {
+  text-decoration: none; font-weight: 500; font-size: 13px; color: var(--muted);
+  border-top: 1px solid var(--line); border-radius: 0 0 10px 10px; margin-top: 4px;
+}
+.belin-dark .b-status-opt.b-status-link { color: var(--e-muted); border-top-color: var(--e-line); }
+
+/* === 4.5d: plan drop === */
+.belin-dark .wz-drop.wz-drop-over { outline: 2px dashed var(--e-gold); outline-offset: 4px; }

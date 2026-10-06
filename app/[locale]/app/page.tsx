@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
-import { resolveActorFromSession, sessionToken, sessionScenario } from "@/lib/auth";
+import { resolveActorFromSession, sessionToken } from "@/lib/auth";
 import { getCrewHome } from "@/lib/data/reports";
 import { getMaterialState } from "@/lib/data/materials";
 import { getEpcDashboard } from "@/lib/data/epc-dashboard";
@@ -13,7 +13,6 @@ import { ProjectList } from "@/components/app/ProjectList";
 import { CrewProjectPicker } from "@/components/crew/CrewProjectPicker";
 import { listProjectsForPerson } from "@/lib/data/projects-list";
 import { crewPickable } from "@/lib/crew-shared";
-import { ScenarioPill } from "@/components/auth/ScenarioPill";
 
 // The signed-in view. Same role router as /p/[token], except identity comes
 // from the session cookie instead of the URL. The token still reaches the view
@@ -64,7 +63,6 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
   // Start the token-independent reads so they overlap the main view fetch
   // instead of running after it.
   const siblingPromise = getSiblingToken(actor);
-  const scenarioPromise = sessionScenario();
 
   let view;
   if (actor.role === "sub") {
@@ -80,11 +78,10 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
   // The crew screen has a fixed submit bar along the bottom, so both pills lift
   // clear of it there.
   const raised = actor.role === "sub";
-  const [sibling, scenario] = await Promise.all([siblingPromise, scenarioPromise]);
+  const sibling = await siblingPromise;
   return (
     <>
       {view}
-      {scenario && <ScenarioPill locale={locale} scenario={scenario} raised={raised} />}
       <LogoutPill locale={locale} raised={raised} />
       {sibling && (
         <DevSwapBar

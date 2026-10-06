@@ -4,7 +4,6 @@ import Link from "next/link";
 import { routing } from "@/i18n/routing";
 import { resolveActorFromSession } from "@/lib/auth";
 import { safeNext } from "@/lib/auth-core";
-import { LoginForm } from "@/components/auth/LoginForm";
 import { MagicLinkForm } from "@/components/auth/MagicLinkForm";
 import { Wordmark } from "@/components/landing/Wordmark";
 import { LegalLinks } from "@/components/landing/LegalLinks";
@@ -37,7 +36,6 @@ export default async function Login({
 
   const { next } = await searchParams;
   const safe = safeNext(next) ?? "";
-  const demoLogin = process.env.DEMO_LOGIN === "1";
 
   const t = await getTranslations("landing");
 
@@ -73,9 +71,6 @@ export default async function Login({
             </h1>
             <p className="lp-card-sub">{t("signInSub")}</p>
             <MagicLinkForm locale={locale} next={safe} />
-            {/* The demo password path is opt IN and fail closed: it appears only
-                when DEMO_LOGIN is exactly "1". Task J4 deletes it outright. */}
-            {demoLogin && <LoginForm locale={locale} />}
           </section>
         </div>
 

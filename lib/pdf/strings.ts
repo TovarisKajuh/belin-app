@@ -50,8 +50,13 @@ export function docLocaleOf(language: string | null | undefined): DocLocale {
   return language === "de" || language === "en" ? language : "sl";
 }
 
-export function poStrings(locale: DocLocale): NarocilnicaStrings {
+/**
+ * The naročilnica's strings. `country` is the SITE's: it picks the non-working
+ * days named in the clause and the contract-basis line.
+ */
+export function poStrings(locale: DocLocale, country: string | null | undefined): NarocilnicaStrings {
   const t = (key: string) => docString(locale, key);
+  const site = country === "de" || country === "at" ? country : "si";
   return {
     title: t("po.title"),
     docNo: t("po.doc.docNo"),
@@ -76,6 +81,9 @@ export function poStrings(locale: DocLocale): NarocilnicaStrings {
     hashLabel: t("po.doc.hashLabel"),
     generated: t("po.doc.generated"),
     page: t("doc.page"),
+    termsTitle: t("doc.po.termsTitle"),
+    regieClause: docText(locale, "doc.po.regieClause", { holidays: t(`doc.holidays.${site}`) }),
+    basis: t(`doc.po.basis.${site}`),
   };
 }
 
