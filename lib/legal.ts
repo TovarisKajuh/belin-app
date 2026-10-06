@@ -40,18 +40,20 @@ export interface Operator {
   vatId: string | null;
 }
 
+// Filled 2026-10-06 from the founder's answer to Task 0.6 c and d and the
+// AJPES / bizi.si register entry he supplied: AVESOL d.o.o. operates Belin.
 export const OPERATOR: Operator = {
-  legalName: null,
-  legalForm: null,
-  street: null,
-  zip: null,
-  city: null,
-  country: null,
-  email: "info@getbelin.com",
+  legalName: "AVESOL",
+  legalForm: "d.o.o.",
+  street: "Poštna ulica 1",
+  zip: "2000",
+  city: "Maribor",
+  country: "Slovenija",
+  email: "info@avesol.eu",
   phone: null,
-  representative: null,
-  registerNumber: null,
-  vatId: null,
+  representative: "Jan Drozg, direktor",
+  registerNumber: "9788778000",
+  vatId: "SI26459973",
 };
 
 /**
