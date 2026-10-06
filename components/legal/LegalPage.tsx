@@ -23,7 +23,7 @@ export function LegalPage({
   locale: string;
   /** This page's own route segment, so the language switch stays on the page
    *  the reader is actually reading instead of dropping them on the pitch. */
-  path: "impressum" | "zasebnost";
+  path: "impressum" | "zasebnost" | "pogoji";
   title: string;
   subtitle?: string;
   /** The identity block, on the Impressum. */

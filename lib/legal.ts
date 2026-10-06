@@ -85,3 +85,20 @@ export function missingLegalFields(): string[] {
     return !(typeof value === "string" && value.trim().length > 0);
   });
 }
+
+/**
+ * The version of the Pogoji uporabe a signup agrees to. Stored on the signup
+ * row and on the organization (terms_version), so "which terms did this
+ * customer accept" always has an answer. Change it whenever the terms text in
+ * lib/legal-copy.ts changes in substance.
+ */
+export const TERMS_VERSION = "2026-10-06";
+
+/**
+ * Where a stuck customer reaches a person: the signup confirmation, the closed
+ * signup page and the first-run help card. From the founder's answer 0.6 d.
+ */
+export const SUPPORT: { email: string; phone: string | null } = {
+  email: OPERATOR.email ?? "info@getbelin.com",
+  phone: OPERATOR.phone,
+};

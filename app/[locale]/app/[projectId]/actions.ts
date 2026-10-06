@@ -184,7 +184,10 @@ export async function createSubInviteLink(
       url,
     );
     after(async () => {
-      await sendEmail({ to: email, kind: "invite", projectId, subject: t("subject"), html });
+      const result = await sendEmail({ to: email, kind: "invite", projectId, subject: t("subject"), html });
+      // The link is still returned to the EPC, so the invite works through
+      // WhatsApp; a failed mail is logged loudly instead of vanishing.
+      if (!result.sent) console.error(`[email] subcontractor invite NOT delivered: ${result.reason}`);
     });
   }
 

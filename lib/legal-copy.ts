@@ -39,6 +39,11 @@ export interface LegalCopy {
     updated: string;
     sections: LegalSection[];
   };
+  terms: {
+    title: string;
+    updated: string;
+    sections: LegalSection[];
+  };
 }
 
 const PROCESSORS_SL = [
@@ -56,6 +61,105 @@ const PROCESSORS_EN = [
   "Vercel (application hosting).",
   "Resend (email delivery, such as sign-in links and notifications).",
 ];
+
+// DRAFT pilot terms, written 2026-10-06 for the founder's approval. Slovenian
+// first; de and en reuse it until the founder approves the wording (debt).
+const TERMS_SL: LegalCopy["terms"] = {
+  title: "Pogoji uporabe",
+  updated: "Različica 2026-10-06, za pilotno obdobje. Veljajo od 6. oktobra 2026.",
+  sections: [
+    {
+      h: "1. Ponudnik in uporabniki",
+      p: [
+        "Storitev Belin ponuja podjetje, navedeno v impresumu (v nadaljevanju: ponudnik).",
+        "Pogoji veljajo med ponudnikom in podjetjem, ki se v Belin registrira kot naročnik (v nadaljevanju: naročnik). Naročnik je praviloma izvajalec gradnje sončnih elektrarn, ki v Belin povabi svoje podizvajalce in sodelavce.",
+        "Osebe, ki jih naročnik ali njegovi podizvajalci povabijo v Belin, storitev uporabljajo v imenu svojega podjetja. Za njihovo ravnanje v Belinu odgovarja podjetje, ki jim je omogočilo dostop.",
+      ],
+    },
+    {
+      h: "2. Kaj je Belin",
+      p: [
+        "Belin je spletna aplikacija za sodelovanje med izvajalcem in podizvajalci na gradbišču: projekti in udeleženci, dnevna poročila s fotografijami in izračunanim napredkom, režijske ure, dodatna dela, naročilnice, zapisnik o prevzemu, računi in dokumenti o skladnosti.",
+        "Belin pripravlja dokumente iz podatkov, ki jih vnesejo uporabniki. Za pravilnost vnesenih podatkov in za vsebino dokumentov, ki jih uporabniki potrdijo ali podpišejo, odgovarjajo uporabniki oziroma njihova podjetja.",
+      ],
+    },
+    {
+      h: "3. Pilotno obdobje in cena",
+      p: [
+        "Pilotno obdobje traja do podpisa zapisnika o prevzemu prvega projekta naročnika v Belinu, najdlje 90 dni od registracije, razen če se stranki pisno dogovorita drugače.",
+        "Med pilotnim obdobjem je uporaba za naročnika brezplačna, brez plačilne kartice in brez obveznosti nadaljevanja.",
+        "Podizvajalci in njihove ekipe Belin uporabljajo brezplačno.",
+        "Morebitno plačljivo naročnino po pilotu ponudnik in naročnik dogovorita pisno in vnaprej. Brez izrecnega soglasja naročnika plačljiva naročnina ne začne teči.",
+      ],
+    },
+    {
+      h: "4. Uporabniški račun in dostop",
+      p: [
+        "Naročnik ob registraciji navede resnične podatke o podjetju in o osebi, ki uporabniški račun upravlja.",
+        "Prijava poteka s povezavo, ki jo pošljemo na e-poštni naslov uporabnika. Uporabnik varuje dostop do svojega e-poštnega predala in ponudnika nemudoma obvesti, če sumi zlorabo.",
+        "Naročnik sam odloča, koga povabi v svoje projekte, in lahko dostop kadar koli odvzame.",
+      ],
+    },
+    {
+      h: "5. Podatki o projektih in varstvo osebnih podatkov",
+      p: [
+        "Podatki o projektih, ki jih vnesejo naročnik, njegovi podizvajalci in njihove ekipe, pripadajo naročniku oziroma podjetju, ki jih je vneslo. Ponudnik jih uporablja samo za izvajanje storitve.",
+        "Za osebne podatke v projektih, na primer imena delavcev, fotografije z gradbišča, ure in podpise, je upravljavec naročnik. Ponudnik jih kot obdelovalec obdeluje po njegovih navodilih in v skladu s členom 28 Splošne uredbe o varstvu podatkov (GDPR).",
+        "Ponudnik osebne podatke v projektih obdeluje samo po dokumentiranih navodilih naročnika, ki so ti pogoji in nastavitve aplikacije. Zagotovi, da so osebe z dostopom zavezane k zaupnosti, in izvaja ustrezne tehnične in organizacijske ukrepe varnosti. Uporablja samo podobdelovalce, navedene v obvestilu o varstvu osebnih podatkov. Naročniku pomaga pri uresničevanju pravic posameznikov in ga brez nepotrebnega odlašanja obvesti o kršitvi varstva osebnih podatkov. Ob prenehanju podatke vrne ali izbriše po izbiri naročnika in mu da na voljo informacije, potrebne za dokazovanje skladnosti s členom 28 GDPR. Na zahtevo naročnika ponudnik podpiše tudi ločeno pogodbo o obdelavi osebnih podatkov.",
+        "Za podatke o uporabniškem računu, torej ime, e-pošto, telefon in podatke o podjetju, je upravljavec ponudnik. Podrobnosti so v obvestilu o varstvu osebnih podatkov.",
+      ],
+    },
+    {
+      h: "6. Gostovanje in zunanji ponudniki",
+      p: [
+        "Baza podatkov in datoteke so shranjene v Evropski uniji, v podatkovnem centru v Frankfurtu v Nemčiji. Tudi strežniški del aplikacije teče v Frankfurtu.",
+        "Za delovanje storitve ponudnik uporablja zunanje ponudnike gostovanja in pošiljanja e-pošte. Njihov seznam je v obvestilu o varstvu osebnih podatkov. O zamenjavi ali dodajanju takega ponudnika naročnika obvestimo vnaprej.",
+      ],
+    },
+    {
+      h: "7. Izvoz in izbris podatkov",
+      p: [
+        "Naročnik lahko kadar koli zahteva izvoz podatkov svojega podjetja. Ustvarjeni dokumenti so na voljo v obliki PDF, ostali podatki v strojno berljivi obliki. Izvoz pripravimo v 14 dneh od zahteve.",
+        "Naročnik lahko kadar koli zahteva izbris podatkov svojega podjetja. Izbris izvedemo v 30 dneh od zahteve, razen podatkov, ki jih moramo hraniti po zakonu.",
+        "Zahtevo pošljite na e-poštni naslov iz impresuma.",
+      ],
+    },
+    {
+      h: "8. Razpoložljivost in odgovornost",
+      p: [
+        "Ponudnik storitev med pilotom zagotavlja z razumno skrbnostjo, vendar ne jamči neprekinjenega ali brezhibnega delovanja ali določene ravni razpoložljivosti. Napake odpravljamo čim hitreje in o daljših izpadih obvestimo naročnika.",
+        "Belin ne nadomešča strokovne presoje uporabnikov. Ponudnik ne odgovarja za odločitve, sprejete na podlagi podatkov v Belinu, niti za vsebino dokumentov, ki jih uporabniki pripravijo, potrdijo ali podpišejo.",
+        "Ker je uporaba med pilotom brezplačna, ponudnik v največjem obsegu, ki ga dopušča zakon, odgovarja le za škodo, povzročeno namenoma ali iz hude malomarnosti.",
+      ],
+    },
+    {
+      h: "9. Prenehanje",
+      p: [
+        "Naročnik lahko uporabo kadar koli preneha s sporočilom na e-poštni naslov iz impresuma.",
+        "Ponudnik lahko pilot konča z obvestilom po e-pošti najmanj 30 dni vnaprej, ob zlorabi storitve ali hujši kršitvi teh pogojev pa takoj.",
+        "Ob prenehanju naročniku na zahtevo pripravimo izvoz podatkov, nato podatke izbrišemo v skladu s točko 7.",
+      ],
+    },
+    {
+      h: "10. Spremembe pogojev",
+      p: [
+        "O spremembah pogojev ponudnik naročnika obvesti po e-pošti najmanj 14 dni pred začetkom njihove veljavnosti. Če se naročnik s spremembo ne strinja, lahko uporabo preneha. Nadaljnja uporaba po začetku veljavnosti pomeni strinjanje.",
+        "Pri registraciji zabeležimo čas strinjanja in različico pogojev, s katero se je naročnik strinjal.",
+      ],
+    },
+    {
+      h: "11. Pravo in reševanje sporov",
+      p: [
+        "Za te pogoje velja pravo Republike Slovenije.",
+        "Spore skušamo rešiti sporazumno. Če to ni mogoče, spor rešuje stvarno pristojno sodišče v kraju sedeža ponudnika.",
+      ],
+    },
+    {
+      h: "12. Kontakt",
+      p: ["Vprašanja o teh pogojih pošljite na e-poštni naslov iz impresuma."],
+    },
+  ],
+};
 
 export const LEGAL_SL: LegalCopy = {
   impressum: {
@@ -92,7 +196,7 @@ export const LEGAL_SL: LegalCopy = {
   },
   privacy: {
     title: "Varstvo osebnih podatkov",
-    updated: "Zadnja sprememba: avgust 2026",
+    updated: "Zadnja sprememba: 6. oktober 2026",
     sections: [
       {
         h: "Kdo obdeluje vaše podatke",
@@ -105,6 +209,7 @@ export const LEGAL_SL: LegalCopy = {
         h: "Katere podatke obdelujemo",
         p: [
           "Podatki o računu: ime in priimek, e-poštni naslov, podjetje in vloga v njem.",
+          "Podatki ob registraciji podjetja: naziv, naslov in davčna številka podjetja, ime in priimek, e-poštni naslov in telefon skrbnika uporabniškega računa, čas strinjanja s pogoji uporabe in njihova različica ter zgoščena, nepovratno spremenjena oblika IP naslova, ki jo uporabljamo samo za omejevanje zlorab obrazca.",
           "Podatki o delu: dnevna poročila, količine, fotografije z gradbišča, število delavcev, zapleti, režijske ure, dodatna dela in podpisi na zapisniku o prevzemu.",
           "Dokumenti o skladnosti, ki jih naložite: potrdila A1, Freistellungsbescheinigung, dokazila o usposobljenosti in podobno, skupaj z datumi veljavnosti.",
           "Tehnični podatki: zapisi strežnika, potrebni za delovanje in varnost storitve.",
@@ -113,6 +218,7 @@ export const LEGAL_SL: LegalCopy = {
       {
         h: "Zakaj jih obdelujemo in na kateri pravni podlagi",
         p: [
+          "Za sklenitev pogodbe ob registraciji (člen 6(1)(b) GDPR): brez teh podatkov uporabniškega računa za podjetje ne moremo ustvariti.",
           "Za izvajanje pogodbe (člen 6(1)(b) GDPR): brez teh podatkov aplikacija ne more opravljati svoje naloge, torej voditi evidence gradbišča in pripraviti dokumentacije.",
           "Za izpolnitev zakonske obveznosti (člen 6(1)(c) GDPR): naročnik del je dolžan preveriti določena dokazila svojih podizvajalcev, zato vodenje teh dokumentov temelji na njegovi zakonski obveznosti.",
           "Za zakonite interese (člen 6(1)(f) GDPR): varnost sistema, preprečevanje zlorab in ohranjanje dokazne vrednosti zapisov.",
@@ -130,7 +236,16 @@ export const LEGAL_SL: LegalCopy = {
         p: [
           "Podatke posredujemo le obdelovalcem, ki so nujni za delovanje storitve:",
           ...PROCESSORS_SL,
-          "Z vsemi imamo sklenjene pogodbe o obdelavi osebnih podatkov. Podatki se hranijo v Evropski uniji.",
+          // Only the public services the code really calls (2026-10-06): VIES at
+          // signup (lib/vies.ts) and Open-Meteo for the weather (lib/weather.ts).
+          // Nominatim joins this sentence when the wizard geocodes (Task 4.5c).
+          "Za posamezne funkcije uporabljamo tudi javne storitve, ki prejmejo samo nujne podatke. Sistem VIES Evropske komisije prejme davčno številko, ki jo vnesete ob registraciji. Storitev Open-Meteo prejme približne koordinate gradbišča in vrne vreme. Vremenski podatki: Open-Meteo, licenca CC BY 4.0.",
+          // Both safeguards stay named until each provider's DPA has been read
+          // (not checked on 2026-10-06).
+          "Supabase, Vercel in Resend so podjetja s sedežem v ZDA. Podatke hranijo v EU; kadar bi bil za delovanje ali podporo potreben dostop iz tretje države, prenos temelji na standardnih pogodbenih določilih Evropske komisije ali na okviru EU-ZDA za zasebnost podatkov, kot ju navajajo pogodbe o obdelavi teh ponudnikov.",
+          // Signed DPAs are not confirmed by the founder (0.6 w): the softer,
+          // true sentence until he does.
+          "Pogodbe o obdelavi osebnih podatkov s temi ponudniki so del njihovih pogojev uporabe. Baza podatkov in datoteke se hranijo v Evropski uniji.",
         ],
       },
       {
@@ -138,6 +253,7 @@ export const LEGAL_SL: LegalCopy = {
         p: [
           "Podatke o projektu hranimo, dokler traja pogodbeno razmerje z naročnikom, in nato toliko časa, kolikor zahtevajo zakonski roki hrambe za poslovno dokumentacijo.",
           "Dokumentacija projekta ostane naročniku na voljo za izvoz tudi ob prenehanju uporabe storitve.",
+          "Nepotrjene registracije izbrišemo v desetih dneh.",
         ],
       },
       {
@@ -149,6 +265,7 @@ export const LEGAL_SL: LegalCopy = {
       },
     ],
   },
+  terms: TERMS_SL,
 };
 
 export const LEGAL_DE: LegalCopy = {
@@ -243,6 +360,7 @@ export const LEGAL_DE: LegalCopy = {
       },
     ],
   },
+  terms: TERMS_SL,
 };
 
 export const LEGAL_EN: LegalCopy = {
@@ -337,6 +455,7 @@ export const LEGAL_EN: LegalCopy = {
       },
     ],
   },
+  terms: TERMS_SL,
 };
 
 export const LEGAL: Record<string, LegalCopy> = { sl: LEGAL_SL, de: LEGAL_DE, en: LEGAL_EN };

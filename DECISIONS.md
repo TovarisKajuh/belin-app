@@ -5,6 +5,15 @@ One line per significant decision: what, why, when.
 - 2026-10-06: The completion report route answers 302 to a 60 second signed URL after authorization; the small documents keep streaming. Reason: weeks of photographs exceed what a function should buffer and may pass Vercel's response limit.
 
 - 2026-10-06: The completion report states approved hours (by a person or by the clock) and lists open and rejected hours apart. Reason: it must agree with the invoice (DOC-H3).
+- 2026-10-06: An address that already has an account gets the same "Preverite e-pošto" screen at signup as a new one and is told by email to sign in; the rate-limit answer ("Preveč poskusov" on the fourth try within the hour) is also the same for both. Reason: an on-screen difference would turn the form into a way to test whether an address has an account, which the login form deliberately prevents.
+
+- 2026-10-06: The public signup form may send at most 25 mails per rolling 24 h (signup_confirm and signup_exists together), and each person at most 10 login links per rolling 24 h. Reason: Resend get-usage on 05.10 showed "Emails (daily): 0 / 100" resetting at 23:59:59Z and a 10 requests per second limit; without a cap one script against either form spends the whole day's mail and every login link, invite and signup confirmation fails until the reset.
+
+- 2026-10-06: The VAT number is required at signup and validated by format; a number VIES does not know is allowed with a warning. Reason: reverse-charge invoices need the recipient's VAT ID, and VIES is down for some member states on some evenings (DE was on 05.10).
+
+- 2026-10-06: Pilot terms are versioned (TERMS_VERSION) and the version and consent time are stored on the signup and on the organization. Reason: "which terms did this customer accept" must have an answer the day the terms change.
+
+- 2026-10-06: Nothing is marked as sent until sendEmail returned sent: true, and the From address comes from EMAIL_FROM (default Belin <obvestila@getbelin.com>). Reason: the getbelin.com domain failed verification for days while every screen said 'sent'.
 
 - 2026-10-06: The naročilnica prints the režijske ure clause (six days after submission, Monday to Saturday except the site country's non-working days, deemed approved) and a contract-basis line by site country (SI: OZ and PGU 2020; DE: VOB/B; AT: ÖNORM B 2110). Reason: D9 makes the deemed approval a term the subcontractor accepts; PGU uzanca 10 counts calendar days unless agreed, so the count is spelled out, and it names the dela prosti dnevi because that is the list the clock skips (tests/hours-clause.test.ts).
 - 2026-10-06: The EPC's empty log shares the project link with the subcontractor, never the crew link, because the crew link stays the subcontractor office's to hand out.

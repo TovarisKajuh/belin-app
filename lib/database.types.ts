@@ -1185,6 +1185,8 @@ export type Database = {
           is_demo: boolean
           logo_path: string | null
           name: string
+          terms_accepted_at: string | null
+          terms_version: string | null
           type: string
           updated_at: string
           vat_id: string | null
@@ -1201,6 +1203,8 @@ export type Database = {
           is_demo?: boolean
           logo_path?: string | null
           name: string
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           type: string
           updated_at?: string
           vat_id?: string | null
@@ -1217,6 +1221,8 @@ export type Database = {
           is_demo?: boolean
           logo_path?: string | null
           name?: string
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           type?: string
           updated_at?: string
           vat_id?: string | null
@@ -1770,11 +1776,86 @@ export type Database = {
           },
         ]
       }
+      signups: {
+        Row: {
+          address: string | null
+          company_name: string
+          consent_at: string
+          consumed_at: string | null
+          country: string
+          created_at: string
+          email: string
+          expires_at: string
+          full_name: string
+          id: string
+          ip_hash: string | null
+          locale: string | null
+          org_id: string | null
+          phone: string | null
+          terms_version: string
+          token_hash: string
+          user_agent: string | null
+          vat_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          company_name: string
+          consent_at: string
+          consumed_at?: string | null
+          country: string
+          created_at?: string
+          email: string
+          expires_at: string
+          full_name: string
+          id?: string
+          ip_hash?: string | null
+          locale?: string | null
+          org_id?: string | null
+          phone?: string | null
+          terms_version: string
+          token_hash: string
+          user_agent?: string | null
+          vat_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          company_name?: string
+          consent_at?: string
+          consumed_at?: string | null
+          country?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          full_name?: string
+          id?: string
+          ip_hash?: string | null
+          locale?: string | null
+          org_id?: string | null
+          phone?: string | null
+          terms_version?: string
+          token_hash?: string
+          user_agent?: string | null
+          vat_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signups_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      complete_epc_signup: {
+        Args: { p_token_hash: string }
+        Returns: { org_id: string; person_id: string }[]
+      }
       create_project_from_review: {
         Args: {
           p_import_id: string

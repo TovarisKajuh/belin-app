@@ -179,13 +179,16 @@ export async function createInviteAction(
   );
 
   after(async () => {
-    await sendEmail({
+    const result = await sendEmail({
       to: email,
       kind: "invite",
       projectId: kind === "sub_company" ? projectId : null,
       subject: t("subject"),
       html,
     });
+    // Loud on purpose. The form still answers "sent" before the mail goes
+    // (it is sent in after()); surfacing a failure here needs a new form state.
+    if (!result.sent) console.error(`[email] invite NOT delivered: ${result.reason}`);
   });
 
   return { sent: true, error: null };

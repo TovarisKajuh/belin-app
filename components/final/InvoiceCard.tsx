@@ -41,6 +41,7 @@ export function InvoiceCard({
 }) {
   const t = useTranslations("invoice");
   const tToast = useTranslations("toast");
+  const tCommon = useTranslations("common");
   const uiLocale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -61,6 +62,10 @@ export function InvoiceCard({
         router.refresh();
       } catch (err) {
         const key = err instanceof Error ? err.message : "";
+        if (key === "common.sendFailed") {
+          setError(tCommon("sendFailed"));
+          return;
+        }
         const suffix = key.startsWith("invoice.") ? key.slice("invoice.".length) : "conflict";
         try {
           setError(t(suffix));

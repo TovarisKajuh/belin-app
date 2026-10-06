@@ -12,6 +12,7 @@ import {
   safeNext,
   LOGIN_TOKEN_TTL_MIN,
   LOGIN_RATE_MAX,
+  LOGIN_DAILY_MAX,
 } from "@/lib/auth-core";
 import { sendEmail, renderEmail } from "@/lib/email";
 import { appBaseUrl } from "@/lib/app-url";
@@ -66,15 +67,26 @@ export async function requestMagicLink(
   if (!person || !person.email) return { sent: true };
 
   // Rate limit: a stranger typing somebody's address repeatedly must not be
-  // able to fill their inbox.
-  const { count } = await db
-    .from("login_tokens")
-    .select("id", { count: "exact", head: true })
-    .eq("person_id", person.id)
-    .is("used_at", null)
-    .gt("expires_at", new Date().toISOString());
-
-  if ((count ?? 0) >= LOGIN_RATE_MAX) return { sent: true };
+  // able to fill their inbox, and at most 10 links per person per rolling 24 h
+  // (Task 4.3 Step 7a): the Resend account sends 100 mails per UTC day, so a
+  // stranger can at worst delay one person's link, never spend the whole
+  // account's budget. Fails closed: an unknown count sends nothing.
+  const now = Date.now();
+  const [live, today] = await Promise.all([
+    db
+      .from("login_tokens")
+      .select("id", { count: "exact", head: true })
+      .eq("person_id", person.id)
+      .is("used_at", null)
+      .gt("expires_at", new Date(now).toISOString()),
+    db
+      .from("login_tokens")
+      .select("id", { count: "exact", head: true })
+      .eq("person_id", person.id)
+      .gt("created_at", new Date(now - 86_400_000).toISOString()),
+  ]);
+  if (live.error || today.error) return { sent: true };
+  if ((live.count ?? 0) >= LOGIN_RATE_MAX || (today.count ?? 0) >= LOGIN_DAILY_MAX) return { sent: true };
 
   const { error } = await db.from("login_tokens").insert({
     person_id: person.id,
@@ -106,7 +118,10 @@ export async function requestMagicLink(
   // path, without detaching a promise the serverless runtime could freeze.
   const to = person.email;
   after(async () => {
-    await sendEmail({ to, kind: "login", projectId: null, subject: t("loginSubject"), html });
+    const result = await sendEmail({ to, kind: "login", projectId: null, subject: t("loginSubject"), html });
+    // Loud on purpose: on 05.10.2026 no login link had left for days and the
+    // form kept saying "sent". The answer to the user stays the same.
+    if (!result.sent) console.error(`[email] login link NOT delivered: ${result.reason}`);
   });
 
   return { sent: true };

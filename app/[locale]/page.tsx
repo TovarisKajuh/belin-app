@@ -8,6 +8,7 @@ import { safeNext } from "@/lib/auth-core";
 import { Story } from "@/components/landing/Story";
 import { Wordmark } from "@/components/landing/Wordmark";
 import { LegalLinks } from "@/components/landing/LegalLinks";
+import { signupOpen } from "@/lib/data/signups";
 
 const POINTS = ["point1", "point2", "point3"] as const;
 
@@ -40,6 +41,7 @@ export default async function Home({
     : `/${locale}/login`;
 
   const t = await getTranslations("landing");
+  const tSignup = await getTranslations("signup");
 
   return (
     <main className="belin-dark lp">
@@ -58,10 +60,22 @@ export default async function Home({
               ))}
             </nav>
 
-            {/* The only way in, and the only button above the fold. */}
-            <Link href={signInHref} className="lp-enter">
+            {/* Two ways in: the gold one for a company that is new, the quiet
+                one for people who already have an account. On a phone only the
+                gold one fits beside the language switch; existing users reach
+                login from /app and from the closing section. While signup is
+                closed this is exactly the single button it always was. */}
+            <Link
+              href={signInHref}
+              className={signupOpen() ? "lp-enter su-enter-quiet su-hide-narrow" : "lp-enter"}
+            >
               {t("useApp")}
             </Link>
+            {signupOpen() && (
+              <Link href={`/${locale}/registracija`} className="lp-enter">
+                {tSignup("ctaStart")}
+              </Link>
+            )}
           </div>
         </header>
 

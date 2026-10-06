@@ -60,7 +60,9 @@ export async function claimCrewAction(
   const to = email.trim().toLowerCase();
 
   after(async () => {
-    await sendEmail({ to, kind: "login", projectId: null, subject: t("loginSubject"), html });
+    const result = await sendEmail({ to, kind: "login", projectId: null, subject: t("loginSubject"), html });
+    // Loud on purpose, the answer to the user stays the same (see auth.ts).
+    if (!result.sent) console.error(`[email] crew login link NOT delivered: ${result.reason}`);
   });
 
   return { sent: true, error: null };
