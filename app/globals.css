@@ -3121,3 +3121,32 @@ body:has(.b-tabbed) .dm-switch { bottom: calc(68px + 96px + env(safe-area-inset-
 .belin-dark .b-addr { margin-bottom: 8px; }
 .belin-dark .b-addr-link { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; color: var(--e-ink2); text-decoration: none; }
 .belin-dark .b-addr-link svg { flex: none; color: var(--e-gold-2); }
+
+/* === 5.7: Dashboard order, empty states, maps === */
+/* The --fs-*, --e-line-strong and --e-on-gold tokens arrive with Task 5.1a;
+   the fallbacks are their values. The .es rules are 5.1a's EmptyState rules,
+   here because 5.1a is not on main yet (components/epc/dashboard/DashEmpty.tsx). */
+.belin-dark .es { display: grid; justify-items: start; gap: 6px; padding: 22px; border-radius: 16px; background: var(--e-surface); border: 1px dashed var(--e-line-strong, rgba(255,255,255,.18)); }
+.belin-dark .es--compact { grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; padding: 16px 18px; }
+.belin-dark .es-ic { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: rgba(255,210,26,.10); color: var(--e-gold-2); }
+.belin-dark .es--compact .es-ic { grid-row: span 2; }
+.belin-dark .es-t { font-size: var(--fs-16, 16px); font-weight: 700; color: var(--e-ink); }
+.belin-dark .es--compact .es-t { font-size: var(--fs-15, 15px); }
+.belin-dark .es-b { margin: 0; max-width: 60ch; font-size: var(--fs-14, 14px); line-height: 1.55; color: var(--e-ink2); }
+.belin-dark .es-a { width: 100%; margin-top: 8px; }
+.belin-dark .es--compact .es-a { grid-column: 1 / -1; }
+.belin-dark .e-addr {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 14px; min-height: 44px;
+  font-size: var(--fs-14, 14px); color: var(--e-ink2); text-decoration: none;
+}
+.belin-dark .e-addr:hover { color: var(--e-ink); }
+.belin-dark .e-addr svg { flex: none; color: var(--e-gold-2); }
+/* Closing chain stepper on /final (LF4) */
+.belin-dark .fn-steps { list-style: none; margin: 0 0 16px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.belin-dark .fn-step { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--e-line); background: var(--e-surface); color: var(--e-muted); font-size: var(--fs-14, 14px); font-weight: 600; }
+.belin-dark .fn-step-n { flex: none; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 999px; border: 1px solid var(--e-line-strong, rgba(255,255,255,.18)); font-size: var(--fs-13, 13px); }
+.belin-dark .fn-step.is-done { color: var(--e-ink2); }
+.belin-dark .fn-step.is-done .fn-step-n { background: rgba(74,208,122,.14); border-color: rgba(74,208,122,.45); color: var(--e-ok); }
+.belin-dark .fn-step.is-now { color: var(--e-ink); border-color: rgba(255,210,26,.55); background: rgba(255,210,26,.08); }
+.belin-dark .fn-step.is-now .fn-step-n { background: var(--e-gold); border-color: transparent; color: var(--e-on-gold, #14100a); }
+@media (max-width: 760px) { .belin-dark .fn-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

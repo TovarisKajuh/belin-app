@@ -194,7 +194,21 @@
     "requests": "Crew requests",
     "noRequests": "No open requests.",
     "resolve": "Answer",
-    "responseNote": "Answer to the crew"
+    "responseNote": "Answer to the crew",
+    "empty": {
+      "logTitle": "No daily reports yet",
+      "logBody": "The {sub} crew reports from their phones. Send them the project link so they can start.",
+      "logBodyNoSub": "Once you add a subcontractor, the crew's daily reports collect here.",
+      "logShareSubject": "Daily reports for project {project}",
+      "logShareMessage": "Project {project} has no daily reports yet. Open the project in Belin and send your crew the reporting link.",
+      "photosTitle": "No site photos yet",
+      "photosBody": "Photos from the daily reports collect here, with their date.",
+      "incidentsTitle": "No incidents",
+      "incidentsBody": "The crew reports an incident, rain or an obstruction with two taps.",
+      "requestsTitle": "No open requests",
+      "requestsBody": "When the crew needs something, the request shows up here."
+    },
+    "maps": "Open in Google Maps"
   },
   "status": {
     "draft": "Draft",

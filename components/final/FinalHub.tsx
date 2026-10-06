@@ -11,6 +11,7 @@ import type { AcceptanceView } from "@/lib/acceptance-view";
 import { AcceptanceFlow } from "./AcceptanceFlow";
 import { InvoiceCard } from "./InvoiceCard";
 import type { InvoiceView } from "@/lib/invoice-view";
+import { IconCheck } from "@/components/epc/dashboard/DashEmpty";
 
 // The handover screen: request, report, acceptance, invoice.
 //
@@ -57,6 +58,20 @@ export function FinalHub({
   const inReview = status === "reviewing";
   const finished = status === "finished";
 
+  // The closing chain at a glance (LF4): which step is done and which one is
+  // now. Only a signed FINAL acceptance ticks Prevzem, never a partial one.
+  const steps = [
+    { key: "handover", label: t("handover"), done: inReview || finished || Boolean(requestedAt) },
+    { key: "report", label: t("reportCard"), done: Boolean(report) },
+    {
+      key: "acceptance",
+      label: t("acceptanceCard"),
+      done: acceptance?.kind === "final" && acceptance.status === "signed",
+    },
+    { key: "invoice", label: t("invoiceCard"), done: Boolean(invoice) },
+  ];
+  const nowIndex = steps.findIndex((s) => !s.done);
+
   const request = () => {
     setError(null);
     startTransition(async () => {
@@ -74,6 +89,21 @@ export function FinalHub({
   return (
     <section className="e-sec e-reveal">
       <div className="e-sec-h">{t("title")}</div>
+
+      <ol className="fn-steps" aria-label={t("title")}>
+        {steps.map((s, i) => (
+          <li
+            key={s.key}
+            className={s.done ? "fn-step is-done" : i === nowIndex ? "fn-step is-now" : "fn-step"}
+            aria-current={i === nowIndex ? "step" : undefined}
+          >
+            <span className="fn-step-n e-mono" aria-hidden>
+              {s.done ? <IconCheck size={14} /> : i + 1}
+            </span>
+            <span>{s.label}</span>
+          </li>
+        ))}
+      </ol>
 
       {error ? <p className="ic-error">{error}</p> : null}
 

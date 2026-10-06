@@ -35,7 +35,7 @@ export async function TodayPosts({ posts }: { posts: TodayPost[] }) {
             <div className="b-thumbs">
               {post.photoUrls.map((url, i) => (
                 <a key={i} href={url} target="_blank" rel="noreferrer" className="b-thumb">
-                  <img src={url} alt="" />
+                  <img src={url} alt="" loading="lazy" decoding="async" width={64} height={64} />
                 </a>
               ))}
             </div>

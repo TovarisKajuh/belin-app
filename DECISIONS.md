@@ -2,6 +2,8 @@
 
 One line per significant decision: what, why, when.
 
+- 2026-10-06: The EPC's empty log shares the project link with the subcontractor, never the crew link, because the crew link stays the subcontractor office's to hand out.
+
 - 2026-10-06: Project coordinates come from OpenStreetMap Nominatim, queried with postcode, town and country only, once per project and stored. Reason: Nominatim allows low-volume commercial use where Open-Meteo's free geocoder does not, and leaving the street out keeps a homeowner's address out of a third-party request.
 
 - 2026-10-06: The demo client is the invented "Svetlogradnja d.o.o." (Dunajska cesta 151, 1000 Ljubljana, SI53814266), not "Lumora Energija d.o.o.". Reason: the Task 2.2a re-check on bizi.si found a real active LUMORA d.o.o. in Ljubljana; Svetlogradnja has no bizi.si result and the VAT id is not in VIES.

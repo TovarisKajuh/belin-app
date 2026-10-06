@@ -197,7 +197,7 @@ export function ChangeOrderList({
                 <div className="ip-thumbs">
                   {order.photoUrls.map((url) => (
                     <a key={url} className="ip-thumb" href={url} target="_blank" rel="noreferrer">
-                      <img src={url} alt="" />
+                      <img src={url} alt="" loading="lazy" decoding="async" width={58} height={58} />
                     </a>
                   ))}
                 </div>
