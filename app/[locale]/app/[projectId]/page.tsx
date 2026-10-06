@@ -6,6 +6,7 @@ import { isUuid } from "@/lib/actor-shared";
 import { getCrewHome } from "@/lib/data/reports";
 import { getMaterialState } from "@/lib/data/materials";
 import { getEpcDashboard } from "@/lib/data/epc-dashboard";
+import { getSubWaiting } from "@/lib/data/sub-home";
 import { ensureCrewLink } from "@/lib/data/invites";
 import { canIssueCrewLink } from "@/lib/invites-shared";
 import { CrewHome } from "@/components/crew/CrewHome";
@@ -64,6 +65,10 @@ export default async function ProjectPage({
       mayOpenCrew ? ensureCrewLink(projectId) : Promise.resolve(null),
     ]);
     if (!data || !material) notFound();
+    // Admin and owner accept the naročilnica and issue the invoice; for them
+    // those cards are "Vaš korak", for anyone else they are waiting.
+    const isOffice = actor.kind === "person" && (actor.role === "admin" || actor.role === "owner");
+    const waiting = await getSubWaiting(project, data, isOffice);
     return (
       <>
         <SubHome
@@ -72,6 +77,7 @@ export default async function ProjectPage({
           data={data}
           material={material}
           crewToken={crewToken}
+          waiting={waiting}
         />
         <LogoutPill locale={locale} />
       </>
