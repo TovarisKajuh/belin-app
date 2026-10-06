@@ -1,6 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { after } from "next/server";
+import { cache } from "react";
 import {
   resolveActorFromToken,
   resolvePersonActor,
@@ -124,8 +125,16 @@ export async function endPersonSession(): Promise<void> {
  * behind a live session row; anything else resolves as a project token. A "p:"
  * with an empty or unknown remainder resolves to null and NEVER falls through
  * to project-token resolution.
+ *
+ * Memoized per request with React cache(): a page, its layout and the
+ * components under it each ask "who is this", and before this every one of
+ * them paid the session query and the person query again, from Washington
+ * until 2026-10-06. Outside a render (route handlers, scripts) cache() is a
+ * plain call, which is correct there too. Safe because nothing in a single
+ * request changes the cookie and then asks again: the actions that start a
+ * session redirect immediately afterwards.
  */
-export async function resolveActorFromSession(): Promise<SessionActor | null> {
+export const resolveActorFromSession = cache(async (): Promise<SessionActor | null> => {
   const value = await sessionCookie();
   if (!value) return null;
 
@@ -175,7 +184,7 @@ export async function resolveActorFromSession(): Promise<SessionActor | null> {
   }
 
   return resolveActorFromToken(value);
-}
+});
 
 /** The token-session narrowing, for the surfaces that still require a link. */
 export async function resolveTokenActorFromSession(): Promise<Actor | null> {

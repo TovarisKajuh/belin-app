@@ -4,6 +4,7 @@ Every change to this repository is logged here, newest first, with date, what an
 
 ## 2026-10-06
 
+- FUNCTIONS RUN IN FRANKFURT (Task 1.2). `vercel.json` sets `regions: ["fra1"]`, next to the Supabase database, so a page no longer crosses the Atlantic several times and "Podatki v EU, Frankfurt" is literally true. `resolveActorFromSession` is memoized per request with React cache(). Before: fra1::iad1, TTFB 6.55, 2.87, 2.09 s on /sl/p/demo-epc-k7m2x9q4 (06.10 09:04). After: measured after the push, recorded in the session log.
 - landing.loopAside no longer promises work on a weak connection (D12). sl "En palec, ena roka, trideset sekund.", with real de and en translations (Task 7.1).
 - THE PUBLIC LANDING NO LONGER PUBLISHES A STRANGER'S HOME ADDRESS, A REAL COMPANY OR AVESOL'S RATE (Task 7.1). The K2 review picture showed a private customer's name and street from a real report; its four identity rows are cut out (wizard-review-r1.webp, 1500x1146). The three document pictures named Sonce Energija d.o.o. and the invoice printed 118.500,00 EUR and 48,00 EUR/h; those cells are a mosaic now (doc-*-r1.webp). The unused German invoice picture printing the same rate is deleted. New file names, so no cached copy of the old pictures can be served from the old URLs. The old blobs stay in git history (private repository); old deployments are behind Vercel Authentication.
 - DEBT: the -r1 pictures are an interim redaction, replaced by reshoots from the fictional demo in Task 7.2a. scripts/marketing/redact-landing.mjs records the exact boxes.
