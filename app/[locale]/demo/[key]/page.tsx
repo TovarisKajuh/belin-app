@@ -19,12 +19,15 @@ import { lastSiteDayBefore, todayInLjubljana } from "@/lib/demo/calendar";
 import { enterAsAction } from "./actions";
 
 // The presenter panel. Its URL carries the door key, so: never indexed, never
-// cached, and no Referer header ever leaves it.
+// cached, and no Referer header ever leaves for another site. "same-origin",
+// not "no-referrer": with no-referrer Chrome sends "Origin: null" on the
+// persona form's server-action POST, and Next 15.5's action handler does
+// new URL(origin), which throws and turns every persona button into a 500.
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Belin",
   robots: { index: false, follow: false, nocache: true },
-  referrer: "no-referrer",
+  referrer: "same-origin",
 };
 
 const TARGET_LABEL: Record<DemoEntryTarget, string> = {
