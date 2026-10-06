@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PhotoCapture } from "./PhotoCapture";
+import { Sheet } from "@/components/ui/Sheet";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { REQUEST_TYPES, type RequestRow, type RequestType } from "@/lib/requests-shared";
 import {
@@ -121,9 +122,27 @@ export function RequestButton({
   }
 
   return (
-    <div className="ic-sheet" role="dialog" aria-label={t("cta")}>
-      <div className="ic-inner">
+    <Sheet label={t("cta")} onClose={close} busy={busy}>
         <p className="ic-h">{t("text")}</p>
+
+        {/* Answers first: what came back is the first thing visible (crew-walk M9). */}
+        {rows && rows.length > 0 ? (
+          <div className="rq-mine">
+            <p className="b-label">{t("yourRequests")}</p>
+            <ul className="rq-list">
+              {rows.map((row) => (
+                <li key={row.id} className={`rq-row${row.status === "resolved" ? " done" : ""}`}>
+                  <p className="rq-t">{row.text}</p>
+                  {row.responseNote ? (
+                    <p className="rq-answer">
+                      <span className="rq-tag">{t("resolvedTag")}</span> {row.responseNote}
+                    </p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <div className="rq-types">
           {REQUEST_TYPES.map((option) => (
@@ -171,24 +190,6 @@ export function RequestButton({
           </button>
         </div>
 
-        {rows && rows.length > 0 ? (
-          <div className="rq-mine">
-            <p className="b-label">{t("yourRequests")}</p>
-            <ul className="rq-list">
-              {rows.map((row) => (
-                <li key={row.id} className={`rq-row${row.status === "resolved" ? " done" : ""}`}>
-                  <p className="rq-t">{row.text}</p>
-                  {row.responseNote ? (
-                    <p className="rq-answer">
-                      <span className="rq-tag">{t("resolvedTag")}</span> {row.responseNote}
-                    </p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-      </div>
-    </div>
+    </Sheet>
   );
 }

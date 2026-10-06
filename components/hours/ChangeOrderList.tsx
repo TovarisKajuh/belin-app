@@ -27,6 +27,7 @@ export function ChangeOrderList({
   role,
   canDecide,
   orders,
+  showMoney = true,
 }: {
   actionKey: string;
   projectId: string;
@@ -34,6 +35,8 @@ export function ChangeOrderList({
   role: "epc" | "sub";
   canDecide: boolean;
   orders: ChangeOrderRow[];
+  /** Crew and link surfaces never see a price (D11): no amount field, no amount line. */
+  showMoney?: boolean;
 }) {
   const t = useTranslations("co");
   const format = useFormatter();
@@ -129,6 +132,7 @@ export function ChangeOrderList({
               onChange={(e) => setDescription(e.target.value)}
             />
           </label>
+          {showMoney ? (
           <label className="hr-f">
             <span className="b-label">{t("amount")}</span>
             <input
@@ -139,6 +143,7 @@ export function ChangeOrderList({
             />
             <span className="co-hint">{t("amountHint")}</span>
           </label>
+          ) : null}
           <div className="hr-f">
             <span className="b-label">{t("photos")}</span>
             <PhotoCapture
@@ -178,13 +183,15 @@ export function ChangeOrderList({
 
               {order.description ? <p className="ip-note">{order.description}</p> : null}
 
-              <p className="co-amount">
-                {order.amount === null ? (
-                  <span className="co-noamount">{t("noAmount")}</span>
-                ) : (
-                  formatMoney(order.amount, locale)
-                )}
-              </p>
+              {showMoney ? (
+                <p className="co-amount">
+                  {order.amount === null ? (
+                    <span className="co-noamount">{t("noAmount")}</span>
+                  ) : (
+                    formatMoney(order.amount, locale)
+                  )}
+                </p>
+              ) : null}
 
               {order.photoUrls.length > 0 ? (
                 <div className="ip-thumbs">

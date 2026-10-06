@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeCrewName, matchRosterName } from "@/lib/crew-shared";
+import { normalizeCrewName, matchRosterName, crewPickable } from "@/lib/crew-shared";
 
 // The claim screen takes free text from a phone keyboard on a roof. These rules
 // are small, but they are the difference between one Luka and three of him.
@@ -39,5 +39,15 @@ describe("matchRosterName", () => {
 
   it("returns null rather than a match for unusable input", () => {
     expect(matchRosterName(roster, " ")).toBeNull();
+  });
+});
+
+describe("crewPickable", () => {
+  it("offers only sites the crew can work on today", () => {
+    expect(crewPickable("active")).toBe(true);
+    expect(crewPickable("draft")).toBe(true);
+    expect(crewPickable("finished")).toBe(false);
+    expect(crewPickable("cancelled")).toBe(false);
+    expect(crewPickable("paused")).toBe(false);
   });
 });

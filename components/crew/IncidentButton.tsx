@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PhotoCapture } from "./PhotoCapture";
+import { Sheet } from "@/components/ui/Sheet";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { INCIDENT_KINDS, MAX_INCIDENT_PHOTOS, type IncidentKind } from "@/lib/incidents-shared";
 import {
@@ -111,8 +112,7 @@ export function IncidentButton({
   }
 
   return (
-    <div className="ic-sheet" role="dialog" aria-label={t("cta")}>
-      <div className="ic-inner">
+    <Sheet label={t("cta")} onClose={close} busy={busy}>
         <p className="ic-h">{t("title")}</p>
 
         <div className="ic-kinds">
@@ -169,7 +169,6 @@ export function IncidentButton({
             {t("cancel")}
           </button>
         </div>
-      </div>
-    </div>
+    </Sheet>
   );
 }

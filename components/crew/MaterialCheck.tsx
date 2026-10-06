@@ -56,6 +56,9 @@ export function MaterialCheck({
   const [notes, setNotes] = useState<Blob[]>([]);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  // "Material še ni prispel" tells the EPC the delivery is late: one stray tap
+  // on a roof must not send that (crew-walk M5), so it asks once.
+  const [confirmEmpty, setConfirmEmpty] = useState(false);
   const [error, setError] = useState<"unresolved" | "badQty" | "submitFailed" | null>(null);
 
   const draftId = useRef(crypto.randomUUID());
@@ -324,16 +327,30 @@ export function MaterialCheck({
               {busy ? t("submitting") : t("submit")}
             </button>
 
-            {gate && (
+            {gate && !confirmEmpty && (
               <button
                 type="button"
                 className="mc-recheck-btn"
                 style={{ display: "block", margin: "12px auto 0" }}
-                onClick={onNotArrived}
+                onClick={() => setConfirmEmpty(true)}
                 disabled={busy}
               >
                 {t("notArrived")}
               </button>
+            )}
+            {gate && confirmEmpty && (
+              <div className="mc-confirm" role="alertdialog" aria-label={tCrew("confirmNotArrived.title")}>
+                <p className="mc-confirm-t">{tCrew("confirmNotArrived.title")}</p>
+                <p className="mc-confirm-b">{tCrew("confirmNotArrived.body")}</p>
+                <div className="mc-confirm-a">
+                  <button type="button" className="mc-recheck-btn" onClick={onNotArrived} disabled={busy}>
+                    {tCrew("confirmNotArrived.yes")}
+                  </button>
+                  <button type="button" className="ic-cancel" onClick={() => setConfirmEmpty(false)} disabled={busy}>
+                    {tCrew("confirmNotArrived.cancel")}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}

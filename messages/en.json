@@ -22,6 +22,13 @@
     "subFailed": "The link could not be created. Please try again."
   },
   "crew": {
+    "confirmNotArrived": {
+      "title": "Has the material really not arrived yet?",
+      "body": "The client will be told the delivery is still missing. Reporting unlocks, and you check the material when it arrives.",
+      "yes": "Yes, not arrived yet",
+      "cancel": "Cancel"
+    },
+    "pickerEmpty": "You have no active site right now.",
     "todayReport": "Today's report",
     "progress": "Project progress",
     "photos": "Photos",

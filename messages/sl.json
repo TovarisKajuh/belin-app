@@ -22,6 +22,13 @@
     "subFailed": "Povezave ni bilo mogoče ustvariti. Poskusite znova."
   },
   "crew": {
+    "confirmNotArrived": {
+      "title": "Material res še ni prispel?",
+      "body": "Naročnik bo obveščen, da dostave še ni. Poročanje se odklene, material pa preverite ob dostavi.",
+      "yes": "Da, še ni prispel",
+      "cancel": "Prekliči"
+    },
+    "pickerEmpty": "Trenutno nimate aktivnega gradbišča.",
     "todayReport": "Današnje poročilo",
     "progress": "Napredek projekta",
     "photos": "Fotografije",

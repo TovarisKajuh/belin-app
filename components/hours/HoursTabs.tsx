@@ -25,6 +25,7 @@ export function HoursTabs({
   sheets,
   orders,
   initialTab,
+  showMoney = true,
 }: {
   actionKey: string;
   projectId: string;
@@ -35,6 +36,8 @@ export function HoursTabs({
   sheets: HourSheet[];
   orders: ChangeOrderRow[];
   initialTab: "hours" | "co";
+  /** False for crew and link surfaces (D11): change orders show no price. */
+  showMoney?: boolean;
 }) {
   const t = useTranslations("hours");
   const [tab, setTab] = useState<"hours" | "co">(initialTab);
@@ -84,6 +87,7 @@ export function HoursTabs({
           role={role}
           canDecide={canDecide}
           orders={orders}
+          showMoney={showMoney}
         />
       )}
     </>

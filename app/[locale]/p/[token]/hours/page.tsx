@@ -69,6 +69,7 @@ export default async function TokenHoursPage({
           sheets={data.sheets}
           orders={data.orders}
           initialTab={initialTab}
+          showMoney={false}
           />
 
         <p className="hr-back">

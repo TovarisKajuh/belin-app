@@ -22,6 +22,13 @@
     "subFailed": "Der Link konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
   },
   "crew": {
+    "confirmNotArrived": {
+      "title": "Ist das Material wirklich noch nicht da?",
+      "body": "Der Auftraggeber wird informiert, dass die Lieferung noch fehlt. Berichte sind dann freigeschaltet, das Material prüfen Sie bei Lieferung.",
+      "yes": "Ja, noch nicht da",
+      "cancel": "Abbrechen"
+    },
+    "pickerEmpty": "Sie haben derzeit keine aktive Baustelle.",
     "todayReport": "Tagesbericht",
     "progress": "Projektfortschritt",
     "photos": "Fotos",

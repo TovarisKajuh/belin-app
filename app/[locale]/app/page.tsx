@@ -12,6 +12,7 @@ import { LogoutPill } from "@/components/auth/LogoutPill";
 import { ProjectList } from "@/components/app/ProjectList";
 import { CrewProjectPicker } from "@/components/crew/CrewProjectPicker";
 import { listProjectsForPerson } from "@/lib/data/projects-list";
+import { crewPickable } from "@/lib/crew-shared";
 import { ScenarioPill } from "@/components/auth/ScenarioPill";
 
 // The signed-in view. Same role router as /p/[token], except identity comes
@@ -36,11 +37,14 @@ export default async function AppPage({ params }: { params: Promise<{ locale: st
     // A roofer does not have a portfolio, he has today's site. One project
     // opens itself, which is the whole experience for most crew: tap the icon,
     // you are on your job. Several ask which roof and nothing more.
+    // Only sites that can be worked on today: a finished or cancelled project
+    // in this list sent the van to a roof that was done (crew-walk, 2026-10-05).
     if (actor.role === "crew") {
-      if (projects.length === 1) redirect(`/${locale}/app/${projects[0].id}`);
+      const pickable = projects.filter((p) => crewPickable(p.status));
+      if (pickable.length === 1) redirect(`/${locale}/app/${pickable[0].id}`);
       return (
         <>
-          <CrewProjectPicker locale={locale} projects={projects} />
+          <CrewProjectPicker locale={locale} projects={pickable} />
           <LogoutPill locale={locale} />
         </>
       );

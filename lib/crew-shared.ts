@@ -35,3 +35,8 @@ export function matchRosterName(
   );
   return hit?.id ?? null;
 }
+
+/** The crew's project picker offers only sites that can be worked on today. */
+export function crewPickable(status: string): boolean {
+  return status === "active" || status === "draft";
+}

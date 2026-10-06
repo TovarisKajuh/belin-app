@@ -67,8 +67,8 @@ export default async function HoursPage({
         meta={core.addressCity}
         status={core.status}
         role={data.role}
-        locale={locale}
-        active="hours"
+        locale={isCrewSurface ? undefined : locale}
+        active={isCrewSurface ? undefined : "hours"}
       />
       <LiveRefresh topic={projectTopic(projectId)} />
 
@@ -83,6 +83,7 @@ export default async function HoursPage({
           sheets={data.sheets}
           orders={data.orders}
           initialTab={initialTab}
+          showMoney={!(actor.kind === "person" && actor.role === "crew")}
           />
       </main>
 

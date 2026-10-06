@@ -2905,3 +2905,38 @@ button.gal-item {
 @media (display-mode: standalone), (display-mode: fullscreen) {
   [data-splash] { display: flex !important; }
 }
+
+/* === 5.10: Crew layout fixes (minimal, morning cut 06.10) === */
+/* The Sheet portal wrapper carries .belin-dark for the tokens only: it must
+   not paint the page background or take 100vh at the end of <body>. */
+.belin-dark.ui-portal { position: static; min-height: 0; background: none; }
+/* Above the crew tab bar (z 50) and the floating pills (z 60). */
+.belin-dark .ic-sheet { z-index: 70; }
+/* The raised logout pill is rendered beside the tabbed crew screen, not inside
+   it, so the .b-tabbed rule above never matched and the pill sat inside the
+   send button. Lift it clear of tabs plus the send bar wherever a tabbed crew
+   screen is on the page. */
+body:has(.b-tabbed) .lp-logout--raised { bottom: calc(68px + 96px + env(safe-area-inset-bottom)); }
+/* Delno and Manjka reveal a quantity input: it may shrink, never widen the page. */
+.belin-dark .mc-miss input { flex: 1 1 0; min-width: 0; width: 100%; }
+.belin-dark .b-scope-row > :first-child { min-width: 0; }
+@media (max-width: 380px) {
+  .belin-dark .b-stepper { gap: 8px; }
+  .belin-dark .b-step-btn { width: 48px; height: 48px; }
+  .belin-dark .b-step-val { min-width: 52px; }
+}
+/* The request sheet's answers now come first, directly under the title. */
+.belin-dark .ic-h + .rq-mine { margin: 0 0 18px; padding: 0 0 16px; border-top: none; border-bottom: 1px solid var(--e-line); }
+/* The crew Ure tab: the last change order ends above the tab bar. */
+.belin-dark.b-tabbed :is(.e-wrap, .container) { padding-bottom: calc(var(--cr-tabs-h) + 32px + env(safe-area-inset-bottom)); }
+/* The crew picker: site name with its town under it. */
+.belin-dark .cl-proj { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-decoration: none; }
+.belin-dark .cl-proj-main { min-width: 0; }
+.belin-dark .cl-proj-main b { display: block; font-weight: 700; }
+.belin-dark .cl-proj-main small { display: block; margin-top: 4px; font-size: 13px; font-weight: 500; color: var(--e-muted); }
+/* "Material še ni prispel" asks once before it tells the EPC. */
+.belin-dark .mc-confirm { margin-top: 12px; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,180,92,.40); background: rgba(255,180,92,.08); }
+.belin-dark .mc-confirm-t { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--e-ink); }
+.belin-dark .mc-confirm-b { margin: 0 0 12px; font-size: 13px; line-height: 1.5; color: var(--e-ink2); }
+.belin-dark .mc-confirm-a { display: grid; gap: 8px; }
+.belin-dark .mc-confirm-a .mc-recheck-btn { width: 100%; margin: 0; }
