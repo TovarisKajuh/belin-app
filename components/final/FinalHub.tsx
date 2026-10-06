@@ -3,6 +3,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { fmtDate } from "@/lib/format";
+import { unwrap } from "@/lib/action-result";
 import {
   generateCompletionReportAction,
   requestFinalizationAction,
@@ -62,7 +63,7 @@ export function FinalHub({
     setError(null);
     startTransition(async () => {
       try {
-        await requestFinalizationAction(projectId);
+        unwrap(await requestFinalizationAction(projectId));
         setConfirming(false);
         router.refresh();
       } catch (err) {
@@ -156,7 +157,7 @@ export function FinalHub({
                 setGenerating(true);
                 startTransition(async () => {
                   try {
-                    await generateCompletionReportAction(projectId);
+                    unwrap(await generateCompletionReportAction(projectId));
                     router.refresh();
                   } catch {
                     setError(t("conflict"));

@@ -13,17 +13,27 @@ import {
 } from "@/lib/data/acceptances";
 import type { AcceptanceStepPayload } from "@/lib/acceptance-view";
 import { generateInvoice, shareToAccountant } from "@/lib/data/invoices";
+import type { ActionResult } from "@/lib/action-result";
+import { toResult } from "@/lib/action-result-server";
+import type { PersonActor } from "@/lib/actor";
 
 // Finalization actions. Session only, all of them: everything on this screen
 // either hands a job over, signs for it, or bills it.
+//
+// Each RETURNS its failure (lib/action-result.ts): a thrown message key such
+// as final.err.declaration does not survive a production build.
 
-export async function requestFinalizationAction(
-  projectId: string,
-): Promise<{ ok: true }> {
+async function officePerson(): Promise<PersonActor> {
   const actor = await resolveActorFromSession();
   if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
-  await requestFinalization(actor, projectId);
-  return { ok: true };
+  return actor;
+}
+
+export async function requestFinalizationAction(projectId: string): Promise<ActionResult<null>> {
+  return toResult(async () => {
+    await requestFinalization(await officePerson(), projectId);
+    return null;
+  });
 }
 
 /**
@@ -36,26 +46,27 @@ export async function requestFinalizationAction(
  */
 export async function generateCompletionReportAction(
   projectId: string,
-): Promise<{ ok: true; documentId: string }> {
-  const actor = await resolveActorFromSession();
-  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
+): Promise<ActionResult<{ documentId: string }>> {
+  return toResult(async () => {
+    const actor = await officePerson();
 
-  const db = createAdminClient();
-  const { data: recent } = await db
-    .from("generated_documents")
-    .select("id, created_at")
-    .eq("project_id", projectId)
-    .eq("kind", "completion_report")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    const db = createAdminClient();
+    const { data: recent } = await db
+      .from("generated_documents")
+      .select("id, created_at")
+      .eq("project_id", projectId)
+      .eq("kind", "completion_report")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  if (recent && Date.now() - Date.parse(recent.created_at) < 60_000) {
-    return { ok: true, documentId: recent.id };
-  }
+    if (recent && Date.now() - Date.parse(recent.created_at) < 60_000) {
+      return { documentId: recent.id };
+    }
 
-  const result = await generateCompletionReport(actor, projectId);
-  return { ok: true, documentId: result.documentId };
+    const result = await generateCompletionReport(actor, projectId);
+    return { documentId: result.documentId };
+  });
 }
 
 // The acceptance. Every step writes immediately, because this is conducted on
@@ -65,43 +76,42 @@ export async function generateCompletionReportAction(
 export async function startAcceptanceAction(
   projectId: string,
   kind: "final" | "partial",
-): Promise<{ ok: true; acceptanceId: string }> {
-  const actor = await resolveActorFromSession();
-  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
-  const acceptanceId = await startAcceptance(actor, projectId, kind);
-  return { ok: true, acceptanceId };
+): Promise<ActionResult<{ acceptanceId: string }>> {
+  return toResult(async () => ({
+    acceptanceId: await startAcceptance(await officePerson(), projectId, kind),
+  }));
 }
 
 export async function saveAcceptanceStepAction(
   projectId: string,
   acceptanceId: string,
   payload: AcceptanceStepPayload,
-): Promise<{ ok: true }> {
-  const actor = await resolveActorFromSession();
-  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
-  await saveAcceptanceStep(actor, projectId, acceptanceId, payload);
-  return { ok: true };
+): Promise<ActionResult<null>> {
+  return toResult(async () => {
+    await saveAcceptanceStep(await officePerson(), projectId, acceptanceId, payload);
+    return null;
+  });
 }
 
 export async function addDefectAction(
   projectId: string,
   acceptanceId: string,
   payload: { description: string; dueDate: string | null; agreement: "agreed" | "disputed" },
-): Promise<{ ok: true }> {
-  const actor = await resolveActorFromSession();
-  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
-  await addDefect(actor, projectId, acceptanceId, payload);
-  return { ok: true };
+): Promise<ActionResult<null>> {
+  return toResult(async () => {
+    await addDefect(await officePerson(), projectId, acceptanceId, payload);
+    return null;
+  });
 }
 
 export async function removeDefectAction(
   projectId: string,
   defectId: string,
-): Promise<{ ok: true }> {
-  const actor = await resolveActorFromSession();
-  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
-  await removeDefect(actor, projectId, defectId);
-  return { ok: true };
+): Promise<ActionResult<null>> {
+  return toResult(async () => {
+    await removeDefect(await officePerson(), projectId, defectId);
+    return null;
+  });
 }
 
 /** The PNG arrives base64 encoded: a server action cannot take a Blob. */
@@ -110,25 +120,26 @@ export async function saveSignatureAction(
   acceptanceId: string,
   side: "epc" | "sub",
   pngBase64: string,
-): Promise<{ ok: true }> {
-  const actor = await resolveActorFromSession();
-  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
-  const bytes = Buffer.from(pngBase64, "base64");
-  await saveSignature(actor, projectId, acceptanceId, side, bytes.buffer.slice(
-    bytes.byteOffset,
-    bytes.byteOffset + bytes.byteLength,
-  ) as ArrayBuffer);
-  return { ok: true };
+): Promise<ActionResult<null>> {
+  return toResult(async () => {
+    const actor = await officePerson();
+    const bytes = Buffer.from(pngBase64, "base64");
+    await saveSignature(actor, projectId, acceptanceId, side, bytes.buffer.slice(
+      bytes.byteOffset,
+      bytes.byteOffset + bytes.byteLength,
+    ) as ArrayBuffer);
+    return null;
+  });
 }
 
 export async function signAcceptanceAction(
   projectId: string,
   acceptanceId: string,
-): Promise<{ ok: true }> {
-  const actor = await resolveActorFromSession();
-  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
-  await signAcceptance(actor, projectId, acceptanceId);
-  return { ok: true };
+): Promise<ActionResult<null>> {
+  return toResult(async () => {
+    await signAcceptance(await officePerson(), projectId, acceptanceId);
+    return null;
+  });
 }
 
 // The invoice. Office only on the subcontractor side: this is the document
@@ -136,19 +147,19 @@ export async function signAcceptanceAction(
 
 export async function generateInvoiceAction(
   projectId: string,
-): Promise<{ ok: true; warnings: string[] }> {
-  const actor = await resolveActorFromSession();
-  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
-  const result = await generateInvoice(actor, projectId);
-  return { ok: true, warnings: result.warnings };
+): Promise<ActionResult<{ warnings: string[] }>> {
+  return toResult(async () => {
+    const result = await generateInvoice(await officePerson(), projectId);
+    return { warnings: result.warnings };
+  });
 }
 
 export async function shareInvoiceAction(
   projectId: string,
   invoiceId: string,
-): Promise<{ ok: true }> {
-  const actor = await resolveActorFromSession();
-  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
-  await shareToAccountant(actor, projectId, invoiceId);
-  return { ok: true };
+): Promise<ActionResult<null>> {
+  return toResult(async () => {
+    await shareToAccountant(await officePerson(), projectId, invoiceId);
+    return null;
+  });
 }

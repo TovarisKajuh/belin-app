@@ -3,6 +3,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { fmtDate } from "@/lib/format";
+import { unwrap } from "@/lib/action-result";
 import { PhotoCapture } from "@/components/crew/PhotoCapture";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { formatMoney } from "@/lib/po-shared";
@@ -90,13 +91,13 @@ export function ChangeOrderList({
       }
 
       const parsed = Number(amount.trim().replace(/\s/g, "").replace(",", "."));
-      await createChangeOrderAction(actionKey, projectId, {
+      unwrap(await createChangeOrderAction(actionKey, projectId, {
         clientGeneratedId: draftId.current,
         title,
         description: description || null,
         amount: amount.trim() && Number.isFinite(parsed) ? parsed : null,
         photoPaths,
-      });
+      }));
 
       draftId.current = crypto.randomUUID();
       setTitle("");
@@ -218,7 +219,7 @@ export function ChangeOrderList({
                     type="button"
                     className="rp-send"
                     disabled={pending}
-                    onClick={() => run(() => decideChangeOrderAction(projectId, order.id, true))}
+                    onClick={() => run(async () => unwrap(await decideChangeOrderAction(projectId, order.id, true)))}
                   >
                     {t("approve")}
                   </button>
@@ -226,7 +227,7 @@ export function ChangeOrderList({
                     type="button"
                     className="hr-reject"
                     disabled={pending}
-                    onClick={() => run(() => decideChangeOrderAction(projectId, order.id, false))}
+                    onClick={() => run(async () => unwrap(await decideChangeOrderAction(projectId, order.id, false)))}
                   >
                     {t("reject")}
                   </button>

@@ -3,6 +3,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { fmtDate, fmtNumber } from "@/lib/format";
+import { unwrap } from "@/lib/action-result";
 import type { HourSheet } from "@/lib/hours-view";
 import {
   addLineAction,
@@ -76,7 +77,7 @@ export function SheetEditor({
               className="po-x"
               aria-label={t("removeLine")}
               disabled={pending}
-              onClick={() => run(() => removeLineAction(actionKey, projectId, line.id))}
+              onClick={() => run(async () => unwrap(await removeLineAction(actionKey, projectId, line.id)))}
             >
               &times;
             </button>
@@ -150,13 +151,13 @@ export function SheetEditor({
               disabled={pending || description.trim().length === 0}
               onClick={() =>
                 run(async () => {
-                  await addLineAction(actionKey, projectId, {
+                  unwrap(await addLineAction(actionKey, projectId, {
                     sheetId: sheet.id,
                     workDate,
                     hours,
                     description,
                     personId: null,
-                  });
+                  }));
                   setDescription("");
                 })
               }

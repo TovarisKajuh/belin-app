@@ -3,6 +3,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { fmtDate, fmtNumber } from "@/lib/format";
+import { unwrap } from "@/lib/action-result";
 import {
   effectiveStatus,
   workingDaysLeft,
@@ -81,7 +82,7 @@ export function SheetList({
             disabled={pending}
             onClick={() =>
               run(async () => {
-                const created = await createSheetAction(actionKey, projectId);
+                const created = unwrap(await createSheetAction(actionKey, projectId));
                 setEditing(created.sheetId);
               })
             }
@@ -143,7 +144,7 @@ export function SheetList({
                     onToggle={() => setEditing(editing === sheet.id ? null : sheet.id)}
                     onSubmitSheet={() =>
                       run(async () => {
-                        await submitSheetAction(actionKey, projectId, sheet.id);
+                        unwrap(await submitSheetAction(actionKey, projectId, sheet.id));
                         setEditing(null);
                       })
                     }
@@ -179,7 +180,7 @@ export function SheetList({
                       type="button"
                       className="rp-send"
                       disabled={pending}
-                      onClick={() => run(() => decideSheetAction(projectId, sheet.id, true))}
+                      onClick={() => run(async () => unwrap(await decideSheetAction(projectId, sheet.id, true)))}
                     >
                       {t("approve")}
                     </button>
@@ -187,7 +188,7 @@ export function SheetList({
                       type="button"
                       className="hr-reject"
                       disabled={pending}
-                      onClick={() => run(() => decideSheetAction(projectId, sheet.id, false))}
+                      onClick={() => run(async () => unwrap(await decideSheetAction(projectId, sheet.id, false)))}
                     >
                       {t("reject")}
                     </button>

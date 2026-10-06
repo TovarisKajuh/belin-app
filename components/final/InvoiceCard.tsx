@@ -3,6 +3,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { fmtDate } from "@/lib/format";
+import { unwrap } from "@/lib/action-result";
 import { formatMoney } from "@/lib/po-shared";
 import type { InvoiceView } from "@/lib/invoice-view";
 import {
@@ -103,7 +104,7 @@ export function InvoiceCard({
                     type="button"
                     className="rp-send"
                     disabled={pending || !accountantEmail}
-                    onClick={() => run(() => shareInvoiceAction(projectId, invoice.id))}
+                    onClick={() => run(async () => unwrap(await shareInvoiceAction(projectId, invoice.id)))}
                   >
                     {t("share")}
                   </button>
@@ -133,7 +134,7 @@ export function InvoiceCard({
                 disabled={pending}
                 onClick={() =>
                   run(async () => {
-                    const result = await generateInvoiceAction(projectId);
+                    const result = unwrap(await generateInvoiceAction(projectId));
                     setWarnings(result.warnings);
                   })
                 }

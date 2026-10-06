@@ -24,6 +24,8 @@ import {
 } from "@/lib/data/materials";
 import { updateProjectStatus } from "@/lib/data/projects";
 import { createIncident, type IncidentPayload } from "@/lib/data/incidents";
+import type { ActionResult } from "@/lib/action-result";
+import { toResult } from "@/lib/action-result-server";
 import {
   createRequest,
   listRequests,
@@ -213,11 +215,12 @@ export async function requestIncidentPhotoTargets(
 
 export async function createIncidentAction(
   projectId: string,
-  payload: IncidentPayload
-): Promise<{ ok: true; incidentId: string }> {
-  const actor = await requireSubActor(projectId);
-  const incidentId = await createIncident(actor, payload);
-  return { ok: true, incidentId };
+  payload: IncidentPayload,
+): Promise<ActionResult<{ incidentId: string }>> {
+  return toResult(async () => {
+    const actor = await requireSubActor(projectId);
+    return { incidentId: await createIncident(actor, payload) };
+  });
 }
 
 export async function requestRequestPhotoTarget(
@@ -230,11 +233,12 @@ export async function requestRequestPhotoTarget(
 
 export async function createRequestAction(
   projectId: string,
-  payload: CreateRequestPayload
-): Promise<{ ok: true; requestId: string }> {
-  const actor = await requireSubActor(projectId);
-  const requestId = await createRequest(actor, payload);
-  return { ok: true, requestId };
+  payload: CreateRequestPayload,
+): Promise<ActionResult<{ requestId: string }>> {
+  return toResult(async () => {
+    const actor = await requireSubActor(projectId);
+    return { requestId: await createRequest(actor, payload) };
+  });
 }
 
 export async function listRequestsAction(projectId: string): Promise<RequestRow[]> {

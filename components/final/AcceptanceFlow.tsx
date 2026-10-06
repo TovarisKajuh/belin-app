@@ -3,6 +3,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { fmtDate } from "@/lib/format";
+import { unwrap } from "@/lib/action-result";
 import { SignaturePad } from "@/components/SignaturePad";
 import { DECLARATIONS, type AcceptanceView, type Declaration } from "@/lib/acceptance-view";
 import {
@@ -74,7 +75,7 @@ export function AcceptanceFlow({
 
   const save = (payload: Parameters<typeof saveAcceptanceStepAction>[2]) => {
     if (!acceptance) return;
-    run(() => saveAcceptanceStepAction(projectId, acceptance.id, payload));
+    run(async () => unwrap(await saveAcceptanceStepAction(projectId, acceptance.id, payload)));
   };
 
   // One upload per signature, when the signer confirms. Returns whether it was
@@ -83,11 +84,9 @@ export function AcceptanceFlow({
     if (!acceptance) return false;
     setError(null);
     try {
-      // Task 1.5 (ActionResult and unwrap) is not merged today: the action
-      // still THROWS on failure, so a bare await rejects and the pad stays
-      // open. When 1.5 lands, this line becomes unwrap(await ...), or the pad
-      // would lock on "Podpis je shranjen." while the server holds nothing.
-      await saveSignatureAction(projectId, acceptance.id, side, await blobToBase64(png));
+      // unwrap() throws on a returned failure, so the pad stays open and never
+      // locks on "Podpis je shranjen." while the server holds nothing.
+      unwrap(await saveSignatureAction(projectId, acceptance.id, side, await blobToBase64(png)));
       router.refresh();
       return true;
     } catch (err) {
@@ -106,9 +105,16 @@ export function AcceptanceFlow({
     if (!acceptance || acceptance.status !== "draft") return;
     if (acceptance.subSignerName || !defaultSubSignerName || defaultPersisted) return;
     setDefaultPersisted(true);
+    // A failure is a resolved { ok: false }, not a rejection: both reset the
+    // flag so the suggestion is persisted on the next render.
     void saveAcceptanceStepAction(projectId, acceptance.id, {
       subSignerName: defaultSubSignerName,
-    }).catch(() => setDefaultPersisted(false));
+    }).then(
+      (result) => {
+        if (!result.ok) setDefaultPersisted(false);
+      },
+      () => setDefaultPersisted(false),
+    );
   }, [acceptance, defaultSubSignerName, defaultPersisted, projectId]);
 
   if (!acceptance) {
@@ -121,7 +127,7 @@ export function AcceptanceFlow({
             type="button"
             className="rp-open"
             disabled={pending}
-            onClick={() => run(() => startAcceptanceAction(projectId, "final"))}
+            onClick={() => run(async () => unwrap(await startAcceptanceAction(projectId, "final")))}
           >
             {t("startAcceptance")}
           </button>
@@ -129,7 +135,7 @@ export function AcceptanceFlow({
             type="button"
             className="ic-cancel"
             disabled={pending}
-            onClick={() => run(() => startAcceptanceAction(projectId, "partial"))}
+            onClick={() => run(async () => unwrap(await startAcceptanceAction(projectId, "partial")))}
           >
             {t("kindPartial")}
           </button>
@@ -197,7 +203,7 @@ export function AcceptanceFlow({
                   type="button"
                   className="po-x"
                   disabled={pending}
-                  onClick={() => run(() => removeDefectAction(projectId, defect.id))}
+                  onClick={() => run(async () => unwrap(await removeDefectAction(projectId, defect.id)))}
                 >
                   &times;
                 </button>
@@ -233,11 +239,11 @@ export function AcceptanceFlow({
             disabled={pending || defectText.trim().length === 0}
             onClick={() =>
               run(async () => {
-                await addDefectAction(projectId, acceptance.id, {
+                unwrap(await addDefectAction(projectId, acceptance.id, {
                   description: defectText,
                   dueDate: defectDue || null,
                   agreement: defectAgreement,
-                });
+                }));
                 setDefectText("");
                 setDefectDue("");
               })
@@ -333,7 +339,7 @@ export function AcceptanceFlow({
           type="button"
           className="b-btn"
           disabled={pending || !acceptance.hasEpcSignature || !acceptance.hasSubSignature}
-          onClick={() => run(() => signAcceptanceAction(projectId, acceptance.id))}
+          onClick={() => run(async () => unwrap(await signAcceptanceAction(projectId, acceptance.id)))}
         >
           {t("signAndClose")}
         </button>

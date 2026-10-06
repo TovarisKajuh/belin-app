@@ -2,6 +2,8 @@
 
 One line per significant decision: what, why, when.
 
+- 2026-10-06: Server actions behind screens that show a specific error RETURN their failure as { ok: false, code } instead of throwing a message key; only keys from the known namespaces are forwarded. Reason: React omits thrown messages in production builds, so every specific error read as 'conflict' on the live site.
+
 - 2026-10-06: One tempo everywhere, the projection's average over the last six reports, because the finish date is computed from it and a second figure on the same hero invited the question which one is true.
 
 - 2026-10-06: The demo client is the invented "Svetlogradnja d.o.o." (Dunajska cesta 151, 1000 Ljubljana, SI53814266), not "Lumora Energija d.o.o.". Reason: the Task 2.2a re-check on bizi.si found a real active LUMORA d.o.o. in Ljubljana; Svetlogradnja has no bizi.si result and the VAT id is not in VIES.

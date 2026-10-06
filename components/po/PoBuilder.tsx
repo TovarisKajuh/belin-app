@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { formatMoney, lineTotal, poTotals } from "@/lib/po-shared";
 import { savePoDraftAction, sendPoAction } from "@/app/[locale]/app/[projectId]/po/actions";
 import type { PoView } from "@/lib/data/purchase-orders";
+import { unwrap } from "@/lib/action-result";
 
 // The EPC's side of the naročilnica: build the lines, price them, send it.
 //
@@ -101,20 +102,21 @@ export function PoBuilder({
         await work();
         router.refresh();
       } catch (err) {
-        // Server errors arrive as message keys ("po.conflict"), so the screen
-        // speaks the user's language without the server knowing about i18n.
+        // Failures arrive as codes ("po.conflict") through unwrap(), so the
+        // screen speaks the user's language without the server knowing about
+        // i18n, in production too.
         const key = err instanceof Error ? err.message : "";
         setError(key.startsWith("po.") ? t(key.slice(3)) : t("conflict"));
       }
     });
   };
 
-  const save = () => run(() => savePoDraftAction(projectId, payload()));
+  const save = () => run(async () => unwrap(await savePoDraftAction(projectId, payload())));
 
   const send = () =>
     run(async () => {
-      const saved = await savePoDraftAction(projectId, payload());
-      await sendPoAction(projectId, saved.poId);
+      const saved = unwrap(await savePoDraftAction(projectId, payload()));
+      unwrap(await sendPoAction(projectId, saved.poId));
       setConfirmSend(false);
     });
 

@@ -3,6 +3,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { fmtDate, fmtNumber } from "@/lib/format";
+import { unwrap } from "@/lib/action-result";
 import { formatMoney } from "@/lib/po-shared";
 import { acceptPoAction, rejectPoAction } from "@/app/[locale]/app/[projectId]/po/actions";
 import type { PoView as PoData } from "@/lib/data/purchase-orders";
@@ -129,7 +130,7 @@ export function PoView({
               type="button"
               className="b-btn"
               disabled={!confirmed || pending}
-              onClick={() => run(() => acceptPoAction(projectId, po.id))}
+              onClick={() => run(async () => unwrap(await acceptPoAction(projectId, po.id)))}
             >
               {t("accept")}
             </button>
@@ -151,7 +152,7 @@ export function PoView({
               type="button"
               className="b-btn"
               disabled={pending || note.trim().length === 0}
-              onClick={() => run(() => rejectPoAction(projectId, po.id, note))}
+              onClick={() => run(async () => unwrap(await rejectPoAction(projectId, po.id, note)))}
             >
               {t("reject")}
             </button>
