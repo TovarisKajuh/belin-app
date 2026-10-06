@@ -23,6 +23,22 @@ const VIEW_W = 240;
 const MARK_X = (VIEW_W - MARK_W) / 2;
 const MARK_Y = 22;
 
+const SEEN_KEY = "belinSplash";
+function seenThisSession(): boolean {
+  try {
+    return sessionStorage.getItem(SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function markSeen(): void {
+  try {
+    sessionStorage.setItem(SEEN_KEY, "1");
+  } catch {
+    // Storage blocked: the animation may play again next time, which is harmless.
+  }
+}
+
 export function BelinSplash({
   background = "#0b1524",
   onFinish,
@@ -50,7 +66,7 @@ export function BelinSplash({
   const FADE_MS = 600; // overlay fade-out
 
   useEffect(() => {
-    if (once && typeof window !== "undefined" && sessionStorage.getItem("belinSplash") === "1") {
+    if (once && typeof window !== "undefined" && seenThisSession()) {
       onFinish?.();
       return;
     }
@@ -67,7 +83,7 @@ export function BelinSplash({
       setT(elapsed);
       if (elapsed >= END + HOLD) {
         setFading(true);
-        if (once && typeof window !== "undefined") sessionStorage.setItem("belinSplash", "1");
+        if (once && typeof window !== "undefined") markSeen();
         window.setTimeout(() => onFinish?.(), FADE_MS);
         return;
       }

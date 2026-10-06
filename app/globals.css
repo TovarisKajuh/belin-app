@@ -2895,3 +2895,13 @@ button.gal-item {
   .lp .lp-pair { grid-template-columns: 1fr; gap: 20px; justify-items: center; }
   .lp .lp-pair > .lp-shot:first-child { max-width: 250px; }
 }
+
+/* === 1.6: launch animation only in the installed app === */
+/* The server renders the splash for everyone (DECISIONS 2026-08-13 forbids
+   deciding from a client signal in render). CSS decides who sees it before
+   any JavaScript runs: a browser tab never does. !important beats the inline
+   display:flex on the element in components/BelinSplash.tsx. */
+[data-splash] { display: none !important; }
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  [data-splash] { display: flex !important; }
+}
