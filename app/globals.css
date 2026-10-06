@@ -3044,3 +3044,32 @@ body:has(.b-tabbed) .dm-switch { bottom: calc(68px + 96px + env(safe-area-inset-
   height: 150px; border-radius: 12px; border: 1px dashed var(--e-line);
   color: var(--e-ok); font-weight: 700; font-size: 14px;
 }
+
+/* === 4.3: signup form === */
+.lp .lp-solo .lp-card.su-card { max-width: 560px; }
+.lp select.lp-input { color-scheme: dark; }
+.lp .su-hint { display: block; margin: 2px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--e-muted); }
+.lp .su-hint.is-ok { color: var(--e-ok); }
+.lp .su-hint.is-warn { color: var(--e-gold-2); }
+.lp .su-check {
+  display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: start;
+  min-height: 44px; padding: 4px 0; cursor: pointer;
+  font-size: 13.5px; line-height: 1.5; color: var(--e-ink2);
+}
+.lp .su-check input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--e-gold); }
+.lp .su-check a { color: var(--e-gold-2); text-underline-offset: 3px; }
+.lp .su-hp { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+.lp .su-alt { margin: 20px 0 0; text-align: center; font-size: 13.5px; color: var(--e-muted); }
+.lp .su-alt a { color: var(--e-gold-2); font-weight: 600; text-decoration: none; }
+.lp .su-alt a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.lp .su-sent { display: grid; gap: 14px; }
+.lp .su-sum { margin: 0 0 22px; border-top: 1px solid var(--e-line); }
+.lp .su-sum-row {
+  display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--e-line); font-size: 14px;
+}
+.lp .su-sum dt { color: var(--e-muted); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; font-weight: 600; padding-top: 2px; }
+.lp .su-sum dd { margin: 0; color: var(--e-ink); overflow-wrap: anywhere; }
+@media (max-width: 420px) {
+  .lp .su-sum-row { grid-template-columns: 1fr; gap: 2px; }
+}

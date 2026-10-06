@@ -18,6 +18,12 @@ export const SESSION_TTL_DAYS = 30;
 // a stranger cannot use the login form to flood somebody's inbox.
 export const LOGIN_RATE_MAX = 3;
 
+// How many login links one person may be sent per rolling 24 hours (Task 4.3
+// Step 7a). The Resend account sends at most 100 mails per UTC day for every
+// purpose together; without this a script against the login form could spend
+// the day's budget on one known address.
+export const LOGIN_DAILY_MAX = 10;
+
 export function hashToken(raw: string): string {
   return createHash("sha256").update(raw, "utf8").digest("hex");
 }
