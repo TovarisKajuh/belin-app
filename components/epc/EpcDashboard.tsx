@@ -117,7 +117,7 @@ export async function EpcDashboard({
                 {proj.ratePctPerDay != null ? <div className="s">{t("tempoSub")}</div> : null}
               </div>
               <div className="e-chip">
-                <div className="l">{t("plannedFinish")}</div>
+                <div className="l">{t(core.status === "finished" ? "finishedOn" : "plannedFinish")}</div>
                 <div className="v e-mono">{finish ?? t("gathering")}</div>
               </div>
               <div className="e-chip">
@@ -175,7 +175,7 @@ export async function EpcDashboard({
 
         <CompliancePanel docs={data.compliance} subName={sub} />
 
-        <StatRow projection={proj} photoCount={data.photoCount} />
+        <StatRow projection={proj} photoCount={data.photoCount} delivered={core.status === "finished"} />
 
         <div className="e-foot">Belin · {t("endOfOverview")}</div>
       </div>

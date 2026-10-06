@@ -84,6 +84,44 @@ describe("computeProjection", () => {
   });
 });
 
+// A finished project's overview said "108 dni zamude" and "Predviden zaključek
+// 06.10" while its portfolio card said one working day late (production
+// verification, 2026-10-06): the overview projected from today.
+describe("computeProjection on a delivered project", () => {
+  const delivered = {
+    history: [
+      { date: "2026-06-15", cumulativePercent: 40 },
+      { date: "2026-06-16", cumulativePercent: 70 },
+      { date: "2026-06-17", cumulativePercent: 100 },
+    ],
+    currentPercent: 100,
+    today: "2026-10-06",
+    plannedStart: "2026-06-15",
+    plannedEnd: "2026-06-16",
+    deliveredOn: "2026-06-17",
+  };
+
+  it("finishes on the delivered day and agrees with scheduleVarianceDays", () => {
+    const projection = computeProjection(delivered);
+    expect(projection.projectedFinish).toBe("2026-06-17");
+    expect(projection.daysVsDeadline).toBe(-1);
+    expect(projection.daysVsDeadline).toBe(
+      scheduleVarianceDays({
+        status: "finished",
+        plannedEnd: delivered.plannedEnd,
+        lastReportedDate: delivered.deliveredOn,
+        projectedDaysVsDeadline: null,
+      }),
+    );
+    expect(projection.workingDaysElapsed).toBe(3);
+  });
+
+  it("still projects from today when nothing was delivered", () => {
+    const projection = computeProjection({ ...delivered, deliveredOn: null });
+    expect(projection.projectedFinish).toBe("2026-10-06");
+  });
+});
+
 // The portfolio card's mark. It has to mean the same thing on a project that is
 // running and on one delivered months ago, which cumulative progress cannot do:
 // every finished project sits at 100 percent, so a progress line on a delivered

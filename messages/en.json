@@ -116,6 +116,7 @@
     "tempo": "Pace",
     "perDay": "/day",
     "plannedFinish": "Projected finish",
+    "finishedOn": "Completed on",
     "team": "Crew",
     "onSite": "on site",
     "gathering": "Gathering data",
