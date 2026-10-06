@@ -200,7 +200,11 @@
       "withdrawReview": "Withdraw request",
       "acceptReview": "Accept and finish",
       "sendBack": "Send back to work"
-    }
+    },
+    "confirmCancel": "A cancelled project cannot be reopened. Do you really want to cancel it?",
+    "confirmYes": "Yes, cancel the project",
+    "confirmNo": "No, go back",
+    "finishViaAcceptance": "Finish: sign the acceptance record"
   },
   "landing": {
     "eyebrow": "SOLAR SITES",

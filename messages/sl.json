@@ -200,7 +200,11 @@
       "withdrawReview": "Prekliči zahtevo",
       "acceptReview": "Potrdi in zaključi",
       "sendBack": "Vrni v delo"
-    }
+    },
+    "confirmCancel": "Preklicanega projekta ni mogoče znova odpreti. Ga res želite preklicati?",
+    "confirmYes": "Da, prekliči projekt",
+    "confirmNo": "Ne, nazaj",
+    "finishViaAcceptance": "Zaključek: podpis zapisnika o prevzemu"
   },
   "landing": {
     "eyebrow": "SOLARNA GRADBIŠČA",

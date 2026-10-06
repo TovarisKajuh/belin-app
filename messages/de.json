@@ -200,7 +200,11 @@
       "withdrawReview": "Anfrage zurückziehen",
       "acceptReview": "Bestätigen und abschließen",
       "sendBack": "Zurück in Bearbeitung"
-    }
+    },
+    "confirmCancel": "Ein abgebrochenes Projekt lässt sich nicht wieder öffnen. Wirklich abbrechen?",
+    "confirmYes": "Ja, Projekt abbrechen",
+    "confirmNo": "Nein, zurück",
+    "finishViaAcceptance": "Abschluss: Abnahmeprotokoll unterschreiben"
   },
   "landing": {
     "eyebrow": "SOLARBAUSTELLEN",
