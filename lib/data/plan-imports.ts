@@ -12,6 +12,7 @@ import {
 import { emptyMetadata, type K2ParseResult, type K2WarningCode } from "@/lib/k2/k2-shared";
 import type { OrgActor } from "@/lib/actor";
 import type { Json } from "@/lib/database.types";
+import { ensureProjectCoordinates } from "@/lib/data/geo";
 
 // The cap is enforced on the RECEIVED BYTES, before a single byte reaches the
 // parser. Real K2 reports with site photos run to a few tens of megabytes.
@@ -246,5 +247,16 @@ export async function createProjectFromReview(
   });
 
   if (error || typeof data !== "string") return { ok: false };
-  return { ok: true, projectId: data, epcToken };
+  const projectId = data;
+
+  // Coordinates for the weather on every report. Deferred: the fallback chain
+  // waits a second between requests (Nominatim's policy), which the EPC should
+  // not sit through. A failure here costs one retry at the first report.
+  try {
+    after(() => ensureProjectCoordinates(projectId).then(() => undefined, () => undefined));
+  } catch {
+    await ensureProjectCoordinates(projectId).catch(() => null);
+  }
+
+  return { ok: true, projectId, epcToken };
 }

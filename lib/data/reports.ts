@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { ProjectActor } from "@/lib/actor";
 import type { Json } from "@/lib/database.types";
 import { fetchWeatherSnapshot } from "@/lib/weather";
+import { ensureProjectCoordinates } from "@/lib/data/geo";
 import { projectToday } from "@/lib/project-time";
 import { getSignedPhotoUrlMap } from "@/lib/storage";
 import {
@@ -166,7 +167,19 @@ export async function submitDailyReport(actor: ProjectActor, payload: SubmitRepo
     .eq("id", actor.projectId)
     .maybeSingle();
 
-  const weather = await fetchWeatherSnapshot(project?.lat ?? null, project?.lng ?? null);
+  // A project created before coordinates existed, or whose geocode failed at
+  // creation, gets them now: once, with one quick query, so a crew submit is
+  // delayed by at most 1.5 s exactly one time per project.
+  let lat = project?.lat ?? null;
+  let lng = project?.lng ?? null;
+  if (project && (lat === null || lng === null)) {
+    const hit = await ensureProjectCoordinates(actor.projectId, { timeoutMs: 1500, maxQueries: 1 }).catch(() => null);
+    if (hit) {
+      lat = hit.lat;
+      lng = hit.lng;
+    }
+  }
+  const weather = await fetchWeatherSnapshot(lat, lng);
   const entryDate = projectToday(project?.country ?? null);
 
   const { data, error } = await db.rpc("submit_daily_report", {
