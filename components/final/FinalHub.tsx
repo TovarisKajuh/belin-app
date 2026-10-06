@@ -60,6 +60,10 @@ export function FinalHub({
   const [confirming, setConfirming] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The server writes the activity row after the response, so the refresh
+  // right after the click has no date yet; the action returns its own.
+  const [justRequestedAt, setJustRequestedAt] = useState<string | null>(null);
+  const shownRequestedAt = requestedAt ?? justRequestedAt;
 
   const inReview = status === "reviewing";
   const finished = status === "finished";
@@ -82,7 +86,8 @@ export function FinalHub({
     setError(null);
     startTransition(async () => {
       try {
-        unwrap(await requestFinalizationAction(projectId));
+        const { requestedAt: at } = unwrap(await requestFinalizationAction(projectId));
+        setJustRequestedAt(at);
         toast.success(tToast("handoverRequested"));
         setConfirming(false);
         router.refresh();
@@ -122,9 +127,9 @@ export function FinalHub({
             <p className="fn-state ok">{t("finished")}</p>
           ) : inReview ? (
             <p className="fn-state ok">
-              {requestedAt
+              {shownRequestedAt
                 ? t("requested", {
-                    date: fmtDate(requestedAt, uiLocale),
+                    date: fmtDate(shownRequestedAt, uiLocale),
                   })
                 : t("requestedPlain")}
             </p>

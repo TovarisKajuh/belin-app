@@ -60,7 +60,7 @@ export async function updateProjectStatus(
 export async function requestFinalization(
   actor: Actor,
   projectId: string,
-): Promise<void> {
+): Promise<{ requestedAt: string }> {
   const projectActor = await requireProjectActor(actor, projectId);
   const person = requireOfficeActor(actor);
   if (projectActor.role !== "sub") {
@@ -78,6 +78,7 @@ export async function requestFinalization(
     .maybeSingle();
 
   if (error || !data) throw new Error("final.conflict");
+  const requestedAt = new Date().toISOString();
 
   await emitEventDeferred({
     projectId,
@@ -85,4 +86,7 @@ export async function requestFinalization(
     actorPerson: person.personId,
     payload: {},
   });
+  // The activity row is written after the response, so the page refreshed
+  // right after the click cannot read the date yet: it shows this one.
+  return { requestedAt };
 }

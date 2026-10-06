@@ -30,11 +30,10 @@ async function officePerson(): Promise<PersonActor> {
   return actor;
 }
 
-export async function requestFinalizationAction(projectId: string): Promise<ActionResult<null>> {
-  return toResult(async () => {
-    await requestFinalization(await officePerson(), projectId);
-    return null;
-  });
+export async function requestFinalizationAction(
+  projectId: string,
+): Promise<ActionResult<{ requestedAt: string }>> {
+  return toResult(async () => requestFinalization(await officePerson(), projectId));
 }
 
 /**
