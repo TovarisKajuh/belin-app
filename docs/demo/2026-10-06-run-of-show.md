@@ -2,19 +2,19 @@
 
 Za Jana, ki govori. Slovenščina, vikanje, 40 minut, v živo pri kupcu. Kupec je slovenski EPC izvajalec. Pokažete dvoje: **AVESOL** kot montažnega podizvajalca, ki ga lahko najame, in **Belin** kot orodje, ki ga lahko da vsem svojim podizvajalcem, ne samo AVESOL-u.
 
-Vse teče na produkciji (getbelin.com; če domena na vaji še ne kaže Belina, belin-app.vercel.app), vstop skozi predstavitvena vrata (odločitev D1). Naročnik v demu je izmišljeno podjetje »Lumora Energija d.o.o.«, razen če je demo za sestanek personaliziran s kupčevim imenom. Imena oseb in projektov spodaj so iz seeda. Plonk listek (docs/demo/2026-10-06-cheat-sheet.html) je statičen in ne bere iz baze: zneske, številko objave za povrnitev in ime dostopne točke vanj vpišete s svinčnikom na vaji, ključa vrat pa nikoli. Če se zaslon in ta dokument razlikujeta v imenu ali številki, velja zaslon: bere iz baze.
+Vse teče na produkciji, **belin-app.vercel.app** (getbelin.com danes ni priklopljen na Belin). Vstop skozi predstavitvena vrata belin-app.vercel.app/sl/demo/[ključ] (odločitev D1); ključ je samo na vašem telefonu. Naročnik v demu je izmišljeno podjetje »Svetlogradnja d.o.o.«, razen če je demo za sestanek personaliziran s kupčevim imenom. Imena oseb in projektov spodaj so iz seeda. Plonk listek (docs/demo/2026-10-06-cheat-sheet.html) je statičen in ne bere iz baze: zneski iz seeda so na njem natisnjeni, številko objave za povrnitev in ime dostopne točke vpišete s svinčnikom na vaji, ključa vrat pa nikoli. Če se zaslon in ta dokument razlikujeta v imenu ali številki, velja zaslon: bere iz baze.
 
-**Jutranji rez (6. 10., 9:00).** Gradnja se je začela zjutraj, zato je del načrtovanega prestavljen na čas po sestanku. Spodaj je kot glavna pot že zapisana rezervna rešitev za vse, česar danes ni:
+**Kaj je na produkciji (main e0c5a70, 6. 10. dopoldne).** Na produkciji so: člen o režijskih urah v naročilnici (Task 6.4m), Zahtevek za dodatno delo v PDF (Task 6.6), tipkanje količin in gumb »Kot včeraj« (Task 5.9), spuščanje načrta v okvir (Task 4.5d), zlati gumb za preklop vloge (Task 2.3c), »Potrdi podpis« pri prevzemu (Task 3.1), naslova, obdobje storitve in rok plačila na računu (Task 3.3), zaključno poročilo, ki šteje samo potrjene ure (Task 3.4), in pet sekund za Razveljavi po vsaki potrditvi (Task 5.3). Točke spodaj jih uporabljajo kot glavno pot.
 
-- registracije kupca v sobi ni (Wave 4): v točki 9 poveste, da mu Belin odprete vi po sestanku;
-- člena o režijskih urah v naročilnici ni (Task 6.4m) in PDF-ja za dodatno delo ni (Task 6.6);
-- količin v poročilu ekipe ni mogoče tipkati in gumba »Kot včeraj« ni (Task 5.9): količine se nastavljajo s tipko +, v korakih po 10;
-- načrta ni mogoče spustiti v okvir (Task 4.5d): kliknete gumb v okvirju in izberete datoteko;
-- ročnega vnosa projekta brez načrta ni (Task 4.5b), novi projekt iz načrta še nima delov za napredek in lokacije za vreme (Task 4.5a, 4.5c);
+Česar danes ni, zato velja rezervna pot:
+
+- registracija kupca je zgrajena, a ZAPRTA, dokler ne prispejo podatki ponudnika: v točki 9 poveste, da mu Belin odprete vi po sestanku (če se odpre pred 13:00, glejte opombo v točki 9);
+- ročnega vnosa projekta brez načrta ni (Task 4.5b), novi projekt iz načrta še nima delov za napredek (Task 4.5a);
 - preklopa projekta in menija z začetnicami na vrhu zaslona ni (Task 5.4);
-- skripte za plonk listek (del Task 9.2), preflighta (Task 9.1) in mape BELIN OFFLINE (Task 9.3) ni: plonk listek izpolnite na roke, mapo pripravite sami, namesto preflighta velja ročni seznam preverjanj orkestratorja.
+- pilotnega dogovora na zaslonu ni (Task 8.2): podpišeta papirnatega, docs/demo/2026-10-06-pilotni-dogovor.html;
+- skripte za plonk listek, preflighta (Task 9.1) in mape BELIN OFFLINE (Task 9.3) ni: plonk listek natisnete iz HTML, mapo pripravite sami, namesto preflighta velja ročni seznam v docs/demo/2026-10-06-pripravljenost.md.
 
-Na vaji preverite še tri stvari, ki se gradijo danes dopoldne in morda ne pridejo pravočasno: zlati gumb za preklop vloge (Task 2.3c, točka 6), gumb »Potrdi podpis« (Task 3.1b, točka 7c) in naslova ter obdobje storitve na računu (Task 3.3, točka 7d). Kar na vaji ne dela, prečrtate in uporabite rezervno vrstico.
+Na vaji vsako točko vseeno preverite na produkciji. Kar na vaji ne dela, prečrtate in uporabite rezervno vrstico.
 
 Oznake ravni pri odgovorih (docs/gtm/INDEX.md): **FACT** preverjeno z virom in datumom, **PATTERN** vzorec iz navedenih virov, **J** presoja, ki jo po sestanku ocenimo v docs/gtm/field-log.md.
 
@@ -29,7 +29,7 @@ Kar baza docs/gtm danes NIMA: datoteke o ceni in pilotu (craft-offer-and-pilot.m
 | Prenosnik, Fotografije | vi | Prva fotografija AVESOL, anlage-weit.jpg, celozaslonsko. To je prvo, kar kupec vidi. Fotografije so v C:\DevEnv\belin-app\assets\marketing\site\; mape BELIN OFFLINE skripta danes ne sestavi (Task 9.3a), zato jih v mapo kopirate sami, v vrstnem redu iz točke 1. |
 | Vaš iPhone | vi, rezerva za kupca | Ikona Belin na začetnem zaslonu, prijavljen kot **Ekipa** (v seedu Luka Zupan). Ne moti vklopljen. Osebna dostopna točka pripravljena. |
 | Kupčev telefon | kupec | Nič. V točkah 4 in 5 skenira gostujoči QR in je gost ekipe. |
-| Na mizi, obrnjeno | vi | Natisnjeni zapisnik, račun, ena stran dnevnega poročila (vse z vaje; PDF-je po vaji prenesete in natisnete ročno, ker zbirnik Task 9.3b danes ne teče), pilotni dogovor v dveh izvodih. Plonk listek ostane v vaši mapi. |
+| Na mizi, obrnjeno | vi | Natisnjeni zapisnik, račun, ena stran dnevnega poročila (vse z vaje; PDF-je po vaji prenesete in natisnete ročno, ker zbirnik Task 9.3b danes ne teče), pilotni dogovor v dveh izvodih (docs/demo/2026-10-06-pilotni-dogovor.html). Plonk listek ostane v vaši mapi. |
 
 Pravilo za vse točke: ko se zaslon ne premakne, **ne osvežujte strani**. Počakajte tri sekunde in znova kliknite zavihek. Reči: »Shranjeno je, zaslon se ujame.«
 
@@ -74,11 +74,11 @@ Pravilo za vse točke: ko se zaslon ne premakne, **ne osvežujte strani**. Poča
 
 - **Naprava in oseba:** prenosnik, profil »Belin EPC«, **Naročnik**.
 - **Projekt:** nov projekt iz načrta.
-- **Kaj naredite:** Nov projekt. V okvirju »Naložite K2 načrt (PDF)« kliknite gumb **Izberite datoteko** in izberite forum1.pdf (v repozitoriju C:\DevEnv\belin-app\tests\fixtures\k2\forum1.pdf; če ste ga na vaji kopirali v mapo BELIN OFFLINE\k2\, od tam). Samo forum1.pdf: ne imenuje nobene osebe in nobenega podjetja, vsi drugi vzorčni načrti imenujejo resnične ljudi ali podjetja. Ali kupčev načrt, če ga je poslal po Task 0.7 in ste ga preizkusili na vaji. Datoteke ne vlecite v brskalnik: spuščanja v okvir danes ni (Task 4.5d), Chrome PDF odpre namesto čarovnika in čarovnik izgine pred kupcem. Klik deluje vedno. Ko se pregled izpolni, je naziv projekta »Bietigheim-Bissingen« (57 modulov, 26,02 kWp, dve strehi); preimenujte ga, npr. v »Strešna elektrarna Bietigheim«, popravite eno količino, izberite podizvajalca AVESOL, ustvarite.
+- **Kaj naredite:** Nov projekt. V okvirju »Naložite K2 načrt (PDF)« kliknite gumb **Izberite datoteko** in izberite forum1.pdf (v repozitoriju C:\DevEnv\belin-app\tests\fixtures\k2\forum1.pdf; če ste ga na vaji kopirali v mapo BELIN OFFLINE\k2\, od tam). Samo forum1.pdf: ne imenuje nobene osebe in nobenega podjetja, vsi drugi vzorčni načrti imenujejo resnične ljudi ali podjetja. Ali kupčev načrt, če ga je poslal po Task 0.7 in ste ga preizkusili na vaji. Kliknite, ne vlecite: spuščanje v okvir od danes deluje (Task 4.5d) in če kupec vpraša, ali lahko načrt samo povleče, recite da. A spust mimo strani, na zavihke ali naslovno vrstico, Chrome še vedno odpre kot PDF in čarovnik izgine pred kupcem. Klik deluje vedno. Ko se pregled izpolni, je naziv projekta »Bietigheim-Bissingen« (57 modulov, 26,02 kWp, dve strehi); preimenujte ga, npr. v »Strešna elektrarna Bietigheim«, popravite eno količino, izberite podizvajalca AVESOL, ustvarite.
 - **Kaj rečete:**
   »Projekta ne tipkate. Naložite načrt iz K2, Belin prebere naslov, moč, strehe, število modulov in material. Vi samo pregledate in popravite, kar je treba.«
   »To je vzorčni načrt iz K2 Base, nemški projekt. Vaši se preberejo enako.«
-  Po ustvarjanju: »Projekt je v portfelju, iz načrta in brez tipkanja.« (Stavka o delih za napredek in lokaciji za vreme danes ne recite: Task 4.5a in 4.5c sta po sestanku, novi projekt ju še nima.) Nato: »Za danes grem na projekt, ki je pripravljen na prvi dan.« Odprite **Dan 1** (v seedu Poslovni park Ljubljana Vzhod).
+  Po ustvarjanju: »Projekt je v portfelju, iz načrta in brez tipkanja.« (Stavka o delih za napredek danes ne recite: Task 4.5a je po sestanku, novi projekt jih še nima.) Nato: »Za danes grem na projekt, ki je pripravljen na prvi dan.« Odprite **Dan 1** (v seedu Poslovni park Ljubljana Vzhod).
 - **Kaj kupec vidi:** prazen obrazec, ki se izpolni sam, nato nov projekt v portfelju.
 - **Če ne gre:** nalaganje traja več kot 15 sekund ali javi napako. »Pokažem vam na projektu, ki je že pripravljen.« Odprite Dan 1.
 - **Če kupec ne uporablja K2:** »Projekt lahko vnesete tudi brez načrta; v pilotu ga vneseva skupaj.« (Gumba »Brez načrta?« danes ni: Task 4.5b je po sestanku.)
@@ -90,7 +90,7 @@ Pravilo za vse točke: ko se zaslon ne premakne, **ne osvežujte strani**. Poča
 - **Kaj naredite:** v pripetem zavihku vrat v razdelku »Telefon za goste« (pod kodo QR) kliknite **Dan 1** (privzeta koda odpre Trenutno): stran izriše novo kodo, veljavno 15 minut. Pomaknite se do razdelka »Telefon za goste«, da je na zaslonu samo koda, in pritisnite **F11**, da naslovna vrstica s ključem vrat ni vidna. Kupec skenira kodo s kamero in je brez vpisa na Dan 1 kot ekipa (v seedu Miha Oblak): »Najprej preverite material«. Nato F11 znova in nazaj na Dan 1 kot Naročnik.
 - **Kaj rečete:**
   »Vzemite svoj telefon in skenirajte to kodo. Brez aplikacije, brez gesla. Zdaj ste vi ekipa na strehi, prvi dan.«
-  »Tapnite Vse prispelo. Zdaj eno vrstico označite Delno in vpišite, koliko manjka. Fotografirajte dobavnico, lahko kar ta list na mizi. Tapnite Potrdi preverjanje.« (Delno samo, če je Task 5.10 na produkciji: na vaji preverite, da se stran po tapu na Delno ne razširi vstran; sicer: »Tapnite Vse prispelo. Fotografirajte dobavnico, lahko kar ta list na mizi. Tapnite Potrdi preverjanje.«)
+  »Tapnite Vse prispelo. Zdaj eno vrstico označite Delno in vpišite, koliko manjka. Fotografirajte dobavnico, lahko kar ta list na mizi. Tapnite Potrdi preverjanje.«
   Na prenosniku: »To vidim jaz v pisarni, v nekaj sekundah, brez klica. Prvi dan veste, česa ni, takrat ko je to še poceni, in ne tretji teden, ko ekipa stoji.«
 - **Kaj kupec vidi:** na svojem telefonu pregled materiala; na prenosniku ploščo materiala s primanjkljajem, fotografijama in uro preverjanja.
 - **Če ne gre:** QR ne odpre ali kupec noče skenirati. Dajte mu svoj iPhone, ikona Belin: »Vzemite moj telefon, je isto.« Če prenosnik po petih sekundah ne pokaže primanjkljaja: »Shranjeno je, zaslon se ujame.« Kliknite zavihek Dan 1 znova, ne osvežujte.
@@ -100,30 +100,31 @@ Pravilo za vse točke: ko se zaslon ne premakne, **ne osvežujte strani**. Poča
 - **Naprava in oseba:** kupčev telefon (gost ekipe), nato prenosnik kot **Naročnik**.
 - **Projekt:** **Trenutno** (v seedu PSE Trgovski center Kranj), dva tedna v delu.
 
-**5a, dnevno poročilo (14:00).** V pripetem zavihku vrat pod »Telefon za goste« kliknite **Trenutno** (F11 kot v točki 4), kupec znova skenira kodo in je na Trenutno. Preklopa projekta na vrhu zaslona danes ni (Task 5.4 je po sestanku). Puščice nazaj v brskalniku ne uporabljajte: vodi skozi gostujočo povezavo. Na zavihku Poročaj pri eni postavki enkrat tapnite **+** (količina se premika v korakih po 10; tipkanja in gumba »Kot včeraj« danes ni, Task 5.9 je po sestanku), fotografirajte mizo, Pošlji poročilo.
-- »Zdaj ste na projektu, ki teče že dva tedna. To je dnevno poročilo: količine, fotografija, pošlji. Trideset sekund, z eno roko.«
+**5a, dnevno poročilo (14:00).** V pripetem zavihku vrat pod »Telefon za goste« kliknite **Trenutno** (F11 kot v točki 4), kupec znova skenira kodo in je na Trenutno. Preklopa projekta na vrhu zaslona danes ni (Task 5.4 je po sestanku). Puščice nazaj v brskalniku ne uporabljajte: vodi skozi gostujočo povezavo. Na zavihku Poročaj tapnite zlati gumb **Kot včeraj**: izpolni število delavcev in včerajšnje količine (če zadnje poročilo ni od včeraj, gumb piše »Kot zadnjič« z datumom; tapnite ga enako). Pri eni postavki tapnite številko in vtipkajte drugo količino, ali tapnite +10. Fotografirajte mizo, **Pošlji poročilo**.
+- »Zdaj ste na projektu, ki teče že dva tedna. To je dnevno poročilo: Kot včeraj, ena popravljena količina, fotografija, pošlji. Trideset sekund, z eno roko.«
 - Na prenosniku, Trenutno: »In jaz ga vidim takoj, z vašo fotografijo. Napredek se izračuna iz količin, ne iz ocene po telefonu.«
 - **Kaj kupec vidi:** svoje poročilo na svojem telefonu, nato isto poročilo z isto fotografijo na prenosniku in premik napredka.
 - **Če ne gre:** pošiljanje ne uspe na njegovem omrežju. Isto na vašem iPhonu.
-- Ko je poročilo na prenosniku: na kupčevem telefonu gumb **Odjava** na zaslonu (menija z začetnicami danes ni, Task 5.4). Gostujoča seja sicer ostane dve uri na njegovem telefonu, kot ekipa v vašem demu.
+- Ko je poročilo na prenosniku: na kupčevem telefonu gumb **Odjava** na zaslonu, nad gumbom Pošlji poročilo (menija z začetnicami danes ni, Task 5.4). Gostujoča seja sicer ostane dve uri na njegovem telefonu, kot ekipa v vašem demu.
 
-**5b, režijske ure (16:00).** Prenosnik, Naročnik, Trenutno, Ure in dodatna dela, zavihek Režijske ure. List 2 kaže »še 2 dneva«.
+**5b, režijske ure in naročilnica (16:00).** Prenosnik, Naročnik, Trenutno, Ure in dodatna dela, zavihek Režijske ure. List 2 kaže »še 2 dneva« (rok 8. 10.).
 - »To je list režijskih ur, ki ga je oddal podizvajalec. Vidite odštevanje: še dva dneva. Isto vidi podizvajalec.«
-- »Rok šestih dni obe strani vidita, preden se delo začne. V pilotu ga zapiševa v vašo naročilnico.« (Člena o režijskih urah v naročilnici danes ni, Task 6.4m je po sestanku: naročilnice za ta stavek ne odpirajte.)
-- Kliknite Potrdi na listu 2. »Potrjeno, podizvajalec je obveščen. Te ure niso več tema za obračun.« (Skupno število potrjenih ur je na plonk listku, vrstica Režija.)
-- **Kaj kupec vidi:** odštevanje na listu, nato list v stanju Potrjeno.
+- Kliknite **Potrdi** na listu 2. Spodaj se za pet sekund pokaže obvestilo z gumbom Razveljavi (Task 5.3): ne kliknite ga. »Potrjeno, podizvajalec je obveščen. Te ure niso več tema za obračun.« (Zdaj je potrjenih 19 h: 14 h prej in 5 h z lista 2; plonk listek, vrstica Režija.)
+- Zavihek **Naročilnica**, **Prenesi PDF** (odpre se v novem zavihku), pomaknite se na konec do bloka **Pogoji naročila**. »Rok šestih dni ni pravilo aplikacije, zapisan je v naročilnici, ki jo podizvajalec sprejme: šest dni od oddaje, od ponedeljka do sobote, brez praznikov. Če se naročnik v roku ne odzove, se list šteje za potrjenega. Obe strani to vidita, preden se delo začne.« Zaprite zavihek s PDF.
+- Na vaji preverite, da je blok Pogoji naročila v PDF-ju: shranjeni PDF ga ima šele po seedu na kodi e0c5a70 ali novejši (seed ob 13:00). **Če ga ni:** naročilnice ne odpirajte in recite »V pilotu rok zapiševa v vašo naročilnico.«
+- **Kaj kupec vidi:** odštevanje na listu, nato list v stanju Potrjeno, nato člen v naročilnici.
 - **Če ne gre:** potrditev javi napako. »Stanje se je medtem spremenilo«, kliknite zavihek Režijske ure znova; list je morda že potrjen.
 
-**5c, dodatno delo (19:00).** Ure in dodatna dela, zavihek Dodatna dela: potrjeno dodatno delo (v seedu »Popravilo poškodovane hidroizolacije«, znesek na plonk listku). PDF-ja za dodatno delo danes ni (Task 6.6 je po sestanku): pokažete ga na zaslonu.
-- »Dodatno delo ima opis, ceno in odločitev z datumom. Na račun pride samo, ne da bi ga kdo prepisoval.«
-- **Kaj kupec vidi:** dodatno delo z zneskom in datumom odločitve.
-- **Če ne gre:** zavihek se ne odpre. Povejte stavek brez zaslona in pojdite na točko 6.
+**5c, dodatno delo (19:00).** Ure in dodatna dela, zavihek Dodatna dela: potrjeno dodatno delo »Popravilo poškodovane hidroizolacije«, 1.200,00 EUR. Na kartici kliknite **Zahtevek v PDF** (odpre se v novem zavihku).
+- »Dodatno delo ima opis, ceno in odločitev z datumom. Iz Belina gre kot Zahtevek za dodatno delo v PDF, s sklicem na Posebne gradbene uzance, in na račun pride samo, ne da bi ga kdo prepisoval.«
+- **Kaj kupec vidi:** dodatno delo z zneskom in datumom odločitve, nato PDF zahtevka z zneskom, kdo je oddal in kdo odločil.
+- **Če ne gre:** PDF se ne odpre: zaprite zavihek in pokažite kartico na zaslonu. Zavihek se ne odpre: povejte stavek brez zaslona in pojdite na točko 6.
 
 ### 6. Kdo vidi kaj: konflikt interesov (21:00 do 24:00)
 
-- **Naprava in oseba:** prenosnik, profil »Belin EPC«. Preklop vloge obstaja samo, če je Task 2.3c na produkciji (na vaji preverite, ali je spodaj desno zlati gumb). Če je: spodaj desno kliknite zlati gumb, ki kaže »Naročnik, vodstvo«, in izberite **Podizvajalec, pisarna**; gumb je viden samo, če je ta profil vstopil skozi predstavitvena vrata. **Če gumba ni:** Alt+Tab na okno profila »Belin podizvajalec«, ki je že na seznamu AVESOL, in na koncu Alt+Tab nazaj na »Belin EPC«.
+- **Naprava in oseba:** prenosnik, profil »Belin EPC«. Preklop vloge: spodaj desno zlati gumb, ki kaže »Naročnik, vodstvo« (Task 2.3c, na produkciji); viden je samo v profilu, ki je vstopil skozi predstavitvena vrata. **Če gumba ni ali ne preklopi:** Alt+Tab na okno profila »Belin podizvajalec«, ki je že na seznamu AVESOL, in na koncu Alt+Tab nazaj na »Belin EPC«.
 - **Projekt:** portfelj, projekt v Velenju (v seedu »Industrijska streha Velenje«, podizvajalec Montaža Kos; ime na plonk listku, vrstica Velenje).
-- **Kaj naredite:** na portfelju kot Naročnik pokažite projekt v Velenju in njegovega podizvajalca. Preklopite na »Podizvajalec, pisarna« (ali Alt+Tab na »Belin podizvajalec«). Prikaže se seznam AVESOL: Trenutno, Dan 1, en zaključen projekt in projekt iz točke 3, če ste ga ustvarili z AVESOL. Velenja ni. Preklopite nazaj na »Naročnik, vodstvo« (ali Alt+Tab nazaj na »Belin EPC«).
+- **Kaj naredite:** na portfelju kot Naročnik pokažite projekt v Velenju in njegovega podizvajalca. Kliknite zlati gumb in izberite **Podizvajalec, pisarna**. Prikaže se seznam AVESOL: Trenutno, Dan 1, en zaključen projekt in projekt iz točke 3, če ste ga ustvarili z AVESOL. Velenja ni. Zlati gumb, **Naročnik, vodstvo**, nazaj.
 - **Kaj rečete (vprašanje postavite VI, preden ga on):**
   »Zdaj vprašanje, ki ga imate verjetno v glavi. Jaz vodim montažno podjetje. Ali AVESOL v Belinu vidi vaše druge podizvajalce in njihove cene? Poglejva.«
   »To je pogled AVESOL-a. Projekta v Velenju ni, ker ga je delal drug podizvajalec. Ne zato, ker bi ga jaz skril, ampak ker ga strežnik ne izda nikomur, ki na projektu ni stranka. Vsako podjetje vidi samo svoje projekte.«
@@ -139,14 +140,13 @@ Pravilo za vse točke: ko se zaslon ne premakne, **ne osvežujte strani**. Poča
 - »Podizvajalec sporoči, da je delo končano. Vi ste obveščeni.«
 - **Kaj kupec vidi:** na kartici Predaja »Zaključek zahtevan« z današnjim datumom.
 
-**7b, zaključno poročilo (25:00).** Okno »Belin EPC«, **Naročnik**: Trenutno, Zaključek, Ustvari poročilo. Ko se pokaže Prenesi poročilo, ga odprite. Listajte: naslovnica, strani po dnevih, današnja stran s fotografijo mize.
+**7b, zaključno poročilo (25:00).** Okno »Belin EPC«, **Naročnik**: Trenutno, Zaključek, Ustvari poročilo. Nastane v okoli 5 sekundah in ima okoli 11 strani. Ko se pokaže Prenesi poročilo, ga odprite. Listajte: naslovnica, strani po dnevih, današnja stran s fotografijo mize.
 - **Kaj kupec vidi:** večstranski PDF, na zadnji dnevni strani svojo fotografijo.
 - »Zaključno poročilo: vsak dan svoja stran, vreme, fotografije, količine, potem ure, dodatna dela in zapleti. In tukaj je današnji dan, z vašo fotografijo mize od pred desetimi minutami. Tega ni nihče tipkal.«
-- Če list 2 v točki 5b ni bil potrjen: o seštevku ur v poročilu ne govorite. Poročilo danes šteje tudi nepotrjene ure (Task 3.4 je po sestanku), račun v 7d pa samo potrjene, zato bi se številki razlikovali.
+- Poročilo in račun štejeta iste ure: samo potrjene (Task 3.4). Če ste v 5b potrdili list 2, je na naslovnici potrjenih režijskih ur 19; sicer 14, odprtih 5 ur pa je v svoji vrstici. »Poročilo kaže iste ure, kot jih bo zaračunal račun.«
 - **Če ne gre:** nalaganje traja. Govorite o naslovnici. Po 30 sekundah: natisnjena kopija z mize (z vaje). Ogrevanja poročila pred sestankom danes ni (preflight, Task 9.1, je po sestanku).
 
 **7c, zapisnik o prevzemu (27:00).** Naročnik: Začni prevzem. Končni prevzem. Prisotni: kupčevo ime in vaše ime. Dodaj pomanjkljivost: »Manjka oznaka na razdelilniku R2«, rok čez 14 dni, Usklajeno. Izjava o prevzemu: **Prevzeto s pridržki**. Obkljukajte »Pridržim si pravico do pogodbene kazni«. Podpis naročnika: obrnite prenosnik h kupcu, »Vi podpišete kot naročnik«, vpiše svoje ime. Kliknite »Potrdi podpis« in počakajte na »Podpis je shranjen.« Podpis podizvajalca: podpišete vi, vpišete svoje ime in priimek. Kliknite »Potrdi podpis« in počakajte na »Podpis je shranjen.« Ko sta shranjena oba podpisa, kliknite Podpiši in zaključi prevzem. Prenesi zapisnik.
-- **Samo če na vaji gumba »Potrdi podpis« NI** (Task 3.1b ni na produkciji): stara blazinica shranjuje ob vsaki potezi na isto mesto in PDF lahko pokaže samo prvo potezo, zato se oba podpišeta z eno samo potezo, brez dviga prsta, in na vaji preverite podpis v PDF-ju. Če je podpis v PDF-ju okrnjen, pokažite natisnjeni zapisnik z vaje.
 - **Kaj kupec vidi:** svoj podpis na zaslonu, nato v PDF zapisniku z vašim, pomanjkljivost z rokom in stavek o pridržku.
 - »Zapisnik o prevzemu, z obema podpisoma, s pomanjkljivostjo in rokom za odpravo. Pridržek pogodbene kazni je izpisan dobesedno. To je stavek, ki vam ohrani pravico: brez njega ob prevzemu pravica do pogodbene kazni zaradi zamude ugasne. In prav ta stavek se v zapisniku po spominu najprej izgubi.« (FACT, 251. člen OZ, glejte kartico 11.)
 - **Če ne gre:** podpis se ne shrani ali PDF ne nastane. Pokažite natisnjeni zapisnik z mize: »To je isti dokument z današnje vaje.«
@@ -154,7 +154,7 @@ Pravilo za vse točke: ko se zaslon ne premakne, **ne osvežujte strani**. Poča
 **7d, račun (30:00).** Okno »Belin podizvajalec«, **Podizvajalec**: Trenutno, Zaključek, kartica Račun, Ustvari račun, Prenesi račun.
 - »Račun se sestavi sam: sprejeta naročilnica, potrjene ure in potrjeno dodatno delo. Ker gre za gradbene storitve med podjetjema, ki sta v Sloveniji identificirani za DDV, velja obrnjena davčna obveznost po 76.a členu ZDDV-1, zato vrstice DDV ni.«
 - »Nihče ni ničesar tipkal. Vse so podatki s strehe.«
-- **Kaj kupec vidi:** račun AVESOL z naslovoma obeh podjetij, obdobjem storitve, rokom plačila, sklicem na naročilnico, urami in dodatnim delom ter stavkom o obrnjeni davčni obveznosti. (Naslovi, obdobje, rok in sklic so iz Task 3.3, ki se gradi danes dopoldne: na vaji jih preverite na PDF-ju. Česar ni, o tem ne govorite.)
+- **Kaj kupec vidi:** račun AVESOL z naslovoma obeh podjetij, obdobjem storitve, rokom plačila, sklicem na naročilnico, urami in dodatnim delom ter stavkom o obrnjeni davčni obveznosti. Skupaj okoli **101.960,00 EUR**, če ste v 5b potrdili list 2 (naročilnica 100.000,00, 19 h po 40,00 EUR, dodatno delo 1.200,00); brez lista 2 okoli 101.760,00 EUR.
 - **Če ne gre:** natisnjeni račun z mize.
 
 ### 8. Ponudba (32:00 do 35:00)
@@ -169,17 +169,26 @@ Pravilo za vse točke: ko se zaslon ne premakne, **ne osvežujte strani**. Poča
 
 ### 9. Zaključek: datum in pilotni dogovor (35:00 do 40:00)
 
-- **Naprava in oseba:** brez zaslona. Natisnjeni pilotni dogovor (Task 9.5, dva izvoda; Task 8.2 na zaslonu danes ne gre v produkcijo). Registracije v sobi danes ni: samopostrežna registracija (Wave 4) pride po sestanku, zato kupčev Belin odprete vi.
-- **Kaj naredite:** poveste, da mu njegov Belin po sestanku odprete sami in da prvi projekt vneseta skupaj. Na hrbtno stran plonk listka zapišete, kar za to potrebujete: ime podjetja, davčno številko in e-pošto osebe, ki bo prva v Belinu. Nato pilotni dogovor: projekt in datum začetka, podpišeta oba. Na koncu datum klica.
+- **Naprava in oseba:** brez zaslona. Natisnjeni pilotni dogovor (docs/demo/2026-10-06-pilotni-dogovor.html, dva izvoda; Task 8.2 na zaslonu danes ne gre v produkcijo). Samopostrežna registracija je zgrajena, a ZAPRTA (SIGNUP_OPEN=0, pravne strani so temne, dokler ne prispejo podatki ponudnika), zato kupčev Belin odprete vi.
+- **Opomba:** če se registracija odpre pred sestankom, točka 9 postane kupec, ki se registrira sam na svojem telefonu na belin-app.vercel.app/sl/registracija. Koraki, kot jih poveste kupcu:
+  1. Če je kupčev telefon še gost iz točk 4 in 5, najprej Odjava (na vaji preverite, da telefon po gostujoči seji pokaže obrazec).
+  2. V Chromu ali Safariju odpre belin-app.vercel.app/sl/registracija.
+  3. Vpiše **davčno številko podjetja** (npr. SI12345678); VIES sam izpolni **Naziv podjetja** in **Naslov sedeža**. Preveri ju.
+  4. Vpiše **ime in priimek** in **službeni e-poštni naslov**, telefon po želji, obkljuka strinjanje s Pogoji uporabe.
+  5. Tapne **Pošlji povezavo za potrditev**.
+  6. V e-pošti tapne **Potrdi registracijo**, na strani preveri podatke in tapne **Potrdi in vstopi**: je v svojem praznem Belinu.
+  Če e-pošte v 60 sekundah ni (tudi med neželeno pošto ne), velja glavna pot spodaj: račun mu odprete vi. Na vaji to preverite z vašo davčno številko in vašim telefonom.
+- **Kaj naredite:** poveste, da mu njegov Belin po sestanku odprete sami in da prvi projekt vneseta skupaj. Na hrbtno stran plonk listka zapišete, kar za to potrebujete: ime podjetja, davčno številko in e-pošto osebe, ki bo prva v Belinu. Nato pilotni dogovor: podjetje, projekt in datum začetka, podpišeta oba. Na koncu datum klica.
 - **Kaj rečete:**
   »Vaš Belin vam po sestanku odprem jaz: vaše podjetje, prazno, vaše, nihče drug ga ne vidi. Vi ne izpolnjujete ničesar.«
   »Potrebujem samo ime podjetja, davčno številko in e-pošto osebe, ki bo prva v Belinu.«
-  Pilotni dogovor: »Kateri projekt in kateri dan začnemo?« Vpišite projekt in datum začetka, podpišeta oba.
+  Pilotni dogovor: »Kateri projekt in kateri dan začnemo?« Vpišite podjetje, projekt in datum začetka, podpišeta oba.
   Zadnji stavek, z datumom: »Pokličem vas v četrtek ob devetih, da skupaj vneseva projekt in povabiva vašega podizvajalca.« (Če se dogovorita drugače, velja dogovorjeno. Brez datuma ne vstanite: J, no-brainer ideja 42.)
 - **Kaj kupec vidi:** vas in natisnjeni dogovor; na koncu dogovor s svojim projektom, datumom začetka in obema podpisoma.
-- **Raven:** J. Odprtje računa namesto registracije v sobi je jutranji rez (registracija ni pripravljena), ne preizkušena izbira.
+- **Raven:** J. Odprtje računa namesto registracije v sobi je posledica zaprte registracije (podatki ponudnika še niso prispeli), ne preizkušena izbira.
 - **Če ne gre:**
   Kupec danes ne podpiše: dogovor pustite pri njem in se dogovorite za datum klica. Brez datuma ne vstanite.
+- **Pred tiskom:** besedilo dogovora je osnutek iz Task 8.2a (devet točk). Preberite ga in ga potrdite orkestratorju v klepetu pred vajo ob 13:30; oznako »OSNUTEK, v potrditev ustanovitelju« odstrani orkestrator šele po vaši potrditvi. Neodobrenega osnutka ne dajte kupcu v podpis.
   Kupec ne želi dati e-pošte za račun: »Pošljem vam jo v četrtek po klicu, ko izbereva projekt.« Datum klica velja enako.
 
 ## Lestev rezervnih rešitev
@@ -211,11 +220,11 @@ Raven: **J** in **PATTERN** (lib/pdf/brochure-copy.ts, problem 3; docs/gtm/knowl
 
 **5. »Kaj, če vas čez leto dni ni več?«**
 »Vsak dokument, ki ga Belin ustvari, je PDF, ki ga prenesete in ostane vaš: poročila, zapisniki, računi. Podatki so v Evropski uniji, v Frankfurtu. Izvoza celotnega projekta v enem paketu danes še ni; v pilotni dogovor zapišem, da ga dobite ob koncu pilota ali kadarkoli na zahtevo.«
-Raven: **FACT** za Frankfurt (baza Supabase v regiji eu-central-1, Supabase konektor get_project, 2026-10-05; funkcije v fra1, Frankfurt, vercel.com/docs/regions, dostop 2026-10-05, po Task 1.2; na vaji preverite, da lučka Strežnik na plošči vrat kaže regijo fra1, sicer recite samo »baza in datoteke so v Frankfurtu«). **FACT** da izvoza ni (recon no-brainer-ideas, ideja 27 ni narejena). **J** za zavezo.
+Raven: **FACT** za Frankfurt (baza Supabase v regiji eu-central-1, Supabase konektor get_project, 2026-10-05; funkcije v fra1, Frankfurt, vercel.com/docs/regions, dostop 2026-10-05, Task 1.2 je na produkciji; na vaji preverite, da lučka Strežnik na plošči vrat kaže regijo fra1, sicer recite samo »baza in datoteke so v Frankfurtu«). **FACT** da izvoza ni (recon no-brainer-ideas, ideja 27 ni narejena). **J** za zavezo.
 
 **6. »Kaj pa GDPR?«**
 »Za podatke vašega projekta ste upravljavec vi, ponudnik Belina je obdelovalec. Baza in datoteke so pri Supabase v Frankfurtu, aplikacija teče na Vercelu v Frankfurtu, e-pošto pošilja Resend s strežnikov na Irskem. Supabase ima od aprila 2026 certifikat ISO 27001. Pogodbo o obdelavi osebnih podatkov podpiševa pred začetkom pilota.«
-Raven: **FACT**: stran /sl/zasebnost obstaja že danes in navaja Supabase (Frankfurt), Vercel in Resend kot obdelovalce (lib/legal-copy.ts; Task 4.8, ki jo dopolni, je po sestanku); aplikacija v Frankfurtu samo, če lučka Strežnik na plošči vrat kaže fra1 (Task 1.2), sicer ta del stavka izpustite; Supabase ISO/IEC 27001:2022 od 22. 4. 2026 (supabase.com/blog/supabase-is-now-iso-27001-certified, dostop 2026-10-05); fra1 je Frankfurt (vercel.com/docs/regions, dostop 2026-10-05); pošiljanje prek eu-west-1 (DNS zapis MX za send.getbelin.com kaže na feedback-smtp.eu-west-1.amazonses.com, recon 2026-10-05). **J**: pogodba o obdelavi za kupca še ne obstaja kot dokument; to je vaša zaveza.
+Raven: **FACT**: obdelovalci Supabase (Frankfurt), Vercel in Resend so zapisani v besedilu o zasebnosti (lib/legal-copy.ts, Task 4.8), a stran /sl/zasebnost je danes temna (404), dokler ne prispejo podatki ponudnika: kupcu je ne odpirajte in nanjo ne kažite; aplikacija teče v Frankfurtu (Task 1.2 je na produkciji), na vaji vseeno preverite, da lučka Strežnik na plošči vrat kaže fra1, sicer ta del stavka izpustite; Supabase ISO/IEC 27001:2022 od 22. 4. 2026 (supabase.com/blog/supabase-is-now-iso-27001-certified, dostop 2026-10-05); fra1 je Frankfurt (vercel.com/docs/regions, dostop 2026-10-05); pošiljanje prek eu-west-1 (DNS zapis MX za send.getbelin.com kaže na feedback-smtp.eu-west-1.amazonses.com, recon 2026-10-05). **J**: pogodba o obdelavi za kupca še ne obstaja kot dokument; to je vaša zaveza.
 
 **7. »Kaj, če na strehi ni signala?«**
 »Belin za oddajo potrebuje povezavo. Stran je lahka, vendar brez signala poročila ne odda, dokler ekipa ni spet v dosegu. Dela brez povezave vam danes ne obljubljam.«
