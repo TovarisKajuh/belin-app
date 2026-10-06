@@ -1038,5 +1038,8 @@
   },
   "doc": {
     "page": "Page {n} of {total}"
+  },
+  "legal": {
+    "termsLink": "Terms of use"
   }
 }

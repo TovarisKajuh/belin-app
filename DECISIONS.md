@@ -2,6 +2,8 @@
 
 One line per significant decision: what, why, when.
 
+- 2026-10-06: Pilot terms are versioned (TERMS_VERSION) and the version and consent time are stored on the signup and on the organization. Reason: "which terms did this customer accept" must have an answer the day the terms change.
+
 - 2026-10-06: Nothing is marked as sent until sendEmail returned sent: true, and the From address comes from EMAIL_FROM (default Belin <obvestila@getbelin.com>). Reason: the getbelin.com domain failed verification for days while every screen said 'sent'.
 
 - 2026-10-06: The demo client is the invented "Svetlogradnja d.o.o." (Dunajska cesta 151, 1000 Ljubljana, SI53814266), not "Lumora Energija d.o.o.". Reason: the Task 2.2a re-check on bizi.si found a real active LUMORA d.o.o. in Ljubljana; Svetlogradnja has no bizi.si result and the VAT id is not in VIES.

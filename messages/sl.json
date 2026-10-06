@@ -1038,5 +1038,8 @@
   },
   "doc": {
     "page": "Stran {n} od {total}"
+  },
+  "legal": {
+    "termsLink": "Pogoji uporabe"
   }
 }
