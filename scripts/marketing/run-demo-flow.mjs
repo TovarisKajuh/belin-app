@@ -81,7 +81,7 @@ async function main() {
   console.log("handover requested");
 
   // 2. The client pulls the completion report.
-  const epc = await signIn(browser, "marko@sonce-demo.si");
+  const epc = await signIn(browser, "marko@svetlogradnja-demo.si");
   await epc.page.goto(`${BASE}/sl/app/${PROJECT}/final`, { waitUntil: "networkidle" });
   await epc.page.getByRole("button", { name: "Ustvari poročilo" }).click();
   await epc.page.waitForSelector("text=Prenesi poročilo", { timeout: 60000 });

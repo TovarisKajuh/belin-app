@@ -30,3 +30,39 @@ export function hhmm(iso: string, country: string | null | undefined): string {
     hour12: false,
   }).format(new Date(iso));
 }
+
+/**
+ * The instant at which the site's wall clock reads `hhmm` on `dateIso`.
+ *
+ * For timestamps that are composed rather than observed (the demo seed writes
+ * "the crew filed at 15:20"). Two passes, so a time on the day the clocks
+ * change still lands on the right side of the switch.
+ */
+export function zonedInstant(dateIso: string, hhmm: string, country: string | null | undefined): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateIso) || !/^\d{2}:\d{2}$/.test(hhmm)) {
+    throw new Error(`zonedInstant: expected yyyy-mm-dd and HH:MM, got ${dateIso} ${hhmm}`);
+  }
+  const zone = projectZone(country);
+  const wall = Date.parse(`${dateIso}T${hhmm}:00.000Z`);
+  const first = offsetAt(new Date(wall), zone);
+  const second = offsetAt(new Date(wall - first), zone);
+  return new Date(wall - second).toISOString();
+}
+
+function offsetAt(at: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(at);
+  const value = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? 0);
+  return (
+    Date.UTC(value("year"), value("month") - 1, value("day"), value("hour") % 24, value("minute"), value("second")) -
+    at.getTime()
+  );
+}

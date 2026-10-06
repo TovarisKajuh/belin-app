@@ -94,6 +94,24 @@ export function addWorkingDays(startIso: string, days: number, country: Country)
 }
 
 /**
+ * The inverse of addWorkingDays: the date `days` working days BEFORE `endIso`,
+ * so that addWorkingDays(result, days, country) === endIso whenever endIso is
+ * itself a working day. Used where a deadline is known and the submission has
+ * to sit exactly the statutory distance before it (the demo seed's live sheet).
+ */
+export function subtractWorkingDays(endIso: string, days: number, country: Country): string {
+  let cursor = toUtcDate(endIso);
+  let remaining = Math.max(0, Math.floor(days));
+  let guard = 0;
+  while (remaining > 0 && guard < 400) {
+    cursor = new Date(cursor.getTime() - DAY_MS);
+    guard++;
+    if (isWorkingDay(isoOf(cursor), country)) remaining--;
+  }
+  return isoOf(cursor);
+}
+
+/**
  * The stored deadline: the last instant of the deadline DAY at the SITE.
  *
  * The zone is not a formatting detail here. Storing 23:59:59Z would mean the
