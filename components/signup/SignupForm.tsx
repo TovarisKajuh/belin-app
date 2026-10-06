@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState, useTransition } from "react";
+import { startTransition, useActionState, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
@@ -87,7 +87,25 @@ export function SignupForm({ locale, contact }: { locale: string; contact: strin
     note === "fromVies" ? "su-hint is-ok" : note === "validNoData" ? "su-hint" : "su-hint is-warn";
 
   return (
-    <form className="lp-form" action={formAction} noValidate>
+    <form
+      className="lp-form"
+      action={formAction}
+      noValidate
+      onSubmit={(e) => {
+        // React 19 calls form.reset() after an action passed as `action`. A
+        // controlled text input survives that (React keeps its value attribute
+        // in step), but a controlled checkbox falls back to its initial
+        // defaultChecked: after any error the consent box showed unticked, and
+        // the next submit failed with "consentRequired" for a person who had
+        // ticked it. Dispatching the action ourselves inside a transition is
+        // React's own opt out of the reset; useFormStatus still sees the
+        // submit, so PendingButton keeps working, and without JavaScript the
+        // `action` above still posts the form.
+        e.preventDefault();
+        const data = new FormData(e.currentTarget);
+        startTransition(() => formAction(data));
+      }}
+    >
       <input type="hidden" name="locale" value={locale} />
 
       <label className="lp-field">
