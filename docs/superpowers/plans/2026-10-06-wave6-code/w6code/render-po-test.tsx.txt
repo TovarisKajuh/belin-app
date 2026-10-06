@@ -1,0 +1,21 @@
+import { writeFileSync } from "node:fs";
+import { renderDocument } from "@/lib/pdf/theme";
+import { NarocilnicaDocument } from "@/lib/pdf/narocilnica";
+import { poStrings } from "@/lib/pdf/strings";
+import { sha256Of } from "@/lib/pdf/render-po";
+const OUT = "C:/Users/ejand/AppData/Local/Temp/claude/C--DevEnv-belin-app/fc02d7f1-c666-4861-aeb4-7e5eac16051f/scratchpad/w6code/out";
+const base = {
+  number: 1, locale: "sl" as const, projectName: "SE Hala Brnik, 199,8 kWp", siteAddress: "Zgornji Brnik 130, 4210 Brnik",
+  issuedOn: "15. 09. 2026", deadline: "10. 10. 2026", paymentTerms: "30 dni od izdaje računa", regieHourlyRate: 40, totalNet: 100000,
+  lines: [{ description: "Montaža FV sistema 199,8 kWp, Brnik", qty: 1, unit: "kpl", unitPrice: 100000, total: 100000 }],
+  epcOrg: { name: "Solarna Gradnja d.o.o.", address: "Šmartinska cesta 152, 1000 Ljubljana", vatId: "SI12345678" },
+  subOrg: { name: "AVESOL d.o.o.", address: "Ulica Mirka Vadnova 3a, 4000 Kranj", vatId: "SI87654321" },
+  issuer: { name: "Solarna Gradnja d.o.o.", logo: null }, s: poStrings("sl", "si"),
+};
+async function main() {
+  const sent = await renderDocument(NarocilnicaDocument({ ...base, acceptance: null }));
+  writeFileSync(`${OUT}/po-sent.pdf`, sent);
+  writeFileSync(`${OUT}/po-accepted.pdf`, await renderDocument(NarocilnicaDocument({ ...base, acceptance: { name: "Boštjan Novak (AVESOL d.o.o.)", at: "16. 09. 2026 ob 10:42", originalSha256: sha256Of(sent) } })));
+  console.log("ok");
+}
+main();

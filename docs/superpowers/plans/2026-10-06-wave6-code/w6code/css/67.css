@@ -1,0 +1,9 @@
+/* === 6.7: the crew QR in Settings and on SubHome === */
+.belin-dark .qr-box { display: grid; grid-template-columns: 148px 1fr; gap: 16px; align-items: center; }
+.belin-dark .qr-svg { display: block; width: 148px; height: 148px; border-radius: 12px; background: #fff; }
+.belin-dark .qr-box .hr-pdf { min-height: 44px; display: inline-flex; align-items: center; }
+.belin-dark .qr-card { margin-bottom: 16px; }
+@media (max-width: 400px) {
+  .belin-dark .qr-box { grid-template-columns: 1fr; justify-items: start; }
+  .belin-dark .qr-svg { width: 184px; height: 184px; }
+}

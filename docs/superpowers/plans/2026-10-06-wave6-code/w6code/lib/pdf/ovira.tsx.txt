@@ -1,0 +1,129 @@
+// The Obvestilo o oviri: an obstruction incident as a written notice.
+//
+// Under the Posebne gradbene uzance 2020, a notice about an obstacle has legal
+// effect only when it is given in writing or entered in the site diary (uzanca
+// 8), and a contractor who wants more time must ask for the extension within a
+// reasonable time of learning of the cause (uzanca 43), the causes including
+// physical obstacles on site and the client's own failures (uzanca 41). The
+// crew already records the obstruction on the roof, with a server timestamp
+// and photos; this turns that record into the written notice, so the request
+// for more time exists the day the obstacle did, not weeks later.
+//
+// Rendered on demand from the incident row. The record of WHEN is the incident's
+// created_at, a server timestamp nobody can edit, printed on the page.
+
+import { Document, Page, Text, View } from "@react-pdf/renderer";
+import { C, Footer, Header, LabelValue, RunningHeader, SignatureBox, styles, type DocIssuer } from "@/lib/pdf/theme";
+import { photoRows, type DocPhoto } from "@/lib/pdf/photos";
+import { docString, type DocLocale } from "@/lib/pdf/strings";
+
+export interface OviraStrings {
+  title: string;
+  docNo: string;
+  recipient: string;
+  sender: string;
+  project: string;
+  site: string;
+  po: string;
+  recordedAt: string;
+  recordedBy: string;
+  intro: string;
+  request: string;
+  /** Already chosen for the SITE's country. */
+  basis: string;
+  noNote: string;
+  photos: string;
+  sign: string;
+  generated: string;
+  page: string;
+}
+
+export function oviraStrings(locale: DocLocale, country: string): OviraStrings {
+  const t = (key: string) => docString(locale, `doc.ovira.${key}`);
+  return {
+    title: t("title"),
+    docNo: docString(locale, "po.doc.docNo"),
+    recipient: t("recipient"),
+    sender: t("sender"),
+    project: t("project"),
+    site: t("site"),
+    po: t("po"),
+    recordedAt: t("recordedAt"),
+    recordedBy: t("recordedBy"),
+    intro: t("intro"),
+    request: t("request"),
+    basis: t(`basis.${country === "de" || country === "at" ? country : "si"}`),
+    noNote: t("noNote"),
+    photos: t("photos"),
+    sign: t("sign"),
+    generated: docString(locale, "final.doc.generated"),
+    page: docString(locale, "doc.page"),
+  };
+}
+
+export interface OviraInput {
+  /** Position of this obstruction among the project's obstructions, from 1. */
+  number: number;
+  projectName: string;
+  siteAddress: string | null;
+  clientName: string;
+  contractorName: string | null;
+  /** "št. 1 z dne 15. 09. 2026", or null without an accepted naročilnica. */
+  poRef: string | null;
+  /** "01. 10. 2026 ob 10:14", the incident's server timestamp in the site zone. */
+  recordedAt: string;
+  recordedBy: string | null;
+  note: string;
+  photos: DocPhoto[];
+  /** The subcontractor: it gives notice. */
+  issuer: DocIssuer;
+  s: OviraStrings;
+}
+
+export function OviraDocument(input: OviraInput) {
+  const { s } = input;
+  const docNo = `${s.docNo} ${input.number}`;
+  const rows = photoRows(input.photos, { keyPrefix: "ovira" });
+
+  return (
+    <Document title={`${s.title} ${input.number}, ${input.projectName}`}>
+      <Page size="A4" style={styles.page}>
+        <RunningHeader title={s.title} docNo={docNo} projectName={input.projectName} />
+        <Header title={s.title} docNo={docNo} projectName={input.projectName} issuer={input.issuer} />
+
+        <View style={{ marginBottom: 12 }}>
+          <LabelValue label={s.recipient} value={input.clientName} />
+          <LabelValue label={s.sender} value={input.contractorName ?? ""} />
+          <LabelValue label={s.project} value={input.projectName} />
+          {input.siteAddress ? <LabelValue label={s.site} value={input.siteAddress} /> : null}
+          {input.poRef ? <LabelValue label={s.po} value={input.poRef} /> : null}
+          <LabelValue label={s.recordedAt} value={input.recordedAt} />
+          {input.recordedBy ? <LabelValue label={s.recordedBy} value={input.recordedBy} /> : null}
+        </View>
+
+        <View wrap={false}>
+          <Text style={styles.body}>{s.intro}</Text>
+          <View style={{ marginTop: 6, marginBottom: 8, paddingLeft: 10, borderLeftWidth: 2, borderLeftColor: C.ink }}>
+            <Text style={styles.body}>{input.note.trim() ? input.note : s.noNote}</Text>
+          </View>
+          <Text style={styles.body}>{s.request}</Text>
+          <Text style={[styles.small, { color: C.muted, marginTop: 6 }]}>{s.basis}</Text>
+        </View>
+
+        {rows.length > 0 ? (
+          <View wrap={false}>
+            <Text style={styles.sectionTitle}>{s.photos}</Text>
+            {rows[0]}
+          </View>
+        ) : null}
+        {rows.slice(1)}
+
+        <View wrap={false} style={{ marginTop: 24, flexDirection: "row" }}>
+          <SignatureBox name={input.contractorName ?? ""} caption={s.sign} />
+        </View>
+
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
+      </Page>
+    </Document>
+  );
+}

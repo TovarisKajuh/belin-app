@@ -1,0 +1,131 @@
+// The arithmetic of a začasna situacija (interim progress statement).
+//
+// Posebne gradbene uzance 2020 (PGU, GZS, verified 2026-10-05 from the OZS
+// published text): interim statements are issued for one month at a time
+// (uzanca 61), on executed quantities at contract prices OR by the degree of
+// completion (uzanca 60), and carry the value of work executed, the amounts
+// previously covered and the amount now due (uzanca 61, second paragraph).
+//
+// Belin already computes the degree of completion from the crew's daily
+// quantities (lib/progress.ts, the founding principle), so a month's statement
+// is: contract value x completion at the month's end, minus the same at the
+// previous month's end. Pure and deterministic: the same reports always give
+// the same statement, so it is rendered on demand and never stored.
+
+import { projectProgress } from "@/lib/progress";
+import { round2 } from "@/lib/po-shared";
+
+export interface SituacijaItemInput {
+  name: string;
+  unit: string;
+  targetQty: number;
+  weight: number;
+}
+
+export interface SituacijaQuantity {
+  /** Index into the items array. */
+  item: number;
+  entryDate: string;
+  qty: number;
+}
+
+export interface SituacijaMonth {
+  /** yyyy-mm */
+  month: string;
+  /** 1 for the first month with any report, counting only months with reports. */
+  number: number;
+  /** First and last calendar day of the month, yyyy-mm-dd. */
+  start: string;
+  end: string;
+}
+
+export interface SituacijaRow {
+  name: string;
+  unit: string;
+  targetQty: number;
+  qtyBefore: number;
+  qtyPeriod: number;
+  qtyToDate: number;
+  /** 0..100, capped at 100 like projectProgress. */
+  percentToDate: number;
+}
+
+export interface SituacijaFigures {
+  rows: SituacijaRow[];
+  contractNet: number;
+  /** Weighted completion, rounded to 0.1, exactly as the dashboard shows it. */
+  percentBefore: number;
+  percentToDate: number;
+  valueBefore: number;
+  valueToDate: number;
+  valueThisPeriod: number;
+}
+
+function lastDayOfMonth(month: string): string {
+  const [year, m] = month.split("-").map(Number);
+  const last = new Date(Date.UTC(year, m, 0)).getUTCDate();
+  return `${month}-${String(last).padStart(2, "0")}`;
+}
+
+/** The months that carry at least one report, oldest first, numbered from 1. */
+export function situacijaMonths(entryDates: string[]): SituacijaMonth[] {
+  const months = [...new Set(entryDates.map((date) => date.slice(0, 7)))].sort();
+  return months.map((month, index) => ({
+    month,
+    number: index + 1,
+    start: `${month}-01`,
+    end: lastDayOfMonth(month),
+  }));
+}
+
+/**
+ * The statement for one month. Quantities dated after `month.end` do not
+ * exist yet as far as this statement is concerned, which is what makes an
+ * earlier month's statement reproducible after later reports arrive.
+ */
+export function situacijaFigures(
+  contractNet: number,
+  items: SituacijaItemInput[],
+  quantities: SituacijaQuantity[],
+  month: SituacijaMonth,
+): SituacijaFigures {
+  const before = items.map(() => 0);
+  const period = items.map(() => 0);
+  for (const q of quantities) {
+    if (q.entryDate < month.start) before[q.item] += q.qty;
+    else if (q.entryDate <= month.end) period[q.item] += q.qty;
+  }
+
+  const rows: SituacijaRow[] = items.map((item, i) => {
+    const toDate = before[i] + period[i];
+    return {
+      name: item.name,
+      unit: item.unit,
+      targetQty: item.targetQty,
+      qtyBefore: before[i],
+      qtyPeriod: period[i],
+      qtyToDate: toDate,
+      percentToDate: item.targetQty > 0 ? Math.round(Math.min(1, toDate / item.targetQty) * 1000) / 10 : 0,
+    };
+  });
+
+  const percentBefore = projectProgress(
+    items.map((item, i) => ({ targetQty: item.targetQty, weight: item.weight, installedQty: before[i] })),
+  );
+  const percentToDate = projectProgress(
+    items.map((item, i) => ({ targetQty: item.targetQty, weight: item.weight, installedQty: before[i] + period[i] })),
+  );
+
+  const valueBefore = round2((contractNet * percentBefore) / 100);
+  const valueToDate = round2((contractNet * percentToDate) / 100);
+
+  return {
+    rows,
+    contractNet,
+    percentBefore,
+    percentToDate,
+    valueBefore,
+    valueToDate,
+    valueThisPeriod: round2(valueToDate - valueBefore),
+  };
+}

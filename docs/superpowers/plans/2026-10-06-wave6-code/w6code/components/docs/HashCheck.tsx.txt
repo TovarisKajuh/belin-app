@@ -1,0 +1,44 @@
+"use client";
+
+import { useState } from "react";
+
+// Compares a PDF the visitor holds against the sealed hash, IN THE BROWSER.
+// The file is never uploaded: crypto.subtle hashes it locally, which is what
+// lets a public page offer this without receiving anybody's documents.
+
+export function HashCheck({
+  expected,
+  labels,
+}: {
+  expected: string;
+  labels: { title: string; hint: string; pick: string; match: string; mismatch: string };
+}) {
+  const [result, setResult] = useState<"match" | "mismatch" | null>(null);
+
+  async function onPick(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+    const hex = Array.from(new Uint8Array(digest))
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+    setResult(hex === expected ? "match" : "mismatch");
+  }
+
+  return (
+    <div className="vf-check">
+      <h2 className="vf-h2">{labels.title}</h2>
+      <p className="vf-note">{labels.hint}</p>
+      <label className="vf-pick">
+        <input type="file" accept="application/pdf" onChange={onPick} />
+        <span>{labels.pick}</span>
+      </label>
+      {result ? (
+        <p className={`vf-result ${result === "match" ? "ok" : "bad"}`} role="status">
+          {result === "match" ? labels.match : labels.mismatch}
+        </p>
+      ) : null}
+    </div>
+  );
+}

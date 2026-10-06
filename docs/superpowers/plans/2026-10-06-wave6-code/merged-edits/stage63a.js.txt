@@ -1,0 +1,187 @@
+// Task 6.3a anchor edits, applied after 6.1b and with lib/pdf/abnahme.tsx already replaced.
+const fs = require("fs");
+function edit(file, pairs) {
+  let s = fs.readFileSync(file, "utf8");
+  for (const [a, b] of pairs) {
+    if (!s.includes(a)) throw new Error(`${file}: miss ${a.slice(0, 90)}`);
+    s = s.split(a).join(b);
+  }
+  fs.writeFileSync(file, s);
+  console.log("edited", file);
+}
+
+edit("lib/pdf/strings.ts", [
+  [
+    `    generated: t("final.doc.generated"),
+    page: t("doc.page"),
+  };
+}
+
+export function invoiceStrings`,
+    `    generated: t("final.doc.generated"),
+    page: t("doc.page"),
+    poRef: t("doc.abnahme.poRef"),
+    poDeadline: t("doc.abnahme.poDeadline"),
+    lastReport: t("doc.abnahme.lastReport"),
+    colNo: t("doc.abnahme.colNo"),
+    colPhoto: t("doc.abnahme.colPhoto"),
+    photoYes: t("doc.abnahme.photoYes"),
+    reservation: docText(locale, "doc.abnahme.reservation", { disputed: t("final.disputed") }),
+    basisSi: t("doc.abnahme.basisSi"),
+    annexTitle: t("doc.abnahme.annexTitle"),
+  };
+}
+
+export function invoiceStrings`,
+  ],
+]);
+
+edit("lib/data/acceptances.ts", [
+  [
+    'import { loadIssuer } from "@/lib/pdf/issuer";',
+    'import { loadIssuer } from "@/lib/pdf/issuer";\nimport { downloadDocPhotos } from "@/lib/pdf/photo-data";\nimport { docDate } from "@/lib/pdf/doc-format";',
+  ],
+  ['import { abnahmeStrings, docString, type DocLocale } from "@/lib/pdf/strings";', 'import { abnahmeStrings, docString, docText, type DocLocale } from "@/lib/pdf/strings";'],
+  [
+    '"name, language, epc_org_id, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)",',
+    '"name, language, country, epc_org_id, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)",',
+  ],
+  ["acceptance_defects (description, due_date, agreement, sort_order)\",", "acceptance_defects (description, due_date, agreement, sort_order, photo_path)\","],
+  [
+    `  const dateFmt = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : locale, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  const day = (value: string | null) => (value ? dateFmt.format(new Date(value)) : null);
+`,
+    `  const country = project.country ?? "si";
+  const day = (value: string | null) => (value ? docDate(value, locale, country) : null);
+
+  // The accepted naročilnica this handover closes, and the last day reported:
+  // facts a zapisnik names (112. uzanca PGU 2020), read from the rows, never typed.
+  const [{ data: po }, { data: lastEntry }] = await Promise.all([
+    db
+      .from("purchase_orders")
+      .select("number, sent_at, created_at, deadline")
+      .eq("project_id", projectId)
+      .eq("status", "accepted")
+      .order("number", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from("daily_entries")
+      .select("entry_date")
+      .eq("project_id", projectId)
+      .order("entry_date", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  const defectRows = (row.acceptance_defects ?? []).sort((a, b) => a.sort_order - b.sort_order);
+  // One photo per defect at most, downloaded per defect so a failed download
+  // leaves exactly that defect without a picture and never shifts the others.
+  const defectPhotos = await Promise.all(
+    defectRows.map(async (defect, i) =>
+      defect.photo_path
+        ? ((
+            await downloadDocPhotos(db, [
+              {
+                path: defect.photo_path,
+                caption: docText(locale, "doc.abnahme.annexCaption", {
+                  no: i + 1,
+                  text: defect.description.length > 90 ? \`\${defect.description.slice(0, 87)}...\` : defect.description,
+                }),
+              },
+            ])
+          )[0] ?? null)
+        : null,
+    ),
+  );
+`,
+  ],
+  [
+    `      kindLabel: t(\`final.kind\${row.kind === "partial" ? "Partial" : "Final"}\`),
+      conductedOn: day(row.conducted_at),
+      attendees: row.attendees,
+      declarationLabel: row.declaration ? t(\`final.decl.\${row.declaration}\`) : "",
+      penaltyReserved: row.penalty_reserved,
+      warrantyStart: day(row.warranty_start),
+      note: row.note,
+      defects: (row.acceptance_defects ?? [])
+        .sort((a, b) => a.sort_order - b.sort_order)
+        .map((defect) => ({
+          description: defect.description,
+          dueDate: day(defect.due_date),
+          agreementLabel: t(\`final.\${defect.agreement === "disputed" ? "disputed" : "agreed"}\`),
+        })),`,
+    `      country,
+      kindLabel: t(\`final.kind\${row.kind === "partial" ? "Partial" : "Final"}\`),
+      conductedOn: day(row.conducted_at),
+      attendees: row.attendees,
+      poRef: po
+        ? docText(locale, "doc.abnahme.poRefValue", { number: po.number, date: day(po.sent_at ?? po.created_at) ?? "" })
+        : null,
+      poDeadline: po?.deadline ? day(po.deadline) : null,
+      lastReportOn: lastEntry ? day(lastEntry.entry_date) : null,
+      declarationLabel: row.declaration ? t(\`final.decl.\${row.declaration}\`) : "",
+      showReservation: row.declaration !== "refused",
+      penaltyReserved: row.penalty_reserved,
+      warrantyStart: day(row.warranty_start),
+      note: row.note,
+      defects: defectRows.map((defect, i) => ({
+        no: i + 1,
+        description: defect.description,
+        dueDate: day(defect.due_date),
+        agreementLabel: t(\`final.\${defect.agreement === "disputed" ? "disputed" : "agreed"}\`),
+        photo: defectPhotos[i],
+      })),`,
+  ],
+]);
+
+// The signing screen shows the same fixed sentence the protocol will print,
+// so nobody signs a sentence they did not see.
+edit("components/final/AcceptanceFlow.tsx", [
+  ['import { useTranslations } from "next-intl";', 'import { useTranslations } from "next-intl";'],
+  ['  const t = useTranslations("final");', '  const t = useTranslations("final");\n  const tDoc = useTranslations("doc");'],
+  [
+    `      <div className="ac-penalty">`,
+    `      {acceptance.defects.length > 0 && acceptance.declaration !== "refused" ? (
+        <p className="fn-note ac-reservation">{tDoc("abnahme.reservation", { disputed: t("disputed") })}</p>
+      ) : null}
+
+      <div className="ac-penalty">`,
+  ],
+]);
+
+edit("tests/pdf-abnahme.test.tsx", [
+  [
+    `    conductedOn: "12. 08. 2026",
+    attendees: "Matej Kovač, Boštjan Novak",
+    declarationLabel: "Prevzeto s pridržki",
+    penaltyReserved,`,
+    `    country: "si",
+    conductedOn: "12. 08. 2026",
+    attendees: "Matej Kovač, Boštjan Novak",
+    poRef: "št. 1 z dne 01. 08. 2026",
+    poDeadline: "15. 08. 2026",
+    lastReportOn: "11. 08. 2026",
+    declarationLabel: "Prevzeto s pridržki",
+    showReservation: true,
+    penaltyReserved,`,
+  ],
+  [
+    `      {
+        description: "Manjka tesnilo na prehodu kabla skozi kritino.",
+        dueDate: "20. 08. 2026",
+        agreementLabel: "Usklajeno",
+      },`,
+    `      {
+        no: 1,
+        description: "Manjka tesnilo na prehodu kabla skozi kritino.",
+        dueDate: "20. 08. 2026",
+        agreementLabel: "Usklajeno",
+        photo: null,
+      },`,
+  ],
+]);

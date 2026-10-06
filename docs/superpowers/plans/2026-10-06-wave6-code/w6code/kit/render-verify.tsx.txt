@@ -1,0 +1,27 @@
+// VERIFICATION KIT (scratchpad only). Task 6.9: a naročilnica with its verify mark, offline.
+//   npx tsx --tsconfig tsconfig.scripts.json <scratch>/kit/render-verify.tsx <out-dir>
+import { mkdirSync, writeFileSync } from "node:fs";
+import { renderDocument } from "@/lib/pdf/theme";
+import { NarocilnicaDocument } from "@/lib/pdf/narocilnica";
+import { poStrings } from "@/lib/pdf/strings";
+import { verifyMarkFor } from "@/lib/pdf/document-records";
+
+const out = process.argv[2];
+mkdirSync(out, { recursive: true });
+async function main(): Promise<void> {
+  const buffer = await renderDocument(
+    NarocilnicaDocument({
+      number: 1, locale: "sl", projectName: "SE Hala Brnik", siteAddress: "Zgornji Brnik 130, 4210 Brnik",
+      issuedOn: "15. 09. 2026", deadline: null, paymentTerms: null, regieHourlyRate: 40, totalNet: 100000,
+      lines: [{ description: "Montaža FV sistema", qty: 1, unit: "kpl", unitPrice: 100000, total: 100000 }],
+      epcOrg: { name: "Solarna Gradnja d.o.o.", address: null, vatId: "SI12345678" },
+      subOrg: { name: "Montaža Kos d.o.o.", address: null, vatId: "SI87654321" },
+      acceptance: null, issuer: { name: "Solarna Gradnja d.o.o.", logo: null },
+      verify: verifyMarkFor("sl", "3f6c1a52-8d7e-4b1f-9a3c-2e5d7f9b1c40"),
+      s: poStrings("sl", "si"),
+    }),
+  );
+  writeFileSync(`${out}/po-verify.pdf`, buffer);
+  console.log("ok");
+}
+main();

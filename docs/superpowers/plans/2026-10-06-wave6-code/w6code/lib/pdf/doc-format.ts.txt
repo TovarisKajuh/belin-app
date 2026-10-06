@@ -1,0 +1,59 @@
+// Dates, times and numbers as a document prints them, in the PROJECT's
+// language and the SITE's time zone.
+//
+// The zone is not cosmetic. Vercel runs in UTC, so a document generated at
+// 00:30 in Ljubljana would otherwise print yesterday's date, and an acceptance
+// at 10:42 would print as 08:42 (flows-correctness L4).
+//
+// If lib/format.ts (Task 1.11) exports equivalent number or date formatters,
+// these functions may delegate to them, but these signatures are what every
+// document calls.
+
+import { hhmm, projectZone } from "@/lib/project-time";
+import { docText, type DocLocale } from "@/lib/pdf/strings";
+
+const intlLocale = (locale: DocLocale) => (locale === "en" ? "en-GB" : locale);
+
+/** A date-only value (yyyy-mm-dd) is that calendar day; a timestamp is read in the site's zone. */
+function toDate(value: string): Date {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T12:00:00Z`) : new Date(value);
+}
+
+/** "12. 08. 2026" in sl, "12.08.2026" in de, "12/08/2026" in en. */
+export function docDate(value: string, locale: DocLocale, country: string | null | undefined): string {
+  return new Intl.DateTimeFormat(intlLocale(locale), {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: projectZone(country),
+  }).format(toDate(value));
+}
+
+/** "četrtek, 21. 08. 2026". */
+export function docWeekdayDate(value: string, locale: DocLocale, country: string | null | undefined): string {
+  const weekday = new Intl.DateTimeFormat(intlLocale(locale), {
+    weekday: "long",
+    timeZone: projectZone(country),
+  }).format(toDate(value));
+  return `${weekday}, ${docDate(value, locale, country)}`;
+}
+
+/** "13. 08. 2026 ob 10:42", from doc.dateTime, in the site's zone. */
+export function docDateTime(iso: string, locale: DocLocale, country: string | null | undefined): string {
+  return docText(locale, "doc.dateTime", {
+    date: docDate(iso, locale, country),
+    time: hhmm(iso, country),
+  });
+}
+
+/** "september 2026" / "September 2026" for a yyyy-mm month. */
+export function docMonth(month: string, locale: DocLocale): string {
+  return new Intl.DateTimeFormat(intlLocale(locale), { month: "long", year: "numeric", timeZone: "UTC" }).format(
+    new Date(`${month}-15T12:00:00Z`),
+  );
+}
+
+/** 245,7 in sl and de, 245.7 in en. Never a stray English decimal point on a Slovenian page. */
+export function docNumber(value: number, locale: DocLocale, maximumFractionDigits = 2): string {
+  return new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits }).format(value);
+}

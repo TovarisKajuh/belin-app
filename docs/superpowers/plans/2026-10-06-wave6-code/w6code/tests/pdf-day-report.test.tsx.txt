@@ -1,0 +1,80 @@
+import { readFileSync } from "node:fs";
+import { extractText, getDocumentProxy } from "unpdf";
+import { describe, expect, it } from "vitest";
+import { DayReportDocument, type DayReportData } from "@/lib/pdf/day-report";
+import { completionStrings, docString } from "@/lib/pdf/strings";
+import { renderDocument } from "@/lib/pdf/theme";
+import { imageSize } from "@/lib/pdf/image-size";
+import type { DocPhoto } from "@/lib/pdf/photos";
+
+// The single-day report's two promises: a loose page still says whose job it
+// is (project, client, contractor), and the signatures never land alone on a
+// page (documents H4). Photos are real JPEGs from the repo so the layout is
+// the one a real day produces.
+
+const SITE = "assets/marketing/site";
+function photo(name: string, caption: string): DocPhoto {
+  const bytes = readFileSync(`${SITE}/${name}`);
+  const size = imageSize(bytes)!;
+  return { bytes, width: size.width, height: size.height, caption };
+}
+
+const s = completionStrings("sl").day;
+s.title = docString("sl", "final.diaryTitleSi");
+
+function day(photoNames: string[]): DayReportData {
+  return {
+    reportNo: 4,
+    dateIso: "2026-10-01",
+    dateLabel: "četrtek, 01. 10. 2026",
+    dateShort: "01. 10. 2026",
+    weatherLabel: "Delno oblačno, 14 °C",
+    headcount: 5,
+    entries: [
+      {
+        note: "Montaža modulov v vrsti 2 in 3. Na polju C manjka 14 srednjih sponk, dobava obljubljena za jutri.",
+        author: "Luka Zupan",
+        quantities: ["Moduli: 96 kos"],
+      },
+    ],
+    incidents: [{ kindLabel: "Ovira", note: "Dostop do strehe blokiran zaradi dostave." }],
+    photos: photoNames.map((name, i) => photo(name, `posneto ob ${String(i + 8).padStart(2, "0")}:15`)),
+    photoTotal: photoNames.length,
+  };
+}
+
+const meta = {
+  projectName: "SE Hala Brnik",
+  clientName: "Solarna Gradnja d.o.o.",
+  contractorName: "Montaža Kos d.o.o.",
+  siteAddress: "Zgornji Brnik 130, 4210 Brnik",
+};
+
+async function pages(data: DayReportData): Promise<string[]> {
+  const buffer = await renderDocument(
+    DayReportDocument({ day: data, meta, s, issuer: { name: "Montaža Kos d.o.o.", logo: null } }),
+  );
+  const pdf = await getDocumentProxy(new Uint8Array(buffer));
+  const { text } = await extractText(pdf, { mergePages: false });
+  return (text as string[]).map((page) => page.replace(/\s+/g, " "));
+}
+
+describe("single day report", () => {
+  it("names the project, the client and the contractor", async () => {
+    const [first] = await pages(day(["crew-montage.jpg"]));
+    expect(first).toContain("SE Hala Brnik");
+    expect(first).toContain("Solarna Gradnja d.o.o.");
+    expect(first).toContain("Montaža Kos d.o.o.");
+    expect(first).toContain("posneto ob 08:15");
+  }, 60000);
+
+  it("never prints the signatures on a page without the last content block", async () => {
+    // Four photos of mixed shape: the layout that used to push the signature
+    // line alone onto page 2.
+    const all = await pages(day(["crew-montage.jpg", "dc-verkabelung.jpg", "unterkonstruktion.jpg", "crew-module.jpg"]));
+    const signPage = all.findIndex((page) => page.includes(s.signPrepared));
+    const lastCaptionPage = all.findIndex((page) => page.includes("posneto ob 11:15"));
+    expect(signPage).toBeGreaterThanOrEqual(0);
+    expect(lastCaptionPage).toBe(signPage);
+  }, 60000);
+});

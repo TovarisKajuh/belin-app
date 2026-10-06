@@ -1,0 +1,130 @@
+// Task 6.7b and 6.7c anchor edits: the crew QR in Settings and on SubHome.
+const fs = require("fs");
+function edit(file, pairs) {
+  let s = fs.readFileSync(file, "utf8");
+  for (const [a, b] of pairs) {
+    if (!s.includes(a)) throw new Error(`${file}: miss ${a.slice(0, 90)}`);
+    s = s.split(a).join(b);
+  }
+  fs.writeFileSync(file, s);
+  console.log("edited", file);
+}
+
+const step = process.argv[2]; // "b" (Settings) or "c" (SubHome)
+
+if (step === "b") {
+  edit("components/settings/CrewLink.tsx", [
+    [
+      'import { ShareLink } from "@/components/share/ShareLink";',
+      'import { ShareLink } from "@/components/share/ShareLink";\nimport { QrCode } from "@/components/share/QrCode";\nimport type { QrSvg } from "@/lib/qr";',
+    ],
+    [
+      `export function CrewLink({ name, url }: { name: string; url: string }) {
+  const t = useTranslations("settings");
+  const tShare = useTranslations("share");`,
+      `export function CrewLink({
+  name,
+  url,
+  qr,
+  projectId,
+}: {
+  name: string;
+  url: string;
+  /** Computed on the server (lib/qr.ts) so the encoder never ships to the browser. */
+  qr: QrSvg;
+  projectId: string;
+}) {
+  const t = useTranslations("settings");
+  const tShare = useTranslations("share");
+  const tDoc = useTranslations("doc.ui");`,
+    ],
+    [
+      `          email: tShare("email"),
+        }}
+      />
+    </div>`,
+      `          email: tShare("email"),
+        }}
+      />
+      <div className="qr-box">
+        <QrCode qr={qr} label={tDoc("qrAlt", { project: name })} />
+        <div>
+          <p className="st-note">{tDoc("qrNote")}</p>
+          <a className="hr-pdf" href={\`/api/pdf/poster/\${projectId}\`} target="_blank" rel="noreferrer">
+            {tDoc("posterPdf")}
+          </a>
+        </div>
+      </div>
+    </div>`,
+    ],
+  ]);
+
+  edit("app/[locale]/app/settings/page.tsx", [
+    ['import { appBaseUrl } from "@/lib/app-url";', 'import { appBaseUrl } from "@/lib/app-url";\nimport { qrSvg } from "@/lib/qr";'],
+    [
+      `        projects.map(async (p) => ({
+          projectId: p.id,
+          name: p.name,
+          url: \`\${appBaseUrl() ?? ""}/\${locale}/p/\${await ensureCrewLink(p.id)}\`,
+        })),`,
+      `        projects.map(async (p) => {
+          const url = \`\${appBaseUrl() ?? ""}/\${locale}/p/\${await ensureCrewLink(p.id)}\`;
+          return { projectId: p.id, name: p.name, url, qr: qrSvg(url) };
+        }),`,
+    ],
+    [
+      "                <CrewLink key={l.projectId} name={l.name} url={l.url} />",
+      "                <CrewLink key={l.projectId} name={l.name} url={l.url} qr={l.qr} projectId={l.projectId} />",
+    ],
+  ]);
+}
+
+if (step === "c") {
+  edit("components/sub/SubHome.tsx", [
+    [
+      'import { IncidentButton } from "@/components/crew/IncidentButton";',
+      'import { IncidentButton } from "@/components/crew/IncidentButton";\nimport { QrCode } from "@/components/share/QrCode";\nimport type { QrSvg } from "@/lib/qr";',
+    ],
+    [
+      `  crewToken: string | null;
+}) {
+  const t = await getTranslations("sub");`,
+      `  crewToken: string | null;
+  /** The crew link as a QR, computed on the server; null when crewToken is null. */
+  crewQr: QrSvg | null;
+}) {
+  const t = await getTranslations("sub");
+  const tDoc = await getTranslations("doc.ui");`,
+    ],
+    ["  crewToken,\n}: {", "  crewToken,\n  crewQr,\n}: {"],
+    [
+      `          <div className="sh-grid">
+            <div className="sh-card sh-card--wide">`,
+      `          {crewQr ? (
+            <div className="sh-card qr-card">
+              <span className="e-proj-lab">{tDoc("qrTitle")}</span>
+              <div className="qr-box">
+                <QrCode qr={crewQr} label={tDoc("qrAlt", { project: data.projectName })} />
+                <div>
+                  <p className="sh-note">{tDoc("qrNote")}</p>
+                  <a className="hr-pdf" href={\`/api/pdf/poster/\${projectId}\`} target="_blank" rel="noreferrer">
+                    {tDoc("posterPdf")}
+                  </a>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="sh-grid">
+            <div className="sh-card sh-card--wide">`,
+    ],
+  ]);
+
+  edit("app/[locale]/app/[projectId]/page.tsx", [
+    ['import { SubHome } from "@/components/sub/SubHome";', 'import { SubHome } from "@/components/sub/SubHome";\nimport { qrSvg } from "@/lib/qr";\nimport { appBaseUrl } from "@/lib/app-url";'],
+    [
+      "          crewToken={crewToken}",
+      "          crewToken={crewToken}\n          crewQr={crewToken ? qrSvg(`${appBaseUrl() ?? \"https://getbelin.com\"}/${locale}/p/${crewToken}`) : null}",
+    ],
+  ]);
+}

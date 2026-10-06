@@ -1,0 +1,112 @@
+const fs = require("fs");
+function edit(file, pairs) {
+  let s = fs.readFileSync(file, "utf8");
+  for (const [a, b] of pairs) {
+    if (!s.includes(a)) throw new Error(`${file}: miss ${a.slice(0, 80)}`);
+    s = s.replace(a, b);
+  }
+  fs.writeFileSync(file, s);
+  console.log("edited", file);
+}
+
+edit("tests/pdf-theme.test.tsx", [
+  [
+    '<Header title="Naročilnica" docNo="N-1" projectName="Belin test" />',
+    '<Header title="Naročilnica" docNo="N-1" projectName="Belin test" issuer={{ name: "Solarna Gradnja d.o.o.", logo: null }} />',
+  ],
+]);
+
+edit("tests/pdf-invoice.test.tsx", [
+  [
+    '    reverseChargeNote: mode === "reverse_charge" ? reverseChargeNote("si") : null,\n    s: invoiceStrings("sl"),',
+    '    reverseChargeNote: mode === "reverse_charge" ? reverseChargeNote("si") : null,\n    issuer: { name: "AVESOL d.o.o.", logo: null },\n    s: invoiceStrings("sl"),',
+  ],
+]);
+
+edit("tests/pdf-completion.test.tsx", [
+  [
+    `  return {
+    reportNo,
+    dateLabel,
+    weatherLabel`,
+    `  return {
+    reportNo,
+    dateIso: "2026-08-01",
+    dateLabel,
+    dateShort: dateLabel,
+    weatherLabel`,
+  ],
+  [
+    `        quantities: [
+          { name: "Podkonstrukcija", qty: 120, unit: "m" },
+          { name: "Moduli", qty: 30, unit: "kos" },
+        ],`,
+    `        quantities: ["Podkonstrukcija: 120 m", "Moduli: 30 kos"],`,
+  ],
+  [
+    "    photos: photo ? [photo] : [],",
+    "    photos: photo ? [{ bytes: photo, width: 4, height: 3, caption: null }] : [],\n    photoTotal: photo ? 1 : 0,",
+  ],
+  [
+    '    incidentRegister: [{ date: "02. 08.", kindLabel: "Dež, prekinitev", note: "" }],\n    s: completionStrings("sl"),',
+    '    incidentRegister: [{ date: "02. 08.", kindLabel: "Dež, prekinitev", note: "" }],\n    issuer: { name: "AVESOL d.o.o.", logo: null },\n    s: completionStrings("sl"),',
+  ],
+]);
+
+edit("tests/pdf-abnahme.test.tsx", [
+  [
+    `    conductedOn: "12. 08. 2026",
+    attendees: "Matej Kovač, Boštjan Novak",
+    declarationLabel: "Prevzeto s pridržki",
+    penaltyReserved,`,
+    `    country: "si",
+    conductedOn: "12. 08. 2026",
+    attendees: "Matej Kovač, Boštjan Novak",
+    poRef: "št. 1 z dne 01. 08. 2026",
+    poDeadline: "15. 08. 2026",
+    lastReportOn: "11. 08. 2026",
+    declarationLabel: "Prevzeto s pridržki",
+    showReservation: true,
+    penaltyReserved,`,
+  ],
+  [
+    `      {
+        description: "Manjka tesnilo na prehodu kabla skozi kritino.",
+        dueDate: "20. 08. 2026",
+        agreementLabel: "Usklajeno",
+      },`,
+    `      {
+        no: 1,
+        description: "Manjka tesnilo na prehodu kabla skozi kritino.",
+        dueDate: "20. 08. 2026",
+        agreementLabel: "Usklajeno",
+        photo: null,
+      },`,
+  ],
+  [
+    `    subSigner: { name: "Boštjan Novak", image: null },
+    s: abnahmeStrings("sl"),`,
+    `    subSigner: { name: "Boštjan Novak", image: null },
+    issuer: { name: "Sonce Energija d.o.o.", logo: null },
+    s: abnahmeStrings("sl"),`,
+  ],
+]);
+
+edit("tests/pdf-render-guard.test.ts", [
+  [
+    `  it("keeps the font re-registration inside the render helper", () => {`,
+    `  // The double-spacing bug (documents H1) returns the moment a template sets
+  // a unitless lineHeight on a Text without its own fontSize. Templates use
+  // styles.body or styles.small from the theme instead; only the theme, and the
+  // brochure whose styles all carry their own fontSize, may say lineHeight.
+  it("keeps lineHeight out of the document templates", () => {
+    const offenders = walk("lib/pdf")
+      .map((file) => file.split("\\\\").join("/"))
+      .filter((file) => !["lib/pdf/theme.tsx", "lib/pdf/brochure.tsx"].includes(file))
+      .filter((file) => readFileSync(file, "utf8").includes("lineHeight"));
+    expect(offenders).toEqual([]);
+  });
+
+  it("keeps the font re-registration inside the render helper", () => {`,
+  ],
+]);

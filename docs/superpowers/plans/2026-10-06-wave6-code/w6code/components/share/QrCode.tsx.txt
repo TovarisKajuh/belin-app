@@ -1,0 +1,16 @@
+import { qrViewBox, type QrSvg } from "@/lib/qr";
+
+// A QR code as inline SVG. No "use client" and no hooks, so it renders from a
+// server component or inside a client one alike; the path itself is computed
+// on the server (lib/qr.ts) and arrives as plain data, so the encoder never
+// ships to the browser. Dark modules on white always, whatever the theme: a
+// scanner needs the contrast, and an inverted code fails on many phones.
+
+export function QrCode({ qr, label, className = "qr-svg" }: { qr: QrSvg; label: string; className?: string }) {
+  return (
+    <svg className={className} viewBox={qrViewBox(qr)} role="img" aria-label={label} shapeRendering="crispEdges">
+      <rect x={-4} y={-4} width={qr.size + 8} height={qr.size + 8} fill="#ffffff" />
+      <path d={qr.path} fill="#0a1628" />
+    </svg>
+  );
+}

@@ -1,0 +1,4 @@
+/* === 6.2: Dnevno poročilo, the day PDF link on the EPC day log === */
+.belin-dark .e-day-mid .e-day-pdf {
+  margin-top: 8px; min-height: 40px; display: inline-flex; align-items: center;
+}

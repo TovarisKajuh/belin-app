@@ -1,0 +1,23 @@
+import { writeFileSync } from "node:fs";
+import { renderDocument } from "@/lib/pdf/theme";
+import { RegieberichtDocument } from "@/lib/pdf/regiebericht";
+import { regieStrings, docText, sheetStatusLabel } from "@/lib/pdf/strings";
+const OUT = "C:/Users/ejand/AppData/Local/Temp/claude/C--DevEnv-belin-app/fc02d7f1-c666-4861-aeb4-7e5eac16051f/scratchpad/w6code/out";
+const s = regieStrings("sl");
+async function main() {
+  writeFileSync(`${OUT}/regie.pdf`, await renderDocument(RegieberichtDocument({
+    number: 2, projectName: "SE Hala Brnik, 199,8 kWp", contractorName: "AVESOL d.o.o.", submittedOn: "22. 09. 2026 ob 16:05",
+    statusLabel: sheetStatusLabel("sl", "deemed_approved"), status: "deemed_approved",
+    decisionLine: `${s.deemedAt}: 29. 09. 2026 ob 23:59`, rejectionReason: null,
+    rateLine: docText("sl", "doc.regie.rateValue", { rate: "40,00 EUR", number: 1 }),
+    ruleLines: [docText("sl", "doc.regie.rule", { deadline: "29. 09. 2026" }), docText("sl", "doc.regie.rulePo", { number: 1 })],
+    totalHoursLabel: "14,5 h", totalAmountLabel: "580,00 EUR",
+    lines: [
+      { date: "21. 09. 2026", person: "Luka Zupan", hours: "8", description: "Dodatno pritrjevanje zaradi drugačne kritine", amount: "320,00 EUR" },
+      { date: "22. 09. 2026", person: "Luka Zupan", hours: "6,5", description: "Nadaljevanje pritrjevanja, južni del", amount: "260,00 EUR" },
+    ],
+    issuer: { name: "AVESOL d.o.o.", logo: null }, s,
+  })));
+  console.log("ok");
+}
+main();

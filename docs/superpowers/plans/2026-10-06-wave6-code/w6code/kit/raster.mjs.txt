@@ -1,0 +1,37 @@
+// VERIFICATION KIT (scratchpad only). Rasterizes one PDF to PNG pages with pdf.js in Playwright.
+// node <scratch>/kit/raster.mjs <file.pdf> [scale=1.4] [outDir=next to the pdf]
+// Rasterizes one PDF (argv[2]) to <out>/<base>-p<n>.png at scale argv[3] (default 1.4) with pdf.js in Playwright.
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { basename, dirname, resolve } from "node:path";
+import { createRequire } from "node:module";
+const require = createRequire("C:/DevEnv/belin-app/package.json");
+const { chromium } = require("playwright");
+const file = resolve(process.argv[2]);
+const scale = Number(process.argv[3] ?? 1.4);
+const outDir = process.argv[4] ?? dirname(file);
+mkdirSync(outDir, { recursive: true });
+const browser = await chromium.launch();
+const context = await browser.newContext({ viewport: { width: 1400, height: 2000 } });
+await context.route("http://raster.local/**", (route) => {
+  const url = route.request().url();
+  if (url.includes("/pdfjs/")) return route.fulfill({ body: readFileSync(resolve("C:/DevEnv/belin-app/node_modules/pdfjs-dist/build", url.split("/pdfjs/")[1])), contentType: "text/javascript" });
+  if (url.endsWith("/doc.pdf")) return route.fulfill({ body: readFileSync(file), contentType: "application/pdf" });
+  return route.fulfill({ body: `<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#fff}canvas{display:block}</style><canvas id="page"></canvas>`, contentType: "text/html" });
+});
+const page = await context.newPage();
+await page.goto("http://raster.local/index.html");
+const pages = await page.evaluate(async () => {
+  const pdfjs = await import("/pdfjs/pdf.mjs");
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.mjs";
+  window.__doc = await pdfjs.getDocument({ url: "/doc.pdf" }).promise;
+  window.renderPage = async (n, s) => { const pg = await window.__doc.getPage(n); const vp = pg.getViewport({ scale: s }); const c = document.getElementById("page"); c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height); await pg.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise; };
+  return window.__doc.numPages;
+});
+const base = basename(file, ".pdf");
+for (let p = 1; p <= pages; p++) {
+  await page.evaluate(([n, s]) => window.renderPage(n, s), [p, scale]);
+  const out = `${outDir}/${base}-p${p}.png`;
+  writeFileSync(out, await page.locator("#page").screenshot({ type: "png" }));
+  console.log(out);
+}
+await browser.close();

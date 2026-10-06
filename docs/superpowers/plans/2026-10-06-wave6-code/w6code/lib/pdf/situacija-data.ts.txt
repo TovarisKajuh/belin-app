@@ -1,0 +1,94 @@
+// Reading what a začasna situacija is computed from: the accepted naročilnica's
+// net value, the project's scope items, and every reported quantity with its
+// date. Not "server-only" (the client is a parameter), like render-po.tsx.
+
+import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  situacijaMonths,
+  type SituacijaItemInput,
+  type SituacijaMonth,
+  type SituacijaQuantity,
+} from "@/lib/situacija-shared";
+
+type Db = SupabaseClient<any, any, any>;
+
+export interface SituacijaSource {
+  po: { number: number; totalNet: number; paymentTerms: string | null; issuedAt: string } | null;
+  items: SituacijaItemInput[];
+  quantities: SituacijaQuantity[];
+  months: SituacijaMonth[];
+}
+
+interface ScopeRow {
+  id: string;
+  name: string;
+  unit: string;
+  target_qty: number | string;
+  weight: number | string;
+  sort_order: number;
+}
+
+interface EntryRow {
+  entry_date: string;
+  entry_quantities: { scope_item_id: string; qty: number | string }[] | null;
+}
+
+export async function loadSituacijaSource(db: Db, projectId: string): Promise<SituacijaSource> {
+  const [poRes, scopeRes, entriesRes] = await Promise.all([
+    // Only an ACCEPTED order is an agreed contract value.
+    db
+      .from("purchase_orders")
+      .select("number, total_net, payment_terms, sent_at, created_at")
+      .eq("project_id", projectId)
+      .eq("status", "accepted")
+      .order("number", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from("scope_items")
+      .select("id, name, unit, target_qty, weight, sort_order")
+      .eq("project_id", projectId)
+      .order("sort_order"),
+    db
+      .from("daily_entries")
+      .select("entry_date, entry_quantities (scope_item_id, qty)")
+      .eq("project_id", projectId)
+      .order("entry_date"),
+  ]);
+
+  const scope = (scopeRes.data ?? []) as unknown as ScopeRow[];
+  const entries = (entriesRes.data ?? []) as unknown as EntryRow[];
+  const index = new Map(scope.map((row, i) => [row.id, i]));
+
+  const quantities: SituacijaQuantity[] = entries.flatMap((entry) =>
+    (entry.entry_quantities ?? []).flatMap((q) => {
+      const item = index.get(q.scope_item_id);
+      return item === undefined || Number(q.qty) <= 0
+        ? []
+        : [{ item, entryDate: entry.entry_date, qty: Number(q.qty) }];
+    }),
+  );
+
+  const po = poRes.data
+    ? {
+        number: poRes.data.number as number,
+        totalNet: Number(poRes.data.total_net),
+        paymentTerms: (poRes.data.payment_terms as string | null) ?? null,
+        issuedAt: (poRes.data.sent_at as string | null) ?? (poRes.data.created_at as string),
+      }
+    : null;
+
+  return {
+    po,
+    items: scope.map((row) => ({
+      name: row.name,
+      unit: row.unit,
+      targetQty: Number(row.target_qty),
+      weight: Number(row.weight),
+    })),
+    quantities,
+    // A month counts when it carries quantities, not merely a note: a month of
+    // rain reports is not a month of billable progress.
+    months: situacijaMonths(quantities.map((q) => q.entryDate)),
+  };
+}

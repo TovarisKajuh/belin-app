@@ -1,0 +1,202 @@
+// One day on site, as a page.
+//
+// The fields are the ones a construction diary is expected to carry: the
+// sequential number, the date, the parties, the weather, how many people were
+// there, what was built and how much of it, what went wrong, and the
+// photographs. Nothing here is invented at print time: every value was
+// captured on the day by the people who were there.
+//
+// Photos arrive as DocPhoto (bytes plus their real pixel size), never as paths
+// (a path string fails silently in @react-pdf). They are laid out by their own
+// shape and never cropped. A photo that could not be downloaded is simply
+// absent: a missing picture must never cost the page it belonged to.
+//
+// THE CLOSING BLOCK: the last content block of the day and the signatures are
+// one unbreakable View, so the signature line can never land alone on a fresh
+// page (documents H4: three photos and a normal note used to do exactly that).
+
+import type { ReactElement } from "react";
+import { Document, Page, Text, View } from "@react-pdf/renderer";
+import { C, Footer, Header, LabelValue, RunningHeader, SignatureBox, styles, type DocIssuer } from "@/lib/pdf/theme";
+import { photoRows, type DocPhoto } from "@/lib/pdf/photos";
+
+export interface DayReportStrings {
+  title: string;
+  reportNo: string;
+  date: string;
+  weather: string;
+  headcount: string;
+  work: string;
+  quantities: string;
+  incidents: string;
+  photos: string;
+  author: string;
+  signature: string;
+  noWeather: string;
+  generated: string;
+  people: string;
+  client: string;
+  contractor: string;
+  site: string;
+  photosShown: string;
+  signPrepared: string;
+  signReceived: string;
+  page: string;
+}
+
+/** The parties and the place, printed on every day so a loose page still says whose job it is. */
+export interface DayReportMeta {
+  projectName: string;
+  clientName: string;
+  contractorName: string | null;
+  siteAddress: string | null;
+}
+
+export interface DayReportData {
+  reportNo: number;
+  dateIso: string;
+  /** "četrtek, 21. 08. 2026", printed on the day page. */
+  dateLabel: string;
+  /** "21. 08. 2026", for the cover's day list. */
+  dateShort: string;
+  weatherLabel: string | null;
+  headcount: number | null;
+  entries: {
+    note: string | null;
+    author: string | null;
+    /** Already formatted in the project locale: "Moduli: 90 kos". */
+    quantities: string[];
+  }[];
+  incidents: { kindLabel: string; note: string }[];
+  photos: DocPhoto[];
+  /** How many photos the day has in Belin, before any cap. */
+  photoTotal: number;
+}
+
+export function DayReportPage({
+  day,
+  meta,
+  s,
+  issuer,
+}: {
+  day: DayReportData;
+  meta: DayReportMeta;
+  s: DayReportStrings;
+  issuer: DocIssuer;
+}) {
+  const docNo = `${s.reportNo} ${day.reportNo}`;
+
+  // Everything after the meta block, as a list of unbreakable blocks. The last
+  // one is printed together with the signatures.
+  const blocks: ReactElement[] = [];
+
+  day.entries.forEach((entry, i) => {
+    blocks.push(
+      <View key={`entry-${i}`} style={{ marginBottom: 8 }} wrap={false}>
+        {i === 0 ? <Text style={styles.sectionTitle}>{s.work}</Text> : null}
+        {entry.note ? <Text style={styles.body}>{entry.note}</Text> : null}
+        {entry.quantities.length > 0 ? (
+          <Text style={[styles.body, { color: C.inkSoft, marginTop: 3 }]}>{entry.quantities.join(" · ")}</Text>
+        ) : null}
+        {entry.author ? <Text style={{ color: C.muted, fontSize: 8, marginTop: 2 }}>{entry.author}</Text> : null}
+      </View>,
+    );
+  });
+
+  if (day.incidents.length > 0) {
+    blocks.push(
+      <View key="incidents" wrap={false}>
+        <Text style={styles.sectionTitle}>{s.incidents}</Text>
+        {day.incidents.map((incident, i) => (
+          <Text key={i} style={[styles.body, { marginBottom: 3 }]}>
+            {incident.note ? `${incident.kindLabel}: ${incident.note}` : incident.kindLabel}
+          </Text>
+        ))}
+      </View>,
+    );
+  }
+
+  if (day.photos.length > 0) {
+    const rows = photoRows(day.photos, { keyPrefix: `day-${day.reportNo}` });
+    // A capped day says so under its last row, in the same block, so the note
+    // can never be the thing left standing beside the signatures.
+    if (day.photoTotal > day.photos.length) {
+      const lastRow = rows.pop();
+      rows.push(
+        <View key="photos-last" wrap={false}>
+          {lastRow}
+          <Text style={[styles.small, { color: C.muted }]}>
+            {s.photosShown.replace("{shown}", String(day.photos.length)).replace("{total}", String(day.photoTotal))}
+          </Text>
+        </View>,
+      );
+    }
+    // The section title travels with the first row, never alone at a page foot.
+    const firstRow = rows.shift();
+    blocks.push(
+      <View key="photos-head" wrap={false}>
+        <Text style={styles.sectionTitle}>{s.photos}</Text>
+        {firstRow}
+      </View>,
+      ...rows,
+    );
+  }
+
+  const signatures = (
+    <View style={[styles.signatureRow, { marginTop: 22 }]}>
+      <SignatureBox name={meta.contractorName ?? ""} caption={s.signPrepared} />
+      <SignatureBox name={meta.clientName} caption={s.signReceived} />
+    </View>
+  );
+
+  // A crew note longer than about a page cannot sit in an unbreakable block, so
+  // only a block of ordinary size is held together with the signatures.
+  const lastEntry = day.entries[day.entries.length - 1];
+  const lastIsLongNote =
+    day.incidents.length === 0 && day.photos.length === 0 && (lastEntry?.note?.length ?? 0) > 1500;
+  const last = lastIsLongNote ? undefined : blocks.pop();
+
+  return (
+    <Page size="A4" style={styles.page} wrap>
+      <RunningHeader title={s.title} docNo={docNo} projectName={meta.projectName} />
+      <Header title={s.title} docNo={docNo} projectName={meta.projectName} issuer={issuer} />
+
+      <View style={{ marginBottom: 10 }}>
+        <LabelValue label={s.date} value={day.dateLabel} />
+        <LabelValue label={s.client} value={meta.clientName} />
+        <LabelValue label={s.contractor} value={meta.contractorName ?? ""} />
+        {meta.siteAddress ? <LabelValue label={s.site} value={meta.siteAddress} /> : null}
+        <LabelValue label={s.weather} value={day.weatherLabel ?? s.noWeather} />
+        <LabelValue label={s.headcount} value={day.headcount === null ? "" : `${day.headcount} ${s.people}`} />
+      </View>
+
+      {blocks}
+
+      <View wrap={false}>
+        {last ?? null}
+        {signatures}
+      </View>
+
+      <Footer generatedLabel={s.generated} pageLabel={s.page} />
+    </Page>
+  );
+}
+
+/** A single day as its own document: the single-day download. */
+export function DayReportDocument({
+  day,
+  meta,
+  s,
+  issuer,
+}: {
+  day: DayReportData;
+  meta: DayReportMeta;
+  s: DayReportStrings;
+  issuer: DocIssuer;
+}) {
+  return (
+    <Document title={`${s.title} ${day.reportNo}, ${meta.projectName}`}>
+      <DayReportPage day={day} meta={meta} s={s} issuer={issuer} />
+    </Document>
+  );
+}

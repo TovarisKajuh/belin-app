@@ -1,0 +1,192 @@
+// The Začasna situacija: one month of work, valued by its degree of completion.
+//
+// What it is NOT: a tax invoice. It is the record of work done for the client
+// to confirm, and says so on its face; the invoice is a separate document with
+// its own numbering (Task 3.3). That keeps one numbering series per company and
+// keeps this document free of the statutory invoice duties it could not meet
+// on the night it was built (J, founder to confirm, see Wave 6 questions).
+
+import { Document, Page, Text, View } from "@react-pdf/renderer";
+import {
+  C,
+  FlexTable,
+  Footer,
+  Header,
+  LabelValue,
+  RunningHeader,
+  SignatureBox,
+  styles,
+  type DocIssuer,
+} from "@/lib/pdf/theme";
+import { docString, type DocLocale } from "@/lib/pdf/strings";
+
+export interface SituacijaStrings {
+  title: string;
+  docNo: string;
+  period: string;
+  po: string;
+  project: string;
+  client: string;
+  contractor: string;
+  site: string;
+  colItem: string;
+  colUnit: string;
+  colContract: string;
+  colBefore: string;
+  colPeriod: string;
+  colToDate: string;
+  colPercent: string;
+  contractValue: string;
+  thisPeriod: string;
+  toPay: string;
+  reverseChargeTitle: string;
+  method: string;
+  methodSi: string;
+  paymentSi: string;
+  disputeSi: string;
+  extrasExcluded: string;
+  notInvoice: string;
+  signContractor: string;
+  signClient: string;
+  generated: string;
+  page: string;
+}
+
+export function situacijaStrings(locale: DocLocale): SituacijaStrings {
+  const t = (key: string) => docString(locale, `doc.situacija.${key}`);
+  return {
+    title: t("title"),
+    docNo: docString(locale, "po.doc.docNo"),
+    period: t("period"),
+    po: t("po"),
+    project: t("project"),
+    client: t("client"),
+    contractor: t("contractor"),
+    site: t("site"),
+    colItem: t("colItem"),
+    colUnit: t("colUnit"),
+    colContract: t("colContract"),
+    colBefore: t("colBefore"),
+    colPeriod: t("colPeriod"),
+    colToDate: t("colToDate"),
+    colPercent: t("colPercent"),
+    contractValue: t("contractValue"),
+    thisPeriod: t("thisPeriod"),
+    toPay: t("toPay"),
+    reverseChargeTitle: t("reverseChargeTitle"),
+    method: t("method"),
+    methodSi: t("methodSi"),
+    paymentSi: t("paymentSi"),
+    disputeSi: t("disputeSi"),
+    extrasExcluded: t("extrasExcluded"),
+    notInvoice: t("notInvoice"),
+    signContractor: t("signContractor"),
+    signClient: t("signClient"),
+    generated: docString(locale, "final.doc.generated"),
+    page: docString(locale, "doc.page"),
+  };
+}
+
+export interface SituacijaInput {
+  number: number;
+  /** "september 2026 (01. 09. 2026 - 30. 09. 2026)" */
+  periodLabel: string;
+  poRef: string | null;
+  projectName: string;
+  country: string;
+  clientName: string;
+  contractorName: string | null;
+  siteAddress: string | null;
+  /** Already formatted rows: name, unit, contract, before, period, to date, percent. */
+  rows: string[][];
+  /** Label and value pairs of the totals block, in order. */
+  totals: { label: string; value: string; strong?: boolean }[];
+  reverseChargeNote: string | null;
+  /** "Plačilni pogoji po naročilnici: ..." when the order sets terms, else null. */
+  paymentPoLine: string | null;
+  /** The subcontractor issues the statement. */
+  issuer: DocIssuer;
+  s: SituacijaStrings;
+}
+
+export function SituacijaDocument(input: SituacijaInput) {
+  const { s } = input;
+  const docNo = `${s.docNo} ${input.number}`;
+  const si = input.country === "si";
+
+  return (
+    <Document title={`${s.title} ${input.number}, ${input.projectName}`}>
+      <Page size="A4" style={styles.page}>
+        <RunningHeader title={s.title} docNo={docNo} projectName={input.projectName} />
+        <Header title={s.title} docNo={docNo} projectName={input.projectName} issuer={input.issuer} />
+
+        <View style={{ marginBottom: 12 }}>
+          <LabelValue label={s.project} value={input.projectName} />
+          <LabelValue label={s.client} value={input.clientName} />
+          <LabelValue label={s.contractor} value={input.contractorName ?? ""} />
+          {input.siteAddress ? <LabelValue label={s.site} value={input.siteAddress} /> : null}
+          {input.poRef ? <LabelValue label={s.po} value={input.poRef} /> : null}
+          <LabelValue label={s.period} value={input.periodLabel} />
+        </View>
+
+        <FlexTable
+          columns={[
+            { label: s.colItem, widthPct: 28 },
+            { label: s.colUnit, widthPct: 8 },
+            { label: s.colContract, widthPct: 13, align: "right" },
+            { label: s.colBefore, widthPct: 13, align: "right" },
+            { label: s.colPeriod, widthPct: 13, align: "right" },
+            { label: s.colToDate, widthPct: 13, align: "right" },
+            { label: s.colPercent, widthPct: 12, align: "right" },
+          ]}
+          rows={input.rows}
+        />
+
+        <View style={{ marginTop: 12, alignItems: "flex-end" }} wrap={false}>
+          <View style={{ width: "62%" }}>
+            {input.totals.map((row, i) => (
+              <View
+                key={i}
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  paddingVertical: 3,
+                  ...(row.strong ? { borderTopWidth: 1, borderTopColor: C.ink, paddingTop: 6, marginTop: 3 } : {}),
+                }}
+              >
+                <Text style={row.strong ? { fontWeight: 700 } : {}}>{row.label}</Text>
+                <Text style={row.strong ? { fontWeight: 700 } : {}}>{row.value}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {input.reverseChargeNote ? (
+          <View style={{ marginTop: 10 }} wrap={false}>
+            <Text style={{ fontWeight: 700, marginBottom: 2 }}>{s.reverseChargeTitle}</Text>
+            <Text style={styles.body}>{input.reverseChargeNote}</Text>
+          </View>
+        ) : null}
+
+        <View style={{ marginTop: 12 }} wrap={false}>
+          <Text style={[styles.small, { color: C.inkSoft }]}>{`${s.method}${si ? ` ${s.methodSi}` : ""}`}</Text>
+          {input.paymentPoLine ? (
+            <Text style={[styles.small, { color: C.inkSoft }]}>{input.paymentPoLine}</Text>
+          ) : si ? (
+            <Text style={[styles.small, { color: C.inkSoft }]}>{s.paymentSi}</Text>
+          ) : null}
+          {si ? <Text style={[styles.small, { color: C.inkSoft }]}>{s.disputeSi}</Text> : null}
+          <Text style={[styles.small, { color: C.inkSoft }]}>{s.extrasExcluded}</Text>
+          <Text style={[styles.small, { color: C.inkSoft }]}>{s.notInvoice}</Text>
+        </View>
+
+        <View wrap={false} style={[styles.signatureRow, { marginTop: 26 }]}>
+          <SignatureBox name={input.contractorName ?? ""} caption={s.signContractor} />
+          <SignatureBox name={input.clientName} caption={s.signClient} />
+        </View>
+
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
+      </Page>
+    </Document>
+  );
+}

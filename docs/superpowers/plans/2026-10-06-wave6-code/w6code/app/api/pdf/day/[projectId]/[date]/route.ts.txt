@@ -1,0 +1,48 @@
+import { createAdminClient } from "@/lib/supabase/admin";
+import { documentReader, notFound, pdfResponse } from "@/lib/data/doc-access";
+import { buildDays, loadDayProject } from "@/lib/pdf/day-data";
+import { DayReportDocument } from "@/lib/pdf/day-report";
+import { completionStrings, docString } from "@/lib/pdf/strings";
+import { contentDisposition } from "@/lib/pdf/filename";
+import { loadIssuer } from "@/lib/pdf/issuer";
+import { renderDocument } from "@/lib/pdf/theme";
+import { diaryTitleKey } from "@/lib/report-days-shared";
+
+// One day of the construction diary as its own document: the "print today"
+// case. Rendered on demand from the rows. Its number is the same position the
+// day has in the completion report, because both come from buildDays.
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+/** A single day carries more photos than a day page inside a 30 day report. */
+const PHOTOS_PER_DAY = 12;
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ projectId: string; date: string }> },
+) {
+  const { projectId, date } = await params;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(`${date}T12:00:00Z`))) return notFound();
+
+  const reader = await documentReader(projectId);
+  if (!reader.ok) return reader.response;
+
+  const db = createAdminClient();
+  const project = await loadDayProject(db, projectId);
+  if (!project) return notFound();
+
+  const { days } = await buildDays(db, project, { onlyDate: date, photosPerDay: PHOTOS_PER_DAY });
+  const day = days[0];
+  // A date with neither a report nor an incident is not a diary day.
+  if (!day) return notFound();
+
+  const s = completionStrings(project.locale).day;
+  s.title = docString(project.locale, diaryTitleKey(project.country));
+
+  const buffer = await renderDocument(
+    DayReportDocument({ day, meta: project.meta, s, issuer: await loadIssuer(db, project.subOrgId) }),
+  );
+
+  return pdfResponse(buffer, contentDisposition([s.title, day.reportNo, project.meta.projectName, date]));
+}

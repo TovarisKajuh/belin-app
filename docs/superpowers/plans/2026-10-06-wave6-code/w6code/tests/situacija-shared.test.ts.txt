@@ -1,0 +1,49 @@
+import { describe, expect, it } from "vitest";
+import { situacijaFigures, situacijaMonths } from "@/lib/situacija-shared";
+
+// The arithmetic of a začasna situacija: month by month, from the crew's reported quantities.
+
+describe("začasna situacija", () => {
+  const items = [
+    { name: "Podkonstrukcija", unit: "kos", targetQty: 444, weight: 2 },
+    { name: "Moduli", unit: "kos", targetQty: 444, weight: 4 },
+    { name: "DC kabliranje", unit: "m", targetQty: 1000, weight: 1 },
+  ];
+  const quantities = [
+    { item: 0, entryDate: "2026-09-21", qty: 300 },
+    { item: 0, entryDate: "2026-09-28", qty: 144 },
+    { item: 1, entryDate: "2026-09-29", qty: 120 },
+    { item: 1, entryDate: "2026-10-02", qty: 96 },
+    { item: 2, entryDate: "2026-10-02", qty: 140 },
+  ];
+
+  it("numbers only the months that carry quantities", () => {
+    expect(situacijaMonths(["2026-09-21", "2026-11-03", "2026-09-30"])).toEqual([
+      { month: "2026-09", number: 1, start: "2026-09-01", end: "2026-09-30" },
+      { month: "2026-11", number: 2, start: "2026-11-01", end: "2026-11-30" },
+    ]);
+  });
+
+  it("values the month as completion at its end minus completion before it", () => {
+    const [september, october] = situacijaMonths(quantities.map((q) => q.entryDate));
+    const first = situacijaFigures(100000, items, quantities, september);
+    const second = situacijaFigures(100000, items, quantities, october);
+
+    // (2 x 100 % + 4 x 27,03 %) / 7 = 44,0 %
+    expect(first.percentToDate).toBe(44);
+    expect(first.valueThisPeriod).toBe(44000);
+    // (2 x 100 % + 4 x 48,65 % + 1 x 14 %) / 7 = 58,4 %
+    expect(second.percentBefore).toBe(44);
+    expect(second.percentToDate).toBe(58.4);
+    expect(second.valueThisPeriod).toBe(14400);
+    expect(second.rows[1]).toMatchObject({ qtyBefore: 120, qtyPeriod: 96, qtyToDate: 216 });
+  });
+
+  it("ignores reports after the month, so an old statement never changes", () => {
+    const [september] = situacijaMonths(quantities.map((q) => q.entryDate));
+    const later = [...quantities, { item: 1, entryDate: "2026-12-01", qty: 228 }];
+    expect(situacijaFigures(100000, items, later, september)).toEqual(
+      situacijaFigures(100000, items, quantities, september),
+    );
+  });
+});

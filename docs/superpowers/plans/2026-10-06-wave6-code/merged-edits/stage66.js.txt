@@ -1,0 +1,95 @@
+// Task 6.6 anchor edits: the change-order card links its PDF, signed-in office only.
+const fs = require("fs");
+function edit(file, pairs) {
+  let s = fs.readFileSync(file, "utf8");
+  for (const [a, b] of pairs) {
+    if (!s.includes(a)) throw new Error(`${file}: miss ${a.slice(0, 90)}`);
+    s = s.split(a).join(b);
+  }
+  fs.writeFileSync(file, s);
+  console.log("edited", file);
+}
+
+edit("components/hours/ChangeOrderList.tsx", [
+  [
+    `  canDecide,
+  orders,
+}: {
+  actionKey: string;
+  projectId: string;
+  locale: "sl" | "de" | "en";
+  role: "epc" | "sub";
+  canDecide: boolean;
+  orders: ChangeOrderRow[];
+}) {
+  const t = useTranslations("co");`,
+    `  canDecide,
+  orders,
+  canOpenPdf = false,
+}: {
+  actionKey: string;
+  projectId: string;
+  locale: "sl" | "de" | "en";
+  role: "epc" | "sub";
+  canDecide: boolean;
+  orders: ChangeOrderRow[];
+  /** A signed-in office person (never crew, never a link): the PDF carries the amount. */
+  canOpenPdf?: boolean;
+}) {
+  const t = useTranslations("co");
+  const tDoc = useTranslations("doc.ui");`,
+  ],
+  [
+    `              ) : order.authorName ? (
+                <p className="ip-who">{order.authorName}</p>
+              ) : null}`,
+    `              ) : order.authorName ? (
+                <p className="ip-who">{order.authorName}</p>
+              ) : null}
+
+              {canOpenPdf ? (
+                <a className="hr-pdf" href={\`/api/pdf/co/\${order.id}\`} target="_blank" rel="noreferrer">
+                  {tDoc("coPdf")}
+                </a>
+              ) : null}`,
+  ],
+]);
+
+edit("components/hours/HoursTabs.tsx", [
+  [
+    `  orders,
+  initialTab,
+}: {`,
+    `  orders,
+  initialTab,
+  canOpenPdf = false,
+}: {`,
+  ],
+  [
+    `  initialTab: "hours" | "co";
+}) {`,
+    `  initialTab: "hours" | "co";
+  /** True only for a signed-in office person; the link surface leaves it false. */
+  canOpenPdf?: boolean;
+}) {`,
+  ],
+  [
+    `          canDecide={canDecide}
+          orders={orders}
+        />`,
+    `          canDecide={canDecide}
+          orders={orders}
+          canOpenPdf={canOpenPdf}
+        />`,
+  ],
+]);
+
+edit("app/[locale]/app/[projectId]/hours/page.tsx", [
+  [
+    `          orders={data.orders}
+          initialTab={initialTab}`,
+    `          orders={data.orders}
+          initialTab={initialTab}
+          canOpenPdf={actor.kind === "person" && actor.role !== "crew"}`,
+  ],
+]);

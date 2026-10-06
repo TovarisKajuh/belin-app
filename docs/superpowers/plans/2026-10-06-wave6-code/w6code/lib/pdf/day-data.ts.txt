@@ -1,0 +1,192 @@
+// Building construction diary days from the database: one place for the
+// completion report and the single-day download, so the two can never number
+// or describe the same day differently.
+//
+// Not "server-only", following render-po.tsx: the database client is a
+// parameter, so a script can render a day under plain Node.
+
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { buildDayReports, type DayReportRef } from "@/lib/report-days-shared";
+import { weatherCodeToKey } from "@/lib/weather-codes";
+import { hhmm } from "@/lib/project-time";
+import { docLocaleOf, docString, docText, type DocLocale } from "@/lib/pdf/strings";
+import { docDate, docNumber, docWeekdayDate } from "@/lib/pdf/doc-format";
+import { downloadDocPhotos, type PhotoRequest } from "@/lib/pdf/photo-data";
+import type { DayReportData, DayReportMeta } from "@/lib/pdf/day-report";
+
+type Db = SupabaseClient<any, any, any>;
+
+// Row shapes of the two selects below. The client is untyped (it may be the
+// app's admin client or a script's), so the joins are described here once
+// rather than inferred.
+interface ProjectRow {
+  id: string;
+  name: string;
+  language: string | null;
+  country: string | null;
+  epc_org_id: string;
+  sub_org_id: string | null;
+  address_street: string | null;
+  address_zip: string | null;
+  address_city: string | null;
+  epc: { name: string } | null;
+  sub: { name: string } | null;
+}
+
+interface EntryRow {
+  id: string;
+  entry_date: string;
+  headcount: number | null;
+  note: string | null;
+  weather: { code?: number; tempC?: number } | null;
+  created_at: string;
+  people: { full_name: string } | null;
+  entry_quantities: { qty: number | string; scope_items: { name: string; unit: string } | null }[] | null;
+  entry_photos: { storage_path: string; sort_order: number; taken_at: string | null; created_at: string }[] | null;
+}
+
+interface IncidentRow {
+  kind: string;
+  note: string;
+  occurred_on: string;
+}
+
+export interface DayProject {
+  id: string;
+  locale: DocLocale;
+  country: string;
+  subOrgId: string | null;
+  epcOrgId: string;
+  meta: DayReportMeta;
+}
+
+export async function loadDayProject(db: Db, projectId: string): Promise<DayProject | null> {
+  const { data } = await db
+    .from("projects")
+    .select(
+      "id, name, language, country, epc_org_id, sub_org_id, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)",
+    )
+    .eq("id", projectId)
+    .maybeSingle();
+  if (!data) return null;
+  const row = data as unknown as ProjectRow;
+
+  const siteAddress = [row.address_street, [row.address_zip, row.address_city].filter(Boolean).join(" ")]
+    .filter((part) => part && part.trim())
+    .join(", ");
+
+  return {
+    id: row.id,
+    locale: docLocaleOf(row.language),
+    country: row.country ?? "si",
+    subOrgId: row.sub_org_id,
+    epcOrgId: row.epc_org_id,
+    meta: {
+      projectName: row.name,
+      clientName: row.epc?.name ?? "",
+      contractorName: row.sub?.name ?? null,
+      siteAddress: siteAddress || null,
+    },
+  };
+}
+
+export interface BuildDaysOptions {
+  /** Build only this calendar day (yyyy-mm-dd); its number still counts every earlier day. */
+  onlyDate?: string;
+  /** Photos printed per day. Every photo still counts toward photoTotal. */
+  photosPerDay: number;
+}
+
+/**
+ * Every day that carried a report or an incident, numbered by position (never
+ * by calendar), with weather and headcount from the first report of the day.
+ */
+export async function buildDays(
+  db: Db,
+  project: DayProject,
+  options: BuildDaysOptions,
+): Promise<{ refs: DayReportRef[]; days: DayReportData[] }> {
+  const { locale, country } = project;
+  const t = (key: string) => docString(locale, key);
+
+  const [entriesRes, incidentsRes] = await Promise.all([
+    db
+      .from("daily_entries")
+      .select(
+        "id, entry_date, headcount, note, weather, created_at, people:created_by_person (full_name), entry_quantities (qty, scope_items (name, unit)), entry_photos (storage_path, sort_order, taken_at, created_at)",
+      )
+      .eq("project_id", project.id)
+      .order("entry_date")
+      .order("created_at"),
+    db.from("incidents").select("kind, note, occurred_on").eq("project_id", project.id).order("occurred_on"),
+  ]);
+
+  const entries = (entriesRes.data ?? []) as unknown as EntryRow[];
+  const incidents = (incidentsRes.data ?? []) as unknown as IncidentRow[];
+
+  const refs = buildDayReports(
+    entries.map((entry) => entry.entry_date),
+    incidents.map((incident) => incident.occurred_on),
+  );
+  const wanted = options.onlyDate ? refs.filter((ref) => ref.dateIso === options.onlyDate) : refs;
+
+  const days: DayReportData[] = [];
+  for (const ref of wanted) {
+    const dayEntries = entries.filter((entry) => entry.entry_date === ref.dateIso);
+    const dayIncidents = incidents.filter((incident) => incident.occurred_on === ref.dateIso);
+
+    // Weather and headcount come from the FIRST report of the date: several
+    // reports on one day share the day's weather, and the crew count is the
+    // one recorded when work started.
+    const first = dayEntries[0];
+    const weather = first?.weather ?? null;
+
+    const allPhotos = dayEntries
+      .flatMap((entry) => entry.entry_photos ?? [])
+      .sort((a, b) => a.sort_order - b.sort_order);
+
+    // "posneto ob" only when the capture time is known; otherwise the honest
+    // "oddano ob", the time the report reached the server.
+    const requests: PhotoRequest[] = allPhotos.slice(0, options.photosPerDay).map(
+      (photo) => ({
+        path: photo.storage_path,
+        caption: photo.taken_at
+          ? docText(locale, "doc.day.photoTaken", { time: hhmm(photo.taken_at, country) })
+          : docText(locale, "doc.day.photoSubmitted", { time: hhmm(photo.created_at, country) }),
+      }),
+    );
+
+    days.push({
+      reportNo: ref.reportNo,
+      dateIso: ref.dateIso,
+      dateLabel: docWeekdayDate(ref.dateIso, locale, country),
+      dateShort: docDate(ref.dateIso, locale, country),
+      weatherLabel:
+        weather?.code === undefined
+          ? null
+          : `${t(`weather.${weatherCodeToKey(weather.code ?? null)}`)}${
+              weather.tempC === undefined ? "" : `, ${docNumber(weather.tempC, locale, 0)} °C`
+            }`,
+      headcount: first?.headcount ?? null,
+      entries: dayEntries.map((entry) => ({
+          note: entry.note,
+          author: entry.people?.full_name ?? null,
+          quantities: (entry.entry_quantities ?? [])
+            .filter((quantity) => Number(quantity.qty) > 0)
+            .map(
+              (quantity) =>
+                `${quantity.scope_items?.name ?? ""}: ${docNumber(Number(quantity.qty), locale)} ${quantity.scope_items?.unit ?? ""}`.trim(),
+            ),
+        }),
+      ),
+      incidents: dayIncidents.map((incident) => ({
+        kindLabel: t(`incident.kinds.${incident.kind}`),
+        note: incident.note,
+      })),
+      photos: await downloadDocPhotos(db, requests),
+      photoTotal: allPhotos.length,
+    });
+  }
+
+  return { refs, days };
+}

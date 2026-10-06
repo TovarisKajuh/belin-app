@@ -1,0 +1,17 @@
+import { writeFileSync, readFileSync } from "node:fs";
+import { renderDocument } from "@/lib/pdf/theme";
+import { PosterDocument } from "@/lib/pdf/poster";
+import { docString } from "@/lib/pdf/strings";
+import { qrSvg } from "@/lib/qr";
+const OUT = "C:/Users/ejand/AppData/Local/Temp/claude/C--DevEnv-belin-app/fc02d7f1-c666-4861-aeb4-7e5eac16051f/scratchpad/w6code/out";
+const t = (k: string) => docString("sl", `doc.poster.${k}`);
+const url = "https://getbelin.com/sl/p/AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdefg";
+async function main() {
+  writeFileSync(`${OUT}/poster.pdf`, await renderDocument(PosterDocument({
+    projectName: "SE Hala Brnik, 199,8 kWp", siteAddress: "Zgornji Brnik 130, 4210 Brnik", clientName: "Solarna Gradnja d.o.o.", contractorName: "AVESOL d.o.o.",
+    url, qr: qrSvg(url, "Q"), issuer: { name: "AVESOL d.o.o.", logo: readFileSync("C:/DevEnv/belin-app/public/icons/icon-192.png") },
+    s: { title: t("title"), client: t("client"), contractor: t("contractor"), scan: t("scan"), step1: t("step1"), step2: t("step2"), step3: t("step3"), noApp: t("noApp"), generated: docString("sl", "final.doc.generated") },
+  })));
+  console.log("ok");
+}
+main();

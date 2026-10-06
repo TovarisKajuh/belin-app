@@ -1,0 +1,25 @@
+// Task 6.5 anchor edit: the Regiebericht's new labels.
+const fs = require("fs");
+const file = "lib/pdf/strings.ts";
+let s = fs.readFileSync(file, "utf8");
+const anchor = `    generated: t("hours.doc.generated"),
+    page: t("doc.page"),
+  };`;
+if (!s.includes(anchor)) throw new Error(`${file}: miss regieStrings tail`);
+s = s.replace(
+  anchor,
+  `    generated: t("hours.doc.generated"),
+    page: t("doc.page"),
+    rate: t("doc.regie.rate"),
+    noRate: t("doc.regie.noRate"),
+    colAmount: t("doc.regie.colAmount"),
+    totalAmount: t("doc.regie.totalAmount"),
+    confirmTitle: t("doc.regie.confirmTitle"),
+    approvedBy: t("doc.regie.approvedBy"),
+    rejectedBy: t("doc.regie.rejectedBy"),
+    deemedAt: t("doc.regie.deemedAt"),
+    pending: t("doc.regie.pending"),
+  };`,
+);
+fs.writeFileSync(file, s);
+console.log("edited", file);

@@ -1,0 +1,94 @@
+import "server-only";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { isUuid } from "@/lib/actor-shared";
+
+// What the PUBLIC verify page may know about a document: its kind, who issued
+// it, when, its status, and its sha256. Nothing else leaves this function: no
+// project, no amounts, no names of people, no storage path. The page is
+// reachable by anyone holding the paper, which is the point, so it must say
+// nothing the paper does not already say.
+
+export type VerifyState =
+  | "sent"
+  | "accepted"
+  | "rejected"
+  | "cancelled"
+  | "draft"
+  | "signed"
+  | "issued"
+  | "generated"
+  | "acceptedCopy"
+  | "unavailable";
+
+export interface VerifyView {
+  kind: "narocilnica" | "narocilnica_sprejem" | "zapisnik_prevzem" | "racun" | "zakljucno_porocilo";
+  issuerName: string;
+  issuedAt: string;
+  country: string;
+  state: VerifyState;
+  /** When the state happened (accepted_at, conducted_at, issue_date), or null. */
+  stateAt: string | null;
+  /** Null until the record is sealed. */
+  sha256: string | null;
+}
+
+export async function getVerifyView(id: string): Promise<VerifyView | null> {
+  if (!isUuid(id)) return null;
+  const db = createAdminClient();
+
+  const { data: record } = await db
+    .from("document_records")
+    .select("kind, source_id, issuer_name, created_at, sha256, projects (country)")
+    .eq("id", id)
+    .maybeSingle();
+  if (!record) return null;
+
+  const kind = record.kind as VerifyView["kind"];
+  let state: VerifyState = "unavailable";
+  let stateAt: string | null = null;
+
+  if (kind === "narocilnica") {
+    const { data } = await db
+      .from("purchase_orders")
+      .select("status, sent_at, accepted_at, rejected_at")
+      .eq("id", record.source_id)
+      .maybeSingle();
+    if (data) {
+      state = (["sent", "accepted", "rejected", "cancelled", "draft"] as const).includes(data.status as never)
+        ? (data.status as VerifyState)
+        : "unavailable";
+      stateAt = data.accepted_at ?? data.rejected_at ?? data.sent_at ?? null;
+    }
+  } else if (kind === "narocilnica_sprejem") {
+    state = "acceptedCopy";
+    stateAt = record.created_at;
+  } else if (kind === "zapisnik_prevzem") {
+    const { data } = await db.from("acceptances").select("status, conducted_at").eq("id", record.source_id).maybeSingle();
+    if (data?.status === "signed") {
+      state = "signed";
+      stateAt = data.conducted_at;
+    }
+  } else if (kind === "racun") {
+    const { data } = await db.from("invoices").select("issue_date").eq("id", record.source_id).maybeSingle();
+    if (data) {
+      state = "issued";
+      stateAt = data.issue_date;
+    }
+  } else if (kind === "zakljucno_porocilo") {
+    const { data } = await db.from("generated_documents").select("created_at").eq("id", record.source_id).maybeSingle();
+    if (data) {
+      state = "generated";
+      stateAt = data.created_at;
+    }
+  }
+
+  return {
+    kind,
+    issuerName: record.issuer_name,
+    issuedAt: record.created_at,
+    country: (record.projects as { country: string } | null)?.country ?? "si",
+    state,
+    stateAt,
+    sha256: record.sha256,
+  };
+}

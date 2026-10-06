@@ -1,0 +1,74 @@
+import { extractText, getDocumentProxy } from "unpdf";
+import { describe, expect, it } from "vitest";
+import { AbnahmeDocument } from "@/lib/pdf/abnahme";
+import { abnahmeStrings, docString } from "@/lib/pdf/strings";
+import { renderDocument } from "@/lib/pdf/theme";
+
+// Wave 6 promises that only a rendered PDF can prove.
+
+async function pages(buffer: Buffer): Promise<string[]> {
+  const pdf = await getDocumentProxy(new Uint8Array(buffer));
+  const { text } = await extractText(pdf, { mergePages: false });
+  return (text as string[]).map((page) => page.replace(/\s+/g, " "));
+}
+
+describe("Zapisnik o prevzemu layout", () => {
+  const s = abnahmeStrings("sl");
+  const protocol = (defectCount: number, declaration: "with_reservations" | "refused") =>
+    AbnahmeDocument({
+      projectName: "SE Hala Brnik",
+      country: "si",
+      clientName: "Solarna Gradnja d.o.o.",
+      contractorName: "Montaža Kos d.o.o.",
+      siteAddress: "Zgornji Brnik 130, 4210 Brnik",
+      kindLabel: "Končni prevzem",
+      conductedOn: "05. 10. 2026",
+      attendees: null,
+      poRef: "št. 1 z dne 15. 09. 2026",
+      poDeadline: "10. 10. 2026",
+      lastReportOn: "03. 10. 2026",
+      declarationLabel: docString("sl", `final.decl.${declaration}`),
+      showReservation: declaration !== "refused",
+      penaltyReserved: true,
+      warrantyStart: "05. 10. 2026",
+      note: null,
+      defects: Array.from({ length: defectCount }, (_, i) => ({
+        no: i + 1,
+        description: `Manjka tesnilo na kabelskem prehodu, polje ${i + 1}, potrebna ponovna obdelava.`,
+        dueDate: "14. 10. 2026",
+        agreementLabel: docString("sl", i % 4 === 1 ? "final.disputed" : "final.agreed"),
+        photo: null,
+      })),
+      epcSigner: { name: "Marko Golob", image: null },
+      subSigner: { name: "Boštjan Novak", image: null },
+      issuer: { name: "Solarna Gradnja d.o.o.", logo: null },
+      s,
+    });
+
+  it("keeps the declaration, the penalty box and both signatures on one page", async () => {
+    // 28 defects used to leave both signatures alone on page 3 (documents H7).
+    const all = await pages(await renderDocument(protocol(28, "with_reservations")));
+    const declarationPage = all.findIndex((page) => page.includes(s.declaration));
+    expect(declarationPage).toBeGreaterThanOrEqual(0);
+    expect(all[declarationPage]).toContain(s.penaltySentence);
+    expect(all[declarationPage]).toContain("Marko Golob");
+    expect(all[declarationPage]).toContain("Boštjan Novak");
+  }, 60000);
+
+  it("names the naročilnica and prints the defect reservation with its basis", async () => {
+    const text = (await pages(await renderDocument(protocol(2, "with_reservations")))).join(" ");
+    expect(text).toContain("št. 1 z dne 15. 09. 2026");
+    expect(text).toContain(s.reservation);
+    expect(text).toContain(s.basisSi);
+  }, 60000);
+
+  it("prints no defect reservation on a refusal", async () => {
+    const text = (await pages(await renderDocument(protocol(2, "refused")))).join(" ");
+    expect(text).not.toContain(s.reservation);
+  }, 60000);
+
+  it("numbers every page", async () => {
+    const all = await pages(await renderDocument(protocol(28, "with_reservations")));
+    all.forEach((page, i) => expect(page).toContain(`Stran ${i + 1} od ${all.length}`));
+  }, 60000);
+});

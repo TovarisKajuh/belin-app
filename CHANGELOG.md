@@ -4,6 +4,7 @@ Every change to this repository is logged here, newest first, with date, what an
 
 ## 2026-10-06
 
+- THE DEMO-DAY PLAN AND ITS AUDIT ARE IN THE REPO. `docs/superpowers/plans/2026-10-05-demo-day-readiness.md` is the plan for the 06.10.2026 meeting with a Slovenian EPC; `docs/audits/2026-10-05-demo-recon/` holds the fourteen read-only audit reports it stands on, `docs/superpowers/plans/2026-10-06-wave6-code/` the tested Wave 6 prototype code (every code file suffixed .txt so nothing compiles it), and `docs/sessions/2026-10-05-demo-day-plan.md` the planning session's log. The only system change the planning session made: the paused Supabase project was resumed with the founder's approval on 05.10 at about 19:00 UTC. A "Morning cut" section at the top of the plan records what is actually built before the meeting, because execution started at 09:00 instead of 23:00.
 - THE WORKFLOW BUILDER NO LONGER READS THE GITIGNORED screenshots/ FOLDER. The two plan import captures were copied to `assets/marketing/raw/k2-upload-prompt.png` and `k2-upload-result.png` and `scripts/marketing/workflow.mjs` points at them, so `npm run marketing:workflow` runs from a fresh clone (rebuild is byte-identical, md5 080c4d20...). The 2026-09-16 workflow and vloga work is committed as it was left. Both captures show a real private customer's name and address from a real K2 plan: private repo only, never under public/.
 
 ## 2026-09-16

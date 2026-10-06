@@ -1,0 +1,195 @@
+// Task 6.2 anchor edits, applied after 6.1b. Run from the worktree root.
+const fs = require("fs");
+function edit(file, pairs) {
+  let s = fs.readFileSync(file, "utf8");
+  for (const [a, b] of pairs) {
+    if (!s.includes(a)) throw new Error(`${file}: miss ${a.slice(0, 90)}`);
+    s = s.split(a).join(b);
+  }
+  fs.writeFileSync(file, s);
+  console.log("edited", file);
+}
+
+// ---------- strings.ts: the day page's new labels
+edit("lib/pdf/strings.ts", [
+  [
+    `      generated: t("final.dayDoc.generated"),
+      page: t("doc.page"),
+    },`,
+    `      generated: t("final.dayDoc.generated"),
+      page: t("doc.page"),
+      client: t("doc.day.client"),
+      contractor: t("doc.day.contractor"),
+      site: t("doc.day.site"),
+      photosShown: t("doc.day.photosShown"),
+      signPrepared: t("doc.day.signPrepared"),
+      signReceived: t("doc.day.signReceived"),
+    },`,
+  ],
+]);
+
+// ---------- completion.tsx: day pages get the project meta; the cover lists short dates
+edit("lib/pdf/completion.tsx", [
+  [
+    "        <DayReportPage key={day.reportNo} day={day} s={s.day} issuer={input.issuer} />",
+    `        <DayReportPage
+          key={day.reportNo}
+          day={day}
+          meta={{
+            projectName: input.projectName,
+            clientName: input.clientName,
+            contractorName: input.contractorName,
+            siteAddress: input.siteAddress,
+          }}
+          s={s.day}
+          issuer={input.issuer}
+        />`,
+  ],
+  [
+    `            day.dateLabel,
+            day.headcount ?? "",`,
+    `            day.dateShort,
+            day.headcount ?? "",`,
+  ],
+  [
+    `            day.entries
+              .map((entry) => entry.note)
+              .filter(Boolean)
+              .join(" ")
+              .slice(0, 90),`,
+    `            clip(
+              day.entries
+                .map((entry) => entry.note)
+                .filter(Boolean)
+                .join(" "),
+              90,
+            ),`,
+  ],
+]);
+fs.appendFileSync(
+  "lib/pdf/completion.tsx",
+  `
+/** At most \`max\` characters, cut at a word boundary and marked when cut. */
+function clip(text: string, max: number): string {
+  if (text.length <= max) return text;
+  return \`\${text.slice(0, max).replace(/\\s+\\S*$/, "")} ...\`;
+}
+`,
+);
+
+// ---------- final-report.ts: days come from the shared builder
+edit("lib/data/final-report.ts", [
+  ['import { buildDayReports, diaryTitleKey } from "@/lib/report-days-shared";', 'import { diaryTitleKey } from "@/lib/report-days-shared";'],
+  ['import { weatherCodeToKey } from "@/lib/weather-codes";\n', ""],
+  [
+    'import type { DayReportData } from "@/lib/pdf/day-report";\n',
+    'import { buildDays, loadDayProject } from "@/lib/pdf/day-data";\nimport { docDate, docNumber } from "@/lib/pdf/doc-format";\n',
+  ],
+  [
+    `  const [entriesRes, incidentsRes, sheetsRes, ordersRes] = await Promise.all([
+    db
+      .from("daily_entries")
+      .select(
+        "id, entry_date, headcount, note, weather, created_at, people:created_by_person (full_name), entry_quantities (qty, scope_items (name, unit)), entry_photos (storage_path, sort_order)",
+      )
+      .eq("project_id", projectId)
+      .order("entry_date")
+      .order("created_at"),
+    db`,
+    `  const dayProject = await loadDayProject(db, projectId);
+  if (!dayProject) throw new Error("Project not found");
+
+  const [{ refs: dayRefs, days }, incidentsRes, sheetsRes, ordersRes] = await Promise.all([
+    buildDays(db, dayProject, { photosPerDay: PHOTOS_PER_DAY }),
+    db`,
+  ],
+  [`  const entries = entriesRes.data ?? [];\n  const incidents`, `  const incidents`],
+  [
+    `        date: shortFmt.format(new Date(\`\${incident.occurred_on}T12:00:00Z\`)),`,
+    `        date: dateFmt(incident.occurred_on),`,
+  ],
+  [
+    "      powerLabel: project.kwp ? `${project.kwp} kWp` : null,",
+    "      powerLabel: project.kwp ? `${docNumber(Number(project.kwp), locale)} kWp` : null,",
+  ],
+]);
+
+// final-report.ts: the old day loop and its date formatters go; one formatter replaces them.
+{
+  const file = "lib/data/final-report.ts";
+  let s = fs.readFileSync(file, "utf8");
+  const a = s.indexOf("  const dayRefs = buildDayReports(");
+  const b = s.indexOf("  const now = new Date();");
+  if (a < 0 || b < 0) throw new Error("final-report: day loop anchors missing");
+  s = s.slice(0, a) + "  const dateFmt = (iso: string) => docDate(iso, locale, project.country);\n\n" + s.slice(b);
+  const p = s.indexOf("  const period =");
+  const q = s.indexOf("  const strings = completionStrings(locale);");
+  if (p < 0 || q < 0) throw new Error("final-report: period anchors missing");
+  s =
+    s.slice(0, p) +
+    "  const period =\n    dayRefs.length > 0 ? `${dateFmt(dayRefs[0].dateIso)} - ${dateFmt(dayRefs[dayRefs.length - 1].dateIso)}` : null;\n\n" +
+    s.slice(q);
+  const c = s.indexOf("/**\n * Photo bytes for one day.");
+  if (c > 0) s = s.slice(0, c).trimEnd() + "\n";
+  fs.writeFileSync(file, s);
+  console.log("restructured", file);
+}
+
+// ---------- EPC dashboard: a PDF link on every day of the log, signed-in only
+edit("components/epc/dashboard/DailyLogFeed.tsx", [
+  [
+    "export async function DailyLogFeed({ days }: { days: DashboardDay[] }) {\n  const t = await getTranslations(\"dashboard\");",
+    `export async function DailyLogFeed({
+  days,
+  pdfProjectId = null,
+}: {
+  days: DashboardDay[];
+  /** The project id on a signed-in session; null on a project link, which gets no documents. */
+  pdfProjectId?: string | null;
+}) {
+  const t = await getTranslations("dashboard");
+  const tDoc = await getTranslations("doc.ui");`,
+  ],
+  [
+    "                  {day.note && <div className=\"mn\">{day.note}</div>}",
+    `                  {day.note && <div className="mn">{day.note}</div>}
+                  {pdfProjectId ? (
+                    <a
+                      className="hr-pdf e-day-pdf"
+                      href={\`/api/pdf/day/\${pdfProjectId}/\${day.date}\`}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={tDoc("dayPdfAria", { date: ddmm(day.date) ?? day.date })}
+                    >
+                      {tDoc("dayPdf")}
+                    </a>
+                  ) : null}`,
+  ],
+]);
+edit("components/epc/EpcDashboard.tsx", [
+  ["        <DailyLogFeed days={data.days} />", "        <DailyLogFeed days={data.days} pdfProjectId={token === null ? projectId : null} />"],
+]);
+
+// ---------- the completion test's day fixture takes the new shape
+edit("tests/pdf-completion.test.tsx", [
+  [
+    `  return {
+    reportNo,
+    dateLabel,
+    weatherLabel`,
+    `  return {
+    reportNo,
+    dateIso: "2026-08-01",
+    dateLabel,
+    dateShort: dateLabel,
+    weatherLabel`,
+  ],
+  [
+    `        quantities: [
+          { name: "Podkonstrukcija", qty: 120, unit: "m" },
+          { name: "Moduli", qty: 30, unit: "kos" },
+        ],`,
+    `        quantities: ["Podkonstrukcija: 120 m", "Moduli: 30 kos"],`,
+  ],
+  ["    photos: photo ? [photo] : [],", "    photos: photo ? [{ bytes: photo, width: 4, height: 3, caption: null }] : [],\n    photoTotal: photo ? 1 : 0,"],
+]);

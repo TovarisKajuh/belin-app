@@ -1,0 +1,206 @@
+// Task 6.3b anchor edits: one photo per defect, captured on the roof.
+const fs = require("fs");
+function edit(file, pairs) {
+  let s = fs.readFileSync(file, "utf8");
+  for (const [a, b] of pairs) {
+    if (!s.includes(a)) throw new Error(`${file}: miss ${a.slice(0, 90)}`);
+    s = s.split(a).join(b);
+  }
+  fs.writeFileSync(file, s);
+  console.log("edited", file);
+}
+
+// ---------- lib/storage.ts: a signed upload URL inside the acceptance's own folder
+edit("lib/storage.ts", [
+  [
+    "// Mint signed upload URLs for a material check's two document kinds.",
+    `// One signed upload URL for a defect photo, inside the acceptance's own
+// folder, which is the prefix addDefect accepts back. Both ids are validated
+// before they touch a path.
+export async function createDefectPhotoTarget(
+  projectId: string,
+  acceptanceId: string
+): Promise<UploadTarget> {
+  if (!isUuid(projectId)) throw new Error("Invalid project id");
+  if (!isUuid(acceptanceId)) throw new Error("Invalid acceptance id");
+
+  const db = createAdminClient();
+  const path = \`\${projectId}/acceptance/\${acceptanceId}/defect-\${randomUUID()}.jpg\`;
+  const { data, error } = await db.storage.from("photos").createSignedUploadUrl(path);
+  if (error || !data) throw new Error("Could not create upload URL");
+  return { path: data.path, token: data.token };
+}
+
+// Mint signed upload URLs for a material check's two document kinds.`,
+  ],
+]);
+
+// ---------- lib/data/acceptances.ts: the target, and addDefect takes the path back
+edit("lib/data/acceptances.ts", [
+  [
+    'import { getSignedPhotoUrlMap, storeReportPdf } from "@/lib/storage";',
+    'import { createDefectPhotoTarget, getSignedPhotoUrlMap, storeReportPdf, type UploadTarget } from "@/lib/storage";',
+  ],
+  [
+    `export async function addDefect(
+  actor: Actor,
+  projectId: string,
+  acceptanceId: string,
+  payload: { description: string; dueDate: string | null; agreement: "agreed" | "disputed" },
+): Promise<void> {`,
+    `/** A signed upload URL for one defect photo. Same gate as adding the defect: EPC, draft only. */
+export async function defectPhotoTarget(
+  actor: Actor,
+  projectId: string,
+  acceptanceId: string,
+): Promise<UploadTarget> {
+  const projectActor = await requireProjectActor(actor, projectId);
+  requireOfficeActor(actor, { allowBauleiter: true });
+  if (projectActor.role !== "epc") throw new Error("Forbidden.");
+  if (!isUuid(acceptanceId)) throw new Error("Invalid acceptance id");
+
+  const { data: acceptance } = await createAdminClient()
+    .from("acceptances")
+    .select("id, status")
+    .eq("id", acceptanceId)
+    .eq("project_id", projectId)
+    .maybeSingle();
+  if (!acceptance || acceptance.status !== "draft") throw new Error(CONFLICT);
+
+  return createDefectPhotoTarget(projectId, acceptanceId);
+}
+
+export async function addDefect(
+  actor: Actor,
+  projectId: string,
+  acceptanceId: string,
+  payload: {
+    description: string;
+    dueDate: string | null;
+    agreement: "agreed" | "disputed";
+    /** A path minted by defectPhotoTarget, or null. Anything outside this acceptance's folder is dropped. */
+    photoPath?: string | null;
+  },
+): Promise<void> {`,
+  ],
+  [
+    `  await db.from("acceptance_defects").insert({
+    acceptance_id: acceptanceId,
+    description,
+    due_date: payload.dueDate || null,
+    agreement: payload.agreement,
+    sort_order: (top?.sort_order ?? 0) + 1,
+  });`,
+    `  // The path arrives back over the wire, so it is checked against the only
+  // prefix this acceptance's photos may have before it is stored.
+  const prefix = \`\${projectId}/acceptance/\${acceptanceId}/defect-\`;
+  const photoPath = payload.photoPath && payload.photoPath.startsWith(prefix) ? payload.photoPath : null;
+
+  await db.from("acceptance_defects").insert({
+    acceptance_id: acceptanceId,
+    description,
+    due_date: payload.dueDate || null,
+    agreement: payload.agreement,
+    photo_path: photoPath,
+    sort_order: (top?.sort_order ?? 0) + 1,
+  });`,
+  ],
+]);
+
+// ---------- final/actions.ts
+edit("app/[locale]/app/[projectId]/final/actions.ts", [
+  ["  addDefect,\n", "  addDefect,\n  defectPhotoTarget,\n"],
+  [
+    `export async function addDefectAction(
+  projectId: string,
+  acceptanceId: string,
+  payload: { description: string; dueDate: string | null; agreement: "agreed" | "disputed" },
+): Promise<{ ok: true }> {`,
+    `export async function requestDefectPhotoTargetAction(
+  projectId: string,
+  acceptanceId: string,
+): Promise<{ path: string; token: string }> {
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
+  return defectPhotoTarget(actor, projectId, acceptanceId);
+}
+
+export async function addDefectAction(
+  projectId: string,
+  acceptanceId: string,
+  payload: {
+    description: string;
+    dueDate: string | null;
+    agreement: "agreed" | "disputed";
+    photoPath?: string | null;
+  },
+): Promise<{ ok: true }> {`,
+  ],
+]);
+
+// ---------- AcceptanceFlow.tsx: one photo per defect, shown in the list
+edit("components/final/AcceptanceFlow.tsx", [
+  ['import { SignaturePad } from "@/components/SignaturePad";', 'import { SignaturePad } from "@/components/SignaturePad";\nimport { PhotoCapture } from "@/components/crew/PhotoCapture";\nimport { createBrowserClient } from "@/lib/supabase/client";'],
+  ["  addDefectAction,\n", "  addDefectAction,\n  requestDefectPhotoTargetAction,\n"],
+  [
+    `  const [defectAgreement, setDefectAgreement] = useState<"agreed" | "disputed">("agreed");`,
+    `  const [defectAgreement, setDefectAgreement] = useState<"agreed" | "disputed">("agreed");
+  const [defectPhoto, setDefectPhoto] = useState<Blob[]>([]);`,
+  ],
+  [
+    `                <span className="ac-d-text">{defect.description}</span>`,
+    `                <span className="ac-d-text">
+                  {defect.photoUrl ? <img className="ac-d-photo" src={defect.photoUrl} alt="" /> : null}
+                  {defect.description}
+                </span>`,
+  ],
+  [
+    `            {t("addDefect")}
+          </button>
+        </div>`,
+    `            {t("addDefect")}
+          </button>
+          {/* Last in the grid, so it takes its own full-width row on every screen. */}
+          <div className="ac-defect-photo">
+            <span className="b-label">{tDoc("ui.defectPhoto")}</span>
+            <PhotoCapture
+              blobs={defectPhoto}
+              onChange={(next) => setDefectPhoto(next.slice(0, 1))}
+              addLabel={tDoc("ui.defectPhoto")}
+            />
+          </div>
+        </div>`,
+  ],
+  [
+    `              run(async () => {
+                await addDefectAction(projectId, acceptance.id, {
+                  description: defectText,
+                  dueDate: defectDue || null,
+                  agreement: defectAgreement,
+                });
+                setDefectText("");
+                setDefectDue("");
+              })`,
+    `              run(async () => {
+                // The photo is uploaded first, straight to storage with a
+                // signed URL; a failed upload still records the defect.
+                let photoPath: string | null = null;
+                if (defectPhoto[0]) {
+                  const target = await requestDefectPhotoTargetAction(projectId, acceptance.id);
+                  const { error: uploadError } = await createBrowserClient()
+                    .storage.from("photos")
+                    .uploadToSignedUrl(target.path, target.token, defectPhoto[0], { contentType: "image/jpeg" });
+                  if (!uploadError) photoPath = target.path;
+                }
+                await addDefectAction(projectId, acceptance.id, {
+                  description: defectText,
+                  dueDate: defectDue || null,
+                  agreement: defectAgreement,
+                  photoPath,
+                });
+                setDefectText("");
+                setDefectDue("");
+                setDefectPhoto([]);
+              })`,
+  ],
+]);

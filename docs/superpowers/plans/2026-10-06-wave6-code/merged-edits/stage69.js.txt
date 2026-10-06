@@ -1,0 +1,255 @@
+// Task 6.9 anchor edits: authenticity records and the verify mark on the four stored documents.
+const fs = require("fs");
+function edit(file, pairs) {
+  let s = fs.readFileSync(file, "utf8");
+  for (const [a, b] of pairs) {
+    if (!s.includes(a)) throw new Error(`${file}: miss ${a.slice(0, 90)}`);
+    s = s.split(a).join(b);
+  }
+  fs.writeFileSync(file, s);
+  console.log("edited", file);
+}
+
+// ---------- templates: an optional verify mark at the end of the content
+edit("lib/pdf/narocilnica.tsx", [
+  ['import { docNumber } from "@/lib/pdf/doc-format";', 'import { docNumber } from "@/lib/pdf/doc-format";\nimport { VerifyMark, type VerifyMarkInput } from "@/lib/pdf/verify-mark";'],
+  [
+    "  acceptance?: NarocilnicaAcceptance | null;\n",
+    "  acceptance?: NarocilnicaAcceptance | null;\n  /** The authenticity QR (Task 6.9); absent on documents without a record. */\n  verify?: VerifyMarkInput | null;\n",
+  ],
+  [
+    "        <Footer generatedLabel={s.generated} pageLabel={s.page} />",
+    "        {input.verify ? <VerifyMark {...input.verify} /> : null}\n\n        <Footer generatedLabel={s.generated} pageLabel={s.page} />",
+  ],
+]);
+edit("lib/pdf/abnahme.tsx", [
+  ['import { photoRows, type DocPhoto } from "@/lib/pdf/photos";', 'import { photoRows, type DocPhoto } from "@/lib/pdf/photos";\nimport { VerifyMark, type VerifyMarkInput } from "@/lib/pdf/verify-mark";'],
+  ["  issuer: DocIssuer;\n  s: AbnahmeStrings;", "  issuer: DocIssuer;\n  /** The authenticity QR (Task 6.9). */\n  verify?: VerifyMarkInput | null;\n  s: AbnahmeStrings;"],
+  [
+    `            <SignatureBox name={input.subSigner.name} image={input.subSigner.image} caption={s.signSub} />
+          </View>
+        </View>
+`,
+    `            <SignatureBox name={input.subSigner.name} image={input.subSigner.image} caption={s.signSub} />
+          </View>
+        </View>
+
+        {input.verify ? <VerifyMark {...input.verify} /> : null}
+`,
+  ],
+]);
+edit("lib/pdf/invoice.tsx", [
+  [
+    'import { C, FlexTable, Footer, Header, LabelValue, RunningHeader, styles, type DocIssuer } from "@/lib/pdf/theme";',
+    'import { C, FlexTable, Footer, Header, LabelValue, RunningHeader, styles, type DocIssuer } from "@/lib/pdf/theme";\nimport { VerifyMark, type VerifyMarkInput } from "@/lib/pdf/verify-mark";',
+  ],
+  ["  issuer: DocIssuer;\n  s: InvoiceStrings;", "  issuer: DocIssuer;\n  /** The authenticity QR (Task 6.9). */\n  verify?: VerifyMarkInput | null;\n  s: InvoiceStrings;"],
+  [
+    "        <Footer generatedLabel={s.generated} pageLabel={s.page} />",
+    "        {input.verify ? <VerifyMark {...input.verify} /> : null}\n\n        <Footer generatedLabel={s.generated} pageLabel={s.page} />",
+  ],
+]);
+edit("lib/pdf/completion.tsx", [
+  ['import { DayReportPage', 'import { VerifyMark, type VerifyMarkInput } from "@/lib/pdf/verify-mark";\nimport { DayReportPage'],
+  ["  issuer: DocIssuer;\n  s: CompletionStrings;", "  issuer: DocIssuer;\n  /** The authenticity QR (Task 6.9), printed on the cover. */\n  verify?: VerifyMarkInput | null;\n  s: CompletionStrings;"],
+  [
+    `          emptyLabel={s.none}
+        />
+
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
+      </Page>
+
+      {/* Every day`,
+    `          emptyLabel={s.none}
+        />
+
+        {input.verify ? <VerifyMark {...input.verify} /> : null}
+
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
+      </Page>
+
+      {/* Every day`,
+  ],
+]);
+
+// ---------- render-po: the verify id travels in the options
+edit("lib/pdf/render-po.tsx", [
+  ['import { loadLogo } from "@/lib/pdf/issuer";', 'import { loadLogo } from "@/lib/pdf/issuer";\nimport { verifyMarkFor } from "@/lib/pdf/document-records";'],
+  [
+    `    /** The moment of sending, when the caller renders BEFORE writing sent_at. */
+    issuedAtIso?: string;
+  } = {},`,
+    `    /** The moment of sending, when the caller renders BEFORE writing sent_at. */
+    issuedAtIso?: string;
+    /** The document_records id whose verify QR the page prints (Task 6.9). */
+    verifyId?: string;
+  } = {},`,
+  ],
+  [
+    "      acceptance,\n      issuer:",
+    "      acceptance,\n      verify: options.verifyId ? verifyMarkFor(locale, options.verifyId) : null,\n      issuer:",
+  ],
+]);
+
+// ---------- sendPo: open the record, render with its QR, seal it once sent
+edit("lib/data/purchase-orders.ts", [
+  ['import { renderPoPdf, sha256Of } from "@/lib/pdf/render-po";', 'import { renderPoPdf, sha256Of } from "@/lib/pdf/render-po";\nimport { openDocumentRecord, sealDocumentRecord } from "@/lib/pdf/document-records";'],
+  [
+    `  const sentAt = new Date().toISOString();
+  const { buffer, sha256 } = await renderPoPdf(db, projectId, poId, "sent", { issuedAtIso: sentAt });`,
+    `  const sentAt = new Date().toISOString();
+  const { data: owner } = await db
+    .from("projects")
+    .select("epc_org_id, language")
+    .eq("id", projectId)
+    .maybeSingle();
+  const record = await openDocumentRecord(db, {
+    projectId,
+    kind: "narocilnica",
+    sourceId: poId,
+    issuerOrgId: owner?.epc_org_id ?? null,
+    language: docLocale(owner?.language ?? null),
+  });
+  const { buffer, sha256 } = await renderPoPdf(db, projectId, poId, "sent", {
+    issuedAtIso: sentAt,
+    verifyId: record.id,
+  });`,
+  ],
+  [
+    `    .select("id, number")
+    .maybeSingle();
+  if (error || !sent) throw new Error(CONFLICT);
+
+  await emitEventDeferred({
+    projectId,
+    kind: "po_sent",`,
+    `    .select("id, number")
+    .maybeSingle();
+  if (error || !sent) throw new Error(CONFLICT);
+
+  // Sealed only once the order really is sent: a conflict above leaves an
+  // unsealed record, which the verify page shows as "not finished".
+  await sealDocumentRecord(db, record.id, sha256, path);
+
+  await emitEventDeferred({
+    projectId,
+    kind: "po_sent",`,
+  ],
+]);
+
+// ---------- the Zapisnik
+edit("lib/data/acceptances.ts", [
+  [
+    'import { loadIssuer } from "@/lib/pdf/issuer";',
+    'import { loadIssuer } from "@/lib/pdf/issuer";\nimport { openDocumentRecord, sealDocumentRecord, verifyMarkFor } from "@/lib/pdf/document-records";\nimport { sha256Of } from "@/lib/pdf/render-po";',
+  ],
+  [
+    "  const buffer = await renderDocument(\n    AbnahmeDocument({",
+    `  const record = await openDocumentRecord(db, {
+    projectId,
+    kind: "zapisnik_prevzem",
+    sourceId: acceptanceId,
+    issuerOrgId: project.epc_org_id,
+    language: locale,
+  });
+
+  const buffer = await renderDocument(
+    AbnahmeDocument({`,
+  ],
+  [
+    "      issuer: await loadIssuer(db, project.epc_org_id),\n      s: abnahmeStrings(locale),",
+    "      issuer: await loadIssuer(db, project.epc_org_id),\n      verify: verifyMarkFor(locale, record.id),\n      s: abnahmeStrings(locale),",
+  ],
+  [
+    "  return storeReportPdf(`${projectId}/final/abnahme-${acceptanceId}.pdf`, buffer);",
+    "  const path = await storeReportPdf(`${projectId}/final/abnahme-${acceptanceId}.pdf`, buffer);\n  await sealDocumentRecord(db, record.id, sha256Of(buffer), path);\n  return path;",
+  ],
+]);
+
+// ---------- the invoice
+edit("lib/data/invoices.ts", [
+  [
+    'import { loadIssuer } from "@/lib/pdf/issuer";',
+    'import { loadIssuer } from "@/lib/pdf/issuer";\nimport { openDocumentRecord, sealDocumentRecord, verifyMarkFor } from "@/lib/pdf/document-records";\nimport { sha256Of } from "@/lib/pdf/render-po";',
+  ],
+  [
+    `  const supplier = invoice.supplier as { name: string; address: string | null; vatId: string | null };`,
+    `  const record = await openDocumentRecord(db, {
+    projectId,
+    kind: "racun",
+    sourceId: invoiceId,
+    issuerOrgId: invoice.sub_org_id,
+    language: locale,
+  });
+
+  const supplier = invoice.supplier as { name: string; address: string | null; vatId: string | null };`,
+  ],
+  [
+    "      issuer: { name: supplier.name, logo: (await loadIssuer(db, invoice.sub_org_id)).logo },\n      s: invoiceStrings(locale),",
+    "      issuer: { name: supplier.name, logo: (await loadIssuer(db, invoice.sub_org_id)).logo },\n      verify: verifyMarkFor(locale, record.id),\n      s: invoiceStrings(locale),",
+  ],
+  [
+    "  return storeReportPdf(`${projectId}/invoice/${invoiceId}.pdf`, buffer);",
+    "  const path = await storeReportPdf(`${projectId}/invoice/${invoiceId}.pdf`, buffer);\n  await sealDocumentRecord(db, record.id, sha256Of(buffer), path);\n  return path;",
+  ],
+]);
+
+// ---------- the completion report: the row exists before the render now
+edit("lib/data/final-report.ts", [
+  [
+    'import { loadIssuer } from "@/lib/pdf/issuer";',
+    'import { loadIssuer } from "@/lib/pdf/issuer";\nimport { openDocumentRecord, sealDocumentRecord, verifyMarkFor } from "@/lib/pdf/document-records";\nimport { sha256Of } from "@/lib/pdf/render-po";',
+  ],
+  [
+    "  const buffer = await renderDocument(\n    CompletionDocument({",
+    `  // The document row first, so the record (and the QR printed on the cover)
+  // can point at it. The path stays "pending" until the bytes are stored.
+  const { data: doc, error } = await db
+    .from("generated_documents")
+    .insert({
+      project_id: projectId,
+      kind: "completion_report",
+      language: locale,
+      storage_path: "pending",
+    })
+    .select("id")
+    .maybeSingle();
+  if (error || !doc) throw new Error("Could not record the document");
+
+  const record = await openDocumentRecord(db, {
+    projectId,
+    kind: "zakljucno_porocilo",
+    sourceId: doc.id,
+    issuerOrgId: project.sub_org_id,
+    language: locale,
+  });
+
+  const buffer = await renderDocument(
+    CompletionDocument({`,
+  ],
+  [
+    "      issuer: await loadIssuer(db, project.sub_org_id),\n      s: strings,",
+    "      issuer: await loadIssuer(db, project.sub_org_id),\n      verify: verifyMarkFor(locale, record.id),\n      s: strings,",
+  ],
+  [
+    `  const { data: doc, error } = await db
+    .from("generated_documents")
+    .insert({
+      project_id: projectId,
+      kind: "completion_report",
+      language: locale,
+      storage_path: "pending",
+    })
+    .select("id")
+    .maybeSingle();
+  if (error || !doc) throw new Error("Could not record the document");
+
+  const path = await storeReportPdf(\`\${projectId}/final/completion-\${doc.id}.pdf\`, buffer);
+  await db.from("generated_documents").update({ storage_path: path }).eq("id", doc.id);
+`,
+    `  const path = await storeReportPdf(\`\${projectId}/final/completion-\${doc.id}.pdf\`, buffer);
+  await db.from("generated_documents").update({ storage_path: path }).eq("id", doc.id);
+  await sealDocumentRecord(db, record.id, sha256Of(buffer), path);
+`,
+  ],
+]);

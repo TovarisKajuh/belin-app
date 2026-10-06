@@ -1,0 +1,152 @@
+// The Poročilo o režijskih urah: one hour sheet as a document.
+//
+// This is what gets attached to an email when somebody disputes an invoice
+// line months later, so it prints the things a dispute turns on: which days,
+// how many hours, what the work was, what it costs at the agreed rate, when it
+// was submitted, by when the client had to answer, and HOW it was decided.
+// That last one matters most. A sheet approved by silence carries a different
+// sentence from one somebody actually approved, and pretending they are the
+// same would misrepresent the record.
+//
+// The rate comes from the ACCEPTED naročilnica only. A draft or a sent order
+// is an offer, not an agreed price, so without an accepted one the amount
+// column is left out rather than filled with a number nobody agreed to.
+
+import { Document, Page, Text, View } from "@react-pdf/renderer";
+import {
+  C,
+  FlexTable,
+  Footer,
+  Header,
+  LabelValue,
+  RunningHeader,
+  styles,
+  type DocIssuer,
+} from "@/lib/pdf/theme";
+
+export interface RegieberichtStrings {
+  title: string;
+  docNo: string;
+  project: string;
+  contractor: string;
+  submitted: string;
+  status: string;
+  decidedBy: string;
+  colDate: string;
+  colPerson: string;
+  colHours: string;
+  colDescription: string;
+  totalHours: string;
+  deemedNote: string;
+  generated: string;
+  hoursUnit: string;
+  rate: string;
+  noRate: string;
+  colAmount: string;
+  totalAmount: string;
+  confirmTitle: string;
+  approvedBy: string;
+  rejectedBy: string;
+  deemedAt: string;
+  pending: string;
+  page: string;
+}
+
+export interface RegieberichtInput {
+  number: number;
+  projectName: string;
+  contractorName: string | null;
+  submittedOn: string | null;
+  statusLabel: string;
+  status: "draft" | "submitted" | "approved" | "rejected" | "deemed_approved";
+  /** "Potrdil: Matej Kovač, 24. 08. 2026 ob 10:14", already composed, or null. */
+  decisionLine: string | null;
+  /** Kept for the rejection reason Task 3.6 prints; null when there is none. */
+  rejectionReason: string | null;
+  /** "40,00 EUR na uro, po naročilnici št. 1", or null without an accepted order. */
+  rateLine: string | null;
+  /** The D9 rule with this sheet's deadline filled in, plus the order reference. */
+  ruleLines: string[];
+  totalHoursLabel: string;
+  totalAmountLabel: string | null;
+  lines: { date: string; person: string | null; hours: string; description: string; amount: string | null }[];
+  /** The subcontractor. */
+  issuer: DocIssuer;
+  s: RegieberichtStrings;
+}
+
+export function RegieberichtDocument(input: RegieberichtInput) {
+  const { s } = input;
+  const docNo = `${s.docNo} ${input.number}`;
+  const priced = input.rateLine !== null;
+
+  const columns = priced
+    ? [
+        { label: s.colDate, widthPct: 14 },
+        { label: s.colPerson, widthPct: 19 },
+        { label: s.colDescription, widthPct: 39 },
+        { label: s.colHours, widthPct: 10, align: "right" as const },
+        { label: s.colAmount, widthPct: 18, align: "right" as const },
+      ]
+    : [
+        { label: s.colDate, widthPct: 14 },
+        { label: s.colPerson, widthPct: 22 },
+        { label: s.colDescription, widthPct: 50 },
+        { label: s.colHours, widthPct: 14, align: "right" as const },
+      ];
+
+  return (
+    <Document title={`${s.title} ${input.number}, ${input.projectName}`}>
+      <Page size="A4" style={styles.page}>
+        <RunningHeader title={s.title} docNo={docNo} projectName={input.projectName} />
+        <Header title={s.title} docNo={docNo} projectName={input.projectName} issuer={input.issuer} />
+
+        <View style={{ marginBottom: 14 }}>
+          <LabelValue label={s.project} value={input.projectName} />
+          <LabelValue label={s.contractor} value={input.contractorName ?? ""} />
+          {input.submittedOn ? <LabelValue label={s.submitted} value={input.submittedOn} /> : null}
+          <LabelValue label={s.status} value={input.statusLabel} />
+          <LabelValue label={s.rate} value={input.rateLine ?? s.noRate} />
+        </View>
+
+        <FlexTable
+          columns={columns}
+          rows={input.lines.map((line) =>
+            priced
+              ? [line.date, line.person ?? "", line.description, line.hours, line.amount ?? ""]
+              : [line.date, line.person ?? "", line.description, line.hours],
+          )}
+        />
+
+        <View
+          style={{ alignItems: "flex-end", marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: C.ink }}
+          wrap={false}
+        >
+          <Text style={{ fontWeight: 700 }}>{`${s.totalHours}: ${input.totalHoursLabel}`}</Text>
+          {input.totalAmountLabel ? (
+            <Text style={{ fontWeight: 700, marginTop: 3 }}>{`${s.totalAmount}: ${input.totalAmountLabel}`}</Text>
+          ) : null}
+        </View>
+
+        {/* The decision block: who decided, when, or that the clock did. */}
+        <View style={{ marginTop: 18, padding: 10, borderWidth: 1, borderColor: C.line }} wrap={false}>
+          <Text style={{ fontWeight: 700, marginBottom: 4 }}>{s.confirmTitle}</Text>
+          {input.decisionLine ? <Text style={styles.body}>{input.decisionLine}</Text> : null}
+          {input.status === "submitted" ? <Text style={styles.body}>{s.pending}</Text> : null}
+          {input.rejectionReason ? <Text style={[styles.body, { marginTop: 3 }]}>{input.rejectionReason}</Text> : null}
+          {/* Printed only when silence is what approved it. */}
+          {input.status === "deemed_approved" ? (
+            <Text style={[styles.small, { color: C.inkSoft, marginTop: 4 }]}>{s.deemedNote}</Text>
+          ) : null}
+          {input.ruleLines.map((line, i) => (
+            <Text key={i} style={[styles.small, { color: C.muted, marginTop: 4 }]}>
+              {line}
+            </Text>
+          ))}
+        </View>
+
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
+      </Page>
+    </Document>
+  );
+}

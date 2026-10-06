@@ -1,0 +1,55 @@
+// One QR encoder for paper and for screen.
+//
+// The `qrcode` package (MIT) builds the module matrix; this file turns it into
+// ONE SVG path in module units. The same path is drawn by @react-pdf's <Path>
+// on the poster and by a plain <svg><path> in Settings and on SubHome, so the
+// code a crew scans on paper and on a screen is byte for byte the same shape.
+//
+// Why a vector path and not a PNG: it stays sharp at any print size, adds a
+// few kilobytes instead of an image, needs no canvas on the server, and renders
+// inside a server component with no client JavaScript at all.
+//
+// Pure: no "server-only", no React. Safe in routes, server components, tests.
+
+import { create } from "qrcode";
+
+export interface QrSvg {
+  /** Modules per side, without the quiet zone. */
+  size: number;
+  /** Every dark module, as one SVG path in module units (0..size). */
+  path: string;
+}
+
+/** The white margin a scanner needs around the code, in modules (ISO/IEC 18004). */
+export const QR_QUIET_ZONE = 4;
+
+/**
+ * "M" (15 % recovery) for screens and small marks; "Q" (25 %) for a poster that
+ * will be taped to a site container and get dirty.
+ */
+export function qrSvg(text: string, level: "M" | "Q" = "M"): QrSvg {
+  const { modules } = create(text, { errorCorrectionLevel: level });
+  const size = modules.size;
+  let path = "";
+  for (let row = 0; row < size; row++) {
+    let col = 0;
+    while (col < size) {
+      if (!modules.get(row, col)) {
+        col++;
+        continue;
+      }
+      // One rectangle per horizontal run keeps the path short.
+      let run = 1;
+      while (col + run < size && modules.get(row, col + run)) run++;
+      path += `M${col} ${row}h${run}v1h-${run}z`;
+      col += run;
+    }
+  }
+  return { size, path };
+}
+
+/** The viewBox that includes the quiet zone: "-4 -4 45 45" for a 37 module code. */
+export function qrViewBox(qr: QrSvg): string {
+  const q = QR_QUIET_ZONE;
+  return `${-q} ${-q} ${qr.size + 2 * q} ${qr.size + 2 * q}`;
+}

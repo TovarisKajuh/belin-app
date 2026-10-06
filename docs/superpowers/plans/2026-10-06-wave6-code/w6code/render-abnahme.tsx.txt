@@ -1,0 +1,33 @@
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { renderDocument } from "@/lib/pdf/theme";
+import { AbnahmeDocument } from "@/lib/pdf/abnahme";
+import { abnahmeStrings, docString, docText } from "@/lib/pdf/strings";
+import { imageSize } from "@/lib/pdf/image-size";
+const OUT = "C:/Users/ejand/AppData/Local/Temp/claude/C--DevEnv-belin-app/fc02d7f1-c666-4861-aeb4-7e5eac16051f/scratchpad/w6code/out";
+mkdirSync(OUT, { recursive: true });
+const req = createRequire("C:/DevEnv/belin-app/package.json");
+const { createCanvas } = req("@napi-rs/canvas");
+function sig(seed: number): Buffer { const c = createCanvas(600, 160); const g = c.getContext("2d"); g.strokeStyle = "#0a1628"; g.lineWidth = 4; g.beginPath(); g.moveTo(40, 110); for (let x = 40; x < 560; x += 6) g.lineTo(x, 90 + Math.sin(x / (22 + seed * 3)) * 35); g.stroke(); return c.toBuffer("image/png"); }
+const pic = (n: string) => { const b = readFileSync(`C:/DevEnv/belin-app/assets/marketing/site/${n}`); const z = imageSize(b)!; return { bytes: b, width: z.width, height: z.height }; };
+const s = abnahmeStrings("sl");
+async function one(name: string, count: number) {
+  const defects = Array.from({ length: count }, (_, i) => ({
+    no: i + 1,
+    description: `Manjka tesnilo na kabelskem prehodu skozi kritino, polje ${i + 1}, potrebna ponovna obdelava.`,
+    dueDate: "14. 10. 2026",
+    agreementLabel: docString("sl", i % 4 === 1 ? "final.disputed" : "final.agreed"),
+    photo: i < 3 ? { ...pic(["dc-verkabelung.jpg", "crew-panel.jpg", "unterkonstruktion.jpg"][i]), caption: docText("sl", "doc.abnahme.annexCaption", { no: i + 1, text: "Manjka tesnilo na kabelskem prehodu skozi kritino" }) } : null,
+  }));
+  writeFileSync(`${OUT}/${name}.pdf`, await renderDocument(AbnahmeDocument({
+    projectName: "SE Hala Brnik, 199,8 kWp", country: "si", clientName: "Solarna Gradnja d.o.o.", contractorName: "AVESOL d.o.o.",
+    siteAddress: "Zgornji Brnik 130, 4210 Brnik", kindLabel: "Končni prevzem", conductedOn: "05. 10. 2026", attendees: "Marko Golob, Boštjan Novak",
+    poRef: "št. 1 z dne 15. 09. 2026", poDeadline: "10. 10. 2026", lastReportOn: "03. 10. 2026",
+    declarationLabel: "Prevzeto s pridržki", showReservation: true, penaltyReserved: true, warrantyStart: "05. 10. 2026",
+    note: "Zaključna dela na strehi 2 do 14. 10. 2026.", defects,
+    epcSigner: { name: "Marko Golob", image: sig(1) }, subSigner: { name: "Boštjan Novak", image: sig(2) },
+    issuer: { name: "Solarna Gradnja d.o.o.", logo: null }, s,
+  })));
+}
+async function main() { await one("abnahme-short", 3); await one("abnahme-long", 24); console.log("ok"); }
+main();

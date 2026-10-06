@@ -1,0 +1,126 @@
+import { createAdminClient } from "@/lib/supabase/admin";
+import { documentReader, notFound, pdfResponse } from "@/lib/data/doc-access";
+import { formatMoney } from "@/lib/po-shared";
+import {
+  computeTotals,
+  defaultVatMode,
+  reverseChargeNote,
+  standardVatRate,
+  type Country,
+  type VatMode,
+} from "@/lib/invoice-shared";
+import { situacijaFigures } from "@/lib/situacija-shared";
+import { loadSituacijaSource } from "@/lib/pdf/situacija-data";
+import { SituacijaDocument, situacijaStrings } from "@/lib/pdf/situacija";
+import { docLocaleOf, docString, docText } from "@/lib/pdf/strings";
+import { docDate, docMonth, docNumber } from "@/lib/pdf/doc-format";
+import { contentDisposition } from "@/lib/pdf/filename";
+import { loadIssuer } from "@/lib/pdf/issuer";
+import { renderDocument } from "@/lib/pdf/theme";
+
+// One month's začasna situacija, computed on demand from the reports and the
+// accepted naročilnica (lib/situacija-shared.ts). Office people of both
+// parties: it is money, so never crew and never a project link.
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const COUNTRIES: Country[] = ["si", "de", "at"];
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ projectId: string; month: string }> },
+) {
+  const { projectId, month } = await params;
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return notFound();
+
+  const reader = await documentReader(projectId);
+  if (!reader.ok) return reader.response;
+
+  const db = createAdminClient();
+  const { data: project } = await db
+    .from("projects")
+    .select(
+      "name, language, country, vat_mode, sub_org_id, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)",
+    )
+    .eq("id", projectId)
+    .maybeSingle();
+  if (!project) return notFound();
+
+  const source = await loadSituacijaSource(db, projectId);
+  const target = source.months.find((m) => m.month === month);
+  // No accepted order means no agreed value; no quantities that month means
+  // nothing to bill. Either way there is no statement to print.
+  if (!source.po || !target) return notFound();
+
+  const locale = docLocaleOf(project.language);
+  const country = COUNTRIES.includes(project.country as Country) ? (project.country as Country) : "si";
+  const s = situacijaStrings(locale);
+  const money = (n: number) => formatMoney(n, locale);
+  const num = (n: number) => docNumber(n, locale);
+
+  const f = situacijaFigures(source.po.totalNet, source.items, source.quantities, target);
+
+  const vatMode = (project.vat_mode as VatMode | null) ?? defaultVatMode(country);
+  const rate = vatMode === "standard" ? standardVatRate(country) : null;
+  const totals = computeTotals(f.valueThisPeriod, vatMode, rate);
+  const endLabel = docDate(target.end, locale, country);
+
+  const totalRows: { label: string; value: string; strong?: boolean }[] = [
+    { label: s.contractValue, value: money(f.contractNet) },
+    { label: docText(locale, "doc.situacija.percentToDate", { date: endLabel }), value: `${num(f.percentToDate)} %` },
+    { label: docText(locale, "doc.situacija.valueToDate", { date: endLabel }), value: money(f.valueToDate) },
+    {
+      label:
+        target.number > 2
+          ? docText(locale, "doc.situacija.previouslyBilled", { last: target.number - 1 })
+          : target.number === 2
+            ? docString(locale, "doc.situacija.previouslyOne")
+            : docString(locale, "doc.situacija.previouslyNone"),
+      value: money(f.valueBefore),
+    },
+    { label: s.thisPeriod, value: money(f.valueThisPeriod) },
+    ...(vatMode === "standard" && totals.totalVat !== null
+      ? [{ label: docText(locale, "doc.situacija.vat", { rate: `${rate} %` }), value: money(totals.totalVat) }]
+      : []),
+    { label: s.toPay, value: money(totals.totalGross), strong: true },
+  ];
+
+  const siteAddress = [project.address_street, [project.address_zip, project.address_city].filter(Boolean).join(" ")]
+    .filter((part) => part && part.trim())
+    .join(", ");
+
+  const buffer = await renderDocument(
+    SituacijaDocument({
+      number: target.number,
+      periodLabel: `${docMonth(month, locale)} (${docDate(target.start, locale, country)} - ${endLabel})`,
+      poRef: docText(locale, "doc.abnahme.poRefValue", {
+        number: source.po.number,
+        date: docDate(source.po.issuedAt, locale, country),
+      }),
+      projectName: project.name,
+      country,
+      clientName: project.epc?.name ?? "",
+      contractorName: project.sub?.name ?? null,
+      siteAddress: siteAddress || null,
+      rows: f.rows.map((row) => [
+        row.name,
+        row.unit,
+        num(row.targetQty),
+        num(row.qtyBefore),
+        num(row.qtyPeriod),
+        num(row.qtyToDate),
+        `${num(row.percentToDate)} %`,
+      ]),
+      totals: totalRows,
+      reverseChargeNote: vatMode === "reverse_charge" ? reverseChargeNote(country) : null,
+      paymentPoLine: source.po.paymentTerms
+        ? docText(locale, "doc.situacija.paymentPo", { terms: source.po.paymentTerms })
+        : null,
+      issuer: await loadIssuer(db, project.sub_org_id),
+      s,
+    }),
+  );
+
+  return pdfResponse(buffer, contentDisposition([s.title, target.number, project.name, month]));
+}

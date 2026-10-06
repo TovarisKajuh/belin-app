@@ -1,0 +1,89 @@
+// Authenticity records: one row per stored document, opened before it is
+// rendered (so the PDF can print its own verify QR) and sealed once with the
+// sha256 of the stored bytes. See supabase/migrations/20261006006900.
+//
+// Not "server-only": the database client is a parameter, so the demo seed's
+// naročilnica rendering (scripts/seed-documents.ts) opens records too.
+//
+// THE VERIFY URL ALWAYS POINTS AT PRODUCTION. Local development and production
+// share one database (memory: one-database-for-local-and-production), so a
+// record opened on a laptop is a production record, and a QR printed with
+// localhost in it would be wrong forever. VERIFY_BASE_URL overrides it only if
+// the canonical domain ever changes.
+
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { docString, docText, type DocLocale } from "@/lib/pdf/strings";
+
+type Db = SupabaseClient<any, any, any>;
+
+export type DocumentRecordKind =
+  | "narocilnica"
+  | "narocilnica_sprejem"
+  | "zapisnik_prevzem"
+  | "racun"
+  | "zakljucno_porocilo";
+
+export function verifyBaseUrl(): string {
+  return (process.env.VERIFY_BASE_URL?.trim() || "https://getbelin.com").replace(/\/+$/, "");
+}
+
+export function verifyUrl(locale: DocLocale, id: string): string {
+  return `${verifyBaseUrl()}/${locale}/v/${id}`;
+}
+
+/** The short form printed beside the QR: "getbelin.com/v/<id>". The middleware adds the locale. */
+export function verifyShortUrl(id: string): string {
+  return `${verifyBaseUrl().replace(/^https?:\/\//, "")}/v/${id}`;
+}
+
+export async function openDocumentRecord(
+  db: Db,
+  input: {
+    projectId: string;
+    kind: DocumentRecordKind;
+    sourceId: string;
+    issuerOrgId: string | null;
+    language: DocLocale;
+  },
+): Promise<{ id: string; url: string; shortUrl: string }> {
+  let issuerName = "";
+  if (input.issuerOrgId) {
+    const { data: org } = await db.from("organizations").select("name").eq("id", input.issuerOrgId).maybeSingle();
+    issuerName = org?.name ?? "";
+  }
+
+  const { data, error } = await db
+    .from("document_records")
+    .insert({
+      project_id: input.projectId,
+      kind: input.kind,
+      source_id: input.sourceId,
+      issuer_org_id: input.issuerOrgId,
+      issuer_name: issuerName,
+      language: input.language,
+    })
+    .select("id")
+    .maybeSingle();
+  if (error || !data) throw new Error(`Could not open the document record: ${error?.message ?? "no row"}`);
+
+  return { id: data.id, url: verifyUrl(input.language, data.id), shortUrl: verifyShortUrl(data.id) };
+}
+
+/** Seals the record with the stored bytes' hash. Only an unsealed row is updated. */
+export async function sealDocumentRecord(db: Db, id: string, sha256: string, storagePath: string): Promise<void> {
+  const { error } = await db
+    .from("document_records")
+    .update({ sha256, storage_path: storagePath, sealed_at: new Date().toISOString() })
+    .eq("id", id)
+    .is("sha256", null);
+  if (error) throw new Error(`Could not seal the document record: ${error.message}`);
+}
+
+/** The strings and URL of the verify mark (lib/pdf/verify-mark.tsx) for one record. */
+export function verifyMarkFor(locale: DocLocale, id: string): { url: string; label: string; hint: string } {
+  return {
+    url: verifyUrl(locale, id),
+    label: docText(locale, "doc.verify.mark", { url: verifyShortUrl(id) }),
+    hint: docString(locale, "doc.verify.markHint"),
+  };
+}

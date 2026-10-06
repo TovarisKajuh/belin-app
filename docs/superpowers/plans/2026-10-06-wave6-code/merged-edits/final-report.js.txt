@@ -1,0 +1,65 @@
+const fs = require("fs");
+const file = process.argv[2];
+let s = fs.readFileSync(file, "utf8");
+const r = (a, b) => {
+  if (!s.includes(a)) throw new Error("miss " + a.slice(0, 80));
+  s = s.replace(a, b);
+};
+r('import { buildDayReports, diaryTitleKey } from "@/lib/report-days-shared";', 'import { diaryTitleKey } from "@/lib/report-days-shared";');
+r('import { weatherCodeToKey } from "@/lib/weather-codes";\n', "");
+r(
+  'import type { DayReportData } from "@/lib/pdf/day-report";\n',
+  'import { buildDays, loadDayProject } from "@/lib/pdf/day-data";\nimport { docDate } from "@/lib/pdf/doc-format";\nimport { loadIssuer } from "@/lib/pdf/issuer";\n',
+);
+r(
+  '"id, name, language, country, kwp, address_street, address_zip, address_city, planned_start, planned_end, epc:epc_org_id (name), sub:sub_org_id (name)"',
+  '"id, name, language, country, kwp, sub_org_id, address_street, address_zip, address_city, planned_start, planned_end, epc:epc_org_id (name), sub:sub_org_id (name)"',
+);
+r(
+  `  const [entriesRes, incidentsRes, sheetsRes, ordersRes] = await Promise.all([
+    db
+      .from("daily_entries")
+      .select(
+        "id, entry_date, headcount, note, weather, created_at, people:created_by_person (full_name), entry_quantities (qty, scope_items (name, unit)), entry_photos (storage_path, sort_order)",
+      )
+      .eq("project_id", projectId)
+      .order("entry_date")
+      .order("created_at"),
+    db`,
+  `  const dayProject = await loadDayProject(db, projectId);
+  if (!dayProject) throw new Error("Project not found");
+
+  const [{ refs: dayRefs, days }, incidentsRes, sheetsRes, ordersRes] = await Promise.all([
+    buildDays(db, dayProject, { photosPerDay: PHOTOS_PER_DAY }),
+    db`,
+);
+r(`  const entries = entriesRes.data ?? [];
+  const incidents`, `  const incidents`);
+const a = s.indexOf("  const dayRefs = buildDayReports(");
+const b = s.indexOf("  const now = new Date();");
+if (a < 0 || b < 0) throw new Error("anchors");
+s = s.slice(0, a) + "  const dateFmt = (iso: string) => docDate(iso, locale, project.country);\n\n" + s.slice(b);
+r(
+  `  const period =
+    dayRefs.length > 0
+      ? \`\${dateFmt.format(new Date(\`\${dayRefs[0].dateIso}T12:00:00Z\`))} - \${dateFmt.format(
+          new Date(\`\${dayRefs[dayRefs.length - 1].dateIso}T12:00:00Z\`),
+        )}\`
+      : null;`,
+  `  const period =
+    dayRefs.length > 0 ? \`\${dateFmt(dayRefs[0].dateIso)} - \${dateFmt(dayRefs[dayRefs.length - 1].dateIso)}\` : null;`,
+);
+r("        date: shortFmt.format(new Date(`${incident.occurred_on}T12:00:00Z`)),", "        date: dateFmt(incident.occurred_on),");
+r(
+  `      s: strings,
+    }),
+  );`,
+  `      issuer: await loadIssuer(db, project.sub_org_id),
+      s: strings,
+    }),
+  );`,
+);
+const c = s.indexOf("/**\n * Photo bytes for one day.");
+if (c > 0) s = s.slice(0, c).trimEnd() + "\n";
+fs.writeFileSync(file, s);
+console.log("final-report edited");

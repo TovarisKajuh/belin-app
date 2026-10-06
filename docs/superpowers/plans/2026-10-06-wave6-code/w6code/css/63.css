@@ -1,0 +1,7 @@
+/* === 6.3: Zapisnik o prevzemu, reservation line and one photo per defect === */
+.belin-dark .ac-reservation { margin-top: 14px; }
+.belin-dark .ac-d-photo {
+  width: 36px; height: 36px; border-radius: 6px; object-fit: cover;
+  vertical-align: middle; margin-right: 8px;
+}
+.belin-dark .ac-defect-photo { grid-column: 1 / -1; display: grid; gap: 6px; }

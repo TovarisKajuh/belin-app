@@ -1,0 +1,263 @@
+// VERIFICATION KIT (scratchpad only). Renders Wave 6 documents OFFLINE from
+// representative Slovenian data: no database, no storage, no session. Each
+// section imports its template lazily, so sections for documents that do not
+// exist yet are simply not requested.
+//
+//   cd C:\DevEnv\belin-app            (or the lane-b worktree)
+//   set NODE_PATH=%CD%\node_modules    (PowerShell: $env:NODE_PATH="$PWD\node_modules")
+//   npx tsx --tsconfig tsconfig.scripts.json <scratch>/kit/render-offline.tsx <out-dir> day abnahme po regie ...
+//
+// Sections: day completion abnahme po regie invoice co poster situacija ovira
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+
+const [outDir, ...sections] = process.argv.slice(2);
+if (!outDir || sections.length === 0) {
+  console.error("usage: render-offline.tsx <out-dir> <section...>");
+  process.exit(2);
+}
+mkdirSync(outDir, { recursive: true });
+
+const SITE = "assets/marketing/site";
+const LOGO = "public/icons/icon-192.png";
+const meta = {
+  projectName: "SE Hala Brnik, 199,8 kWp",
+  clientName: "Solarna Gradnja d.o.o.",
+  contractorName: "Montaža Kos d.o.o.",
+  siteAddress: "Zgornji Brnik 130, 4210 Brnik",
+};
+
+async function photo(name: string, caption: string) {
+  const { imageSize } = await import("@/lib/pdf/image-size");
+  const bytes = readFileSync(`${SITE}/${name}`);
+  const size = imageSize(bytes)!;
+  return { bytes, width: size.width, height: size.height, caption };
+}
+
+async function save(name: string, element: Parameters<(typeof import("@/lib/pdf/theme"))["renderDocument"]>[0]) {
+  const { renderDocument } = await import("@/lib/pdf/theme");
+  const buffer = await renderDocument(element);
+  writeFileSync(`${outDir}/${name}.pdf`, buffer);
+  console.log(`${name}.pdf ${buffer.length} bytes`);
+}
+
+const sub = { name: "Montaža Kos d.o.o.", logo: readFileSync(LOGO) };
+const epc = { name: "Solarna Gradnja d.o.o.", logo: null };
+
+const run: Record<string, () => Promise<void>> = {
+  async day() {
+    const { DayReportDocument } = await import("@/lib/pdf/day-report");
+    const { completionStrings, docString } = await import("@/lib/pdf/strings");
+    const s = completionStrings("sl").day;
+    s.title = docString("sl", "final.diaryTitleSi");
+    await save(
+      "day",
+      DayReportDocument({
+        day: {
+          reportNo: 4,
+          dateIso: "2026-10-01",
+          dateLabel: "četrtek, 01. 10. 2026",
+          dateShort: "01. 10. 2026",
+          weatherLabel: "Delno oblačno, 14 °C",
+          headcount: 5,
+          entries: [
+            {
+              note: "Montaža modulov v vrsti 2 in 3. Na polju C manjka 14 srednjih sponk, dobava obljubljena za jutri. Kabelska trasa položena po navodilu vodje gradbišča.",
+              author: "Luka Zupan",
+              quantities: ["Moduli: 96 kos", "DC kabliranje: 140 m"],
+            },
+          ],
+          incidents: [{ kindLabel: "Ovira", note: "Dostop do strehe blokiran zaradi dostave, 2 uri čakanja." }],
+          photos: [
+            await photo("crew-montage.jpg", "posneto ob 09:12"),
+            await photo("dc-verkabelung.jpg", "posneto ob 11:40"),
+            await photo("unterkonstruktion.jpg", "oddano ob 15:02"),
+            await photo("crew-module.jpg", "posneto ob 13:25"),
+          ],
+          photoTotal: 6,
+        },
+        meta,
+        s,
+        issuer: sub,
+      }),
+    );
+  },
+
+  async abnahme() {
+    const { AbnahmeDocument } = await import("@/lib/pdf/abnahme");
+    const { abnahmeStrings, docString } = await import("@/lib/pdf/strings");
+    const s = abnahmeStrings("sl");
+    await save(
+      "abnahme",
+      AbnahmeDocument({
+        ...meta,
+        country: "si",
+        kindLabel: "Končni prevzem",
+        conductedOn: "05. 10. 2026",
+        attendees: "Marko Golob, Boštjan Novak",
+        poRef: "št. 1 z dne 15. 09. 2026",
+        poDeadline: "10. 10. 2026",
+        lastReportOn: "03. 10. 2026",
+        declarationLabel: docString("sl", "final.decl.with_reservations"),
+        showReservation: true,
+        penaltyReserved: true,
+        warrantyStart: "05. 10. 2026",
+        note: "Zaključna dela na strehi 2 do 14. 10. 2026.",
+        defects: await Promise.all(
+          Array.from({ length: 24 }, async (_, i) => ({
+            no: i + 1,
+            description: `Manjka tesnilo na kabelskem prehodu skozi kritino, polje ${i + 1}.`,
+            dueDate: "14. 10. 2026",
+            agreementLabel: docString("sl", i % 4 === 1 ? "final.disputed" : "final.agreed"),
+            photo: i < 2 ? await photo(i === 0 ? "dc-verkabelung.jpg" : "crew-panel.jpg", `Pomanjkljivost ${i + 1}: manjka tesnilo`) : null,
+          })),
+        ),
+        epcSigner: { name: "Marko Golob", image: null },
+        subSigner: { name: "Boštjan Novak", image: null },
+        issuer: epc,
+        s,
+      }),
+    );
+  },
+
+  async po() {
+    const { NarocilnicaDocument } = await import("@/lib/pdf/narocilnica");
+    const { poStrings } = await import("@/lib/pdf/strings");
+    const base = {
+      number: 1,
+      locale: "sl" as const,
+      projectName: meta.projectName,
+      siteAddress: meta.siteAddress,
+      issuedOn: "15. 09. 2026",
+      deadline: "10. 10. 2026",
+      paymentTerms: "30 dni od izdaje računa",
+      regieHourlyRate: 40,
+      totalNet: 100000,
+      lines: [{ description: "Montaža FV sistema 199,8 kWp, Brnik", qty: 1, unit: "kpl", unitPrice: 100000, total: 100000 }],
+      epcOrg: { name: epc.name, address: "Šmartinska cesta 152, 1000 Ljubljana", vatId: "SI12345678" },
+      subOrg: { name: sub.name, address: "Kidričeva cesta 12, 4220 Škofja Loka", vatId: "SI87654321" },
+      issuer: epc,
+      s: poStrings("sl", "si"),
+    };
+    await save("po-sent", NarocilnicaDocument({ ...base, acceptance: null }));
+    await save(
+      "po-accepted",
+      NarocilnicaDocument({
+        ...base,
+        acceptance: { name: "Boštjan Novak (Montaža Kos d.o.o.)", at: "16. 09. 2026 ob 10:42", originalSha256: "a".repeat(64) },
+      }),
+    );
+  },
+
+  async regie() {
+    const { RegieberichtDocument } = await import("@/lib/pdf/regiebericht");
+    const { docText, regieStrings, sheetStatusLabel } = await import("@/lib/pdf/strings");
+    const s = regieStrings("sl");
+    await save(
+      "regie",
+      RegieberichtDocument({
+        number: 2,
+        projectName: meta.projectName,
+        contractorName: meta.contractorName,
+        submittedOn: "22. 09. 2026 ob 16:05",
+        statusLabel: sheetStatusLabel("sl", "deemed_approved"),
+        status: "deemed_approved",
+        decisionLine: `${s.deemedAt}: 30. 09. 2026 ob 23:59`,
+        rejectionReason: null,
+        rateLine: docText("sl", "doc.regie.rateValue", { rate: "40,00 EUR", number: 1 }),
+        ruleLines: [docText("sl", "doc.regie.rulePo", { number: 1 })],
+        totalHoursLabel: "14,5 h",
+        totalAmountLabel: "580,00 EUR",
+        lines: [
+          { date: "21. 09. 2026", person: "Luka Zupan", hours: "8", description: "Dodatno pritrjevanje zaradi drugačne kritine", amount: "320,00 EUR" },
+          { date: "22. 09. 2026", person: "Luka Zupan", hours: "6,5", description: "Nadaljevanje pritrjevanja, južni del", amount: "260,00 EUR" },
+        ],
+        issuer: sub,
+        s,
+      }),
+    );
+  },
+
+  async co() {
+    const { DodatnoDeloDocument, dodatnoDeloStrings } = await import("@/lib/pdf/dodatno-delo");
+    await save(
+      "co",
+      DodatnoDeloDocument({
+        number: 1,
+        title: "Zamenjava poškodovanih strešnih letev",
+        description: "Pod kritino na strehi 2 so letve trhle na dolžini 14 m.",
+        amount: "800,00 EUR",
+        status: "approved",
+        statusLabel: "Potrjeno",
+        submittedOn: "24. 09. 2026 ob 15:41",
+        submittedBy: "Luka Zupan",
+        decidedLine: "Marko Golob, 25. 09. 2026 ob 08:12",
+        ...meta,
+        country: "si",
+        photos: [await photo("dach-weit.jpg", "Fotografija 1"), await photo("dc-verkabelung.jpg", "Fotografija 2")],
+        issuer: sub,
+        s: dodatnoDeloStrings("sl"),
+      }),
+    );
+  },
+
+  async poster() {
+    const { PosterDocument } = await import("@/lib/pdf/poster");
+    const { docString } = await import("@/lib/pdf/strings");
+    const { qrSvg } = await import("@/lib/qr");
+    const t = (k: string) => docString("sl", `doc.poster.${k}`);
+    const url = "https://getbelin.com/sl/p/AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdefg";
+    await save(
+      "poster",
+      PosterDocument({
+        projectName: meta.projectName,
+        siteAddress: meta.siteAddress,
+        clientName: meta.clientName,
+        contractorName: meta.contractorName,
+        url,
+        qr: qrSvg(url, "Q"),
+        issuer: sub,
+        s: {
+          title: t("title"),
+          client: t("client"),
+          contractor: t("contractor"),
+          scan: t("scan"),
+          step1: t("step1"),
+          step2: t("step2"),
+          step3: t("step3"),
+          noApp: t("noApp"),
+          generated: docString("sl", "final.doc.generated"),
+        },
+      }),
+    );
+  },
+
+  async ovira() {
+    const { OviraDocument, oviraStrings } = await import("@/lib/pdf/ovira");
+    await save(
+      "ovira",
+      OviraDocument({
+        number: 1,
+        ...meta,
+        poRef: "št. 1 z dne 15. 09. 2026",
+        recordedAt: "01. 10. 2026 ob 10:14",
+        recordedBy: "Luka Zupan",
+        note: "Dostop do strehe je blokiran, dvigalo drugega izvajalca stoji na edinem dovozu. Čakamo od 7:30.",
+        photos: [await photo("anlage-weit.jpg", "Fotografija 1")],
+        issuer: sub,
+        s: oviraStrings("sl", "si"),
+      }),
+    );
+  },
+};
+
+async function main(): Promise<void> {
+  for (const section of sections) {
+    if (!run[section]) {
+      console.error(`unknown section ${section}`);
+      process.exit(2);
+    }
+    await run[section]();
+  }
+}
+
+main();

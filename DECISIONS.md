@@ -2,6 +2,8 @@
 
 One line per significant decision: what, why, when.
 
+- 2026-10-06: The meeting is built from a Morning cut, not the plan's Minimum winning cut, and self-serve signup moves to after the meeting. Reason: execution started at 09:00 instead of 23:00, leaving about four hours before a 13:00 freeze; the cut keeps what the buyer sees in the run of show (truthful demo data, the presenter door, the visible screen bugs on the demo path, signatures, invoice fields, document spacing, the landing privacy fix, the splash), and signup cannot open today in any case without the operator's legal details.
+
 - 2026-09-16: The workflow document stays an attachment in `assets/marketing/` and is NOT published to `public/p/` like the Salzburg deck. Reason: it is labelled an internal document on its own first screen, and the real generated documents it photographs carry a real EPC's name and AVESOL's demo pricing. The rule for public/p/ is that a push to main publishes it, so anything internal has to stay out by construction rather than by remembering.
 
 - 2026-09-16: Pictures in internal documents carry a badge saying what they are: `app` a real screenshot, `teren` a real site photograph, `dokument` a page rasterized from real PDF bytes, `predlog` something drawn for the page whose module does not exist. Reason: this document will be built from, and the expensive mistake is a developer reading a drawing as a specification of a screen that already exists. Where nothing honest is available the tile says in Slovenian what is missing, rather than being filled with an approximation.

@@ -1,0 +1,31 @@
+/* === 6.9: the public authenticity page /<locale>/v/<id> === */
+.belin-dark.vf-wrap {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 28px 22px;
+}
+.belin-dark .vf-card { width: 100%; max-width: 520px; position: relative; z-index: 1; }
+.belin-dark .vf-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+.belin-dark .vf-title { margin: 0 0 18px; font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+.belin-dark .vf-facts {
+  display: grid; grid-template-columns: max-content 1fr; gap: 10px 18px;
+  margin: 0 0 18px; font-size: 14.5px;
+}
+.belin-dark .vf-facts dt { color: var(--e-muted); }
+.belin-dark .vf-facts dd { margin: 0; color: var(--e-ink); }
+.belin-dark .vf-hash { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; word-break: break-all; }
+.belin-dark .vf-note { margin: 0 0 18px; color: var(--e-ink2); font-size: 13.5px; line-height: 1.55; }
+.belin-dark .vf-check { padding: 16px; border-radius: 14px; background: var(--e-surface); border: 1px solid var(--e-line); }
+.belin-dark .vf-h2 { margin: 0 0 6px; font-size: 16px; font-weight: 700; }
+.belin-dark .vf-pick {
+  position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
+  border-radius: 12px; border: 1px solid var(--e-line); background: var(--e-surface-2);
+  color: var(--e-ink); font-weight: 700; cursor: pointer;
+}
+.belin-dark .vf-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.belin-dark .vf-result { margin: 12px 0 0; font-weight: 700; }
+.belin-dark .vf-result.ok { color: var(--e-ok); }
+.belin-dark .vf-result.bad { color: #ff7a6b; }
+@media (max-width: 420px) {
+  .belin-dark .vf-facts { grid-template-columns: 1fr; gap: 2px; }
+  .belin-dark .vf-facts dd { margin-bottom: 10px; }
+}

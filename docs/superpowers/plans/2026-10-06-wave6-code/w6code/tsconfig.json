@@ -1,0 +1,62 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "typeRoots": [
+      "C:/DevEnv/belin-app/node_modules/@types"
+    ],
+    "types": [
+      "node"
+    ],
+    "paths": {
+      "qrcode": [
+        "../w6test/node_modules/@types/qrcode"
+      ],
+      "react": [
+        "C:/DevEnv/belin-app/node_modules/@types/react"
+      ],
+      "react/jsx-runtime": [
+        "C:/DevEnv/belin-app/node_modules/@types/react/jsx-runtime"
+      ],
+      "react-dom": [
+        "C:/DevEnv/belin-app/node_modules/@types/react-dom"
+      ],
+      "@/*": [
+        "./*",
+        "C:/DevEnv/belin-app/*"
+      ],
+      "*": [
+        "C:/DevEnv/belin-app/node_modules/*",
+        "C:/DevEnv/belin-app/node_modules/@types/*",
+        "../w6test/node_modules/*",
+        "../w6test/node_modules/@types/*"
+      ]
+    }
+  },
+  "include": [
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "components/**/*.tsx",
+    "tests/**/*.ts",
+    "tests/**/*.tsx"
+  ],
+  "exclude": [
+    "lib/pdf/*.orig.*"
+  ]
+}

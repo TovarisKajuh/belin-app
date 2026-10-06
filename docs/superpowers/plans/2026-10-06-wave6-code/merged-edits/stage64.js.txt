@@ -1,0 +1,64 @@
+// Task 6.4 anchor edits, applied with narocilnica.tsx and render-po.tsx already replaced.
+const fs = require("fs");
+function edit(file, pairs) {
+  let s = fs.readFileSync(file, "utf8");
+  for (const [a, b] of pairs) {
+    if (!s.includes(a)) throw new Error(`${file}: miss ${a.slice(0, 90)}`);
+    s = s.split(a).join(b);
+  }
+  fs.writeFileSync(file, s);
+  console.log("edited", file);
+}
+
+edit("lib/pdf/strings.ts", [
+  [
+    "export function poStrings(locale: DocLocale): NarocilnicaStrings {",
+    "/** The naročilnica strings. `country` is the SITE's and picks the contract-basis line. */\nexport function poStrings(locale: DocLocale, country: string | null | undefined): NarocilnicaStrings {",
+  ],
+  ['    acceptedBy: t("po.doc.acceptedBy"),\n    acceptedAt: t("po.doc.acceptedAt"),', '    acceptedBy: t("doc.po.acceptedBy"),\n    acceptedAt: t("doc.po.acceptedAt"),'],
+  [
+    `    generated: t("po.doc.generated"),
+    page: t("doc.page"),
+  };`,
+    `    generated: t("po.doc.generated"),
+    page: t("doc.page"),
+    termsTitle: t("doc.po.termsTitle"),
+    regieClause: t("doc.po.regieClause"),
+    basis: t(\`doc.po.basis.\${country === "de" || country === "at" ? country : "si"}\`),
+    acceptedTitle: t("doc.po.acceptedTitle"),
+    acceptedBody: t("doc.po.acceptedBody"),
+    acceptedHash: t("doc.po.acceptedHash"),
+  };`,
+  ],
+]);
+
+edit("lib/data/purchase-orders.ts", [
+  [
+    `  const { buffer, sha256 } = await renderPoPdf(db, projectId, poId, null);
+  const path = await storeReportPdf(\`\${projectId}/po/\${poId}.pdf\`, buffer);
+
+  const { data: sent, error } = await db
+    .from("purchase_orders")
+    .update({ status: "sent", sent_at: new Date().toISOString(), pdf_path: path, pdf_sha256: sha256 })`,
+    `  // The paper prints the moment of sending and the row records the same
+  // moment, so the date on the document and sent_at can never disagree.
+  const sentAt = new Date().toISOString();
+  const { buffer, sha256 } = await renderPoPdf(db, projectId, poId, "sent", { issuedAtIso: sentAt });
+  const path = await storeReportPdf(\`\${projectId}/po/\${poId}.pdf\`, buffer);
+
+  const { data: sent, error } = await db
+    .from("purchase_orders")
+    .update({ status: "sent", sent_at: sentAt, pdf_path: path, pdf_sha256: sha256 })`,
+  ],
+]);
+
+edit("components/po/PoView.tsx", [
+  ['  const t = useTranslations("po");', '  const t = useTranslations("po");\n  const tDoc = useTranslations("doc.ui");'],
+  [
+    `          <p className="po-confirm-t">{t("acceptNote")}</p>`,
+    `          <p className="po-confirm-t">{t("acceptNote")}</p>
+          <p className="po-meta">{tDoc("poTermsHint")}</p>`,
+  ],
+]);
+
+edit("tests/pdf-body-text.test.tsx", [['const s = poStrings("sl");', 'const s = poStrings("sl", "si");']]);

@@ -1,0 +1,59 @@
+import { extractText, getDocumentProxy } from "unpdf";
+import { describe, expect, it } from "vitest";
+import { NarocilnicaDocument } from "@/lib/pdf/narocilnica";
+import { poStrings } from "@/lib/pdf/strings";
+import { renderDocument } from "@/lib/pdf/theme";
+
+// The naročilnica's order terms (D9) and its acceptance certificate, read back from the PDF.
+
+async function pages(buffer: Buffer): Promise<string[]> {
+  const pdf = await getDocumentProxy(new Uint8Array(buffer));
+  const { text } = await extractText(pdf, { mergePages: false });
+  return (text as string[]).map((page) => page.replace(/\s+/g, " "));
+}
+
+describe("naročilnica terms and acceptance", () => {
+  const s = poStrings("sl", "si");
+  const base = {
+    number: 1,
+    locale: "sl" as const,
+    projectName: "SE Hala Brnik",
+    siteAddress: "Zgornji Brnik 130, 4210 Brnik",
+    issuedOn: "15. 09. 2026",
+    deadline: "10. 10. 2026",
+    paymentTerms: "30 dni od izdaje računa",
+    regieHourlyRate: 40,
+    totalNet: 100000,
+    lines: [{ description: "Montaža FV sistema", qty: 1, unit: "kpl", unitPrice: 100000, total: 100000 }],
+    epcOrg: { name: "Solarna Gradnja d.o.o.", address: null, vatId: "SI12345678" },
+    subOrg: { name: "Montaža Kos d.o.o.", address: null, vatId: "SI87654321" },
+    issuer: { name: "Solarna Gradnja d.o.o.", logo: null },
+    s,
+  };
+
+  it("prints the deemed-approval clause and the Slovenian contract basis on the sent copy", async () => {
+    const text = (await pages(await renderDocument(NarocilnicaDocument({ ...base, acceptance: null })))).join(" ");
+    expect(text).toContain(s.regieClause);
+    expect(text).toContain("Posebne gradbene uzance 2020");
+    expect(text).not.toContain(s.acceptedTitle);
+    // D9: a Monday to Saturday count is never called "delovni dnevi".
+    expect(text).not.toContain("delovnih dni");
+  }, 60000);
+
+  it("certifies the acceptance with the hash of the sent version", async () => {
+    const hash = "a".repeat(64);
+    const text = (
+      await pages(
+        await renderDocument(
+          NarocilnicaDocument({
+            ...base,
+            acceptance: { name: "Boštjan Novak (Montaža Kos d.o.o.)", at: "16. 09. 2026 ob 10:42", originalSha256: hash },
+          }),
+        ),
+      )
+    ).join(" ");
+    expect(text).toContain(s.acceptedTitle);
+    expect(text).toContain("16. 09. 2026 ob 10:42");
+    expect(text).toContain(hash);
+  }, 60000);
+});

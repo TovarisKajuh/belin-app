@@ -1,0 +1,42 @@
+// Task 6.10 anchor edits: the obstruction row on the EPC dashboard links its written notice.
+const fs = require("fs");
+function edit(file, pairs) {
+  let s = fs.readFileSync(file, "utf8");
+  for (const [a, b] of pairs) {
+    if (!s.includes(a)) throw new Error(`${file}: miss ${a.slice(0, 90)}`);
+    s = s.split(a).join(b);
+  }
+  fs.writeFileSync(file, s);
+  console.log("edited", file);
+}
+edit("components/epc/dashboard/IncidentsPanel.tsx", [
+  [
+    `export async function IncidentsPanel({ incidents }: { incidents: IncidentRow[] }) {
+  const t = await getTranslations("dashboard");
+  const tKinds = await getTranslations("incident.kinds");`,
+    `export async function IncidentsPanel({
+  incidents,
+  canOpenPdf = false,
+}: {
+  incidents: IncidentRow[];
+  /** Signed-in sessions only: a project link gets no documents. */
+  canOpenPdf?: boolean;
+}) {
+  const t = await getTranslations("dashboard");
+  const tKinds = await getTranslations("incident.kinds");
+  const tDoc = await getTranslations("doc.ui");`,
+  ],
+  [
+    `              {incident.authorName ? <p className="ip-who">{incident.authorName}</p> : null}`,
+    `              {incident.authorName ? <p className="ip-who">{incident.authorName}</p> : null}
+
+              {canOpenPdf && incident.kind === "obstruction" ? (
+                <a className="hr-pdf" href={\`/api/pdf/ovira/\${incident.id}\`} target="_blank" rel="noreferrer">
+                  {tDoc("oviraPdf")}
+                </a>
+              ) : null}`,
+  ],
+]);
+edit("components/epc/EpcDashboard.tsx", [
+  ["        <IncidentsPanel incidents={data.incidents} />", "        <IncidentsPanel incidents={data.incidents} canOpenPdf={token === null} />"],
+]);

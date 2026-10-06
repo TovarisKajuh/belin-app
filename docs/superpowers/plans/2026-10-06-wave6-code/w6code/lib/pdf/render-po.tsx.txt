@@ -1,0 +1,132 @@
+// Rendering the naročilnica.
+//
+// Deliberately NOT "server-only", following the lib/k2 precedent: the demo
+// seed renders these documents under plain Node through scripts/seed-documents.ts,
+// where that import throws. It holds no secrets and reads no environment; the
+// database client is handed in by the caller, who has already decided that the
+// caller is allowed to read this project.
+//
+// TWO VARIANTS, ONE FUNCTION. "sent" is the document the subcontractor reviews
+// and whose sha256 the acceptance binds to. "accepted" is the same document
+// plus an acceptance certificate, and it reads every acceptance fact from the
+// row itself (who, server time, the bound hash), so no caller can hand it a
+// date formatted in the wrong language or zone (documents B2).
+
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createHash } from "node:crypto";
+import { NarocilnicaDocument } from "@/lib/pdf/narocilnica";
+import { docLocaleOf, poStrings } from "@/lib/pdf/strings";
+import { docDate, docDateTime } from "@/lib/pdf/doc-format";
+import { loadLogo } from "@/lib/pdf/issuer";
+import { renderDocument } from "@/lib/pdf/theme";
+
+export function sha256Of(bytes: Buffer): string {
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
+export type PoVariant = "sent" | "accepted";
+
+/**
+ * Renders the document from the CURRENT database state. Exported because the
+ * demo seed renders the same documents through this exact path, so a staged
+ * naročilnica is a real one rather than a row pretending to be one.
+ */
+export async function renderPoPdf(
+  // Any client the caller has already authorized. The seed passes the admin
+  // client directly; the app passes its own.
+  db: SupabaseClient<any, any, any>,
+  projectId: string,
+  poId: string,
+  variant: PoVariant,
+  options: {
+    /** The moment of sending, when the caller renders BEFORE writing sent_at. */
+    issuedAtIso?: string;
+  } = {},
+): Promise<{ buffer: Buffer; sha256: string }> {
+  const { data: project } = await db
+    .from("projects")
+    .select("id, name, language, country, address_street, address_zip, address_city, epc_org_id, sub_org_id")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (!project) throw new Error("Project not found");
+
+  const { data: po } = await db
+    .from("purchase_orders")
+    .select(
+      "id, number, total_net, regie_hourly_rate, payment_terms, deadline, created_at, sent_at, accepted_at, accepted_by_name, pdf_sha256",
+    )
+    .eq("id", poId)
+    .maybeSingle();
+  if (!po) throw new Error("Naročilnica not found");
+
+  const { data: lines } = await db
+    .from("purchase_order_lines")
+    .select("description, qty, unit, unit_price, total, sort_order")
+    .eq("purchase_order_id", poId)
+    .order("sort_order", { ascending: true });
+
+  const orgIds = [project.epc_org_id, project.sub_org_id].filter(Boolean) as string[];
+  const { data: orgs } = await db
+    .from("organizations")
+    .select("id, name, address, vat_id, logo_path")
+    .in("id", orgIds);
+
+  const orgById = new Map((orgs ?? []).map((org: { id: string }) => [org.id, org]));
+  const epc = orgById.get(project.epc_org_id) as
+    | { name: string; address: string | null; vat_id: string | null; logo_path: string | null }
+    | undefined;
+  const sub = (project.sub_org_id ? orgById.get(project.sub_org_id) : undefined) as
+    | { name: string; address: string | null; vat_id: string | null }
+    | undefined;
+
+  const locale = docLocaleOf(project.language);
+  const country: string = project.country ?? "si";
+  const address = [project.address_street, [project.address_zip, project.address_city].filter(Boolean).join(" ")]
+    .filter((part) => part && part.trim().length > 0)
+    .join(", ");
+
+  let acceptance = null;
+  if (variant === "accepted") {
+    // An accepted copy without the bound hash would certify nothing.
+    if (!po.accepted_at || !po.accepted_by_name || !po.pdf_sha256) {
+      throw new Error("Naročilnica is not accepted, or has no bound hash");
+    }
+    acceptance = {
+      name: sub?.name ? `${po.accepted_by_name} (${sub.name})` : po.accepted_by_name,
+      at: docDateTime(po.accepted_at, locale, country),
+      originalSha256: po.pdf_sha256,
+    };
+  }
+
+  const issuedAt: string = options.issuedAtIso ?? po.sent_at ?? po.created_at;
+
+  const buffer = await renderDocument(
+    NarocilnicaDocument({
+      number: po.number,
+      locale,
+      projectName: project.name,
+      siteAddress: address || null,
+      issuedOn: docDate(issuedAt, locale, country),
+      deadline: po.deadline ? docDate(po.deadline, locale, country) : null,
+      paymentTerms: po.payment_terms,
+      regieHourlyRate: po.regie_hourly_rate === null ? null : Number(po.regie_hourly_rate),
+      totalNet: Number(po.total_net),
+      lines: (lines ?? []).map(
+        (line: { description: string; qty: number | null; unit: string | null; unit_price: number | null; total: number }) => ({
+          description: line.description,
+          qty: line.qty === null ? null : Number(line.qty),
+          unit: line.unit,
+          unitPrice: line.unit_price === null ? null : Number(line.unit_price),
+          total: Number(line.total),
+        }),
+      ),
+      epcOrg: { name: epc?.name ?? "", address: epc?.address ?? null, vatId: epc?.vat_id ?? null },
+      subOrg: { name: sub?.name ?? "", address: sub?.address ?? null, vatId: sub?.vat_id ?? null },
+      acceptance,
+      issuer: { name: epc?.name ?? "", logo: await loadLogo(db, epc?.logo_path) },
+      s: poStrings(locale, country),
+    }),
+  );
+
+  return { buffer, sha256: sha256Of(buffer) };
+}

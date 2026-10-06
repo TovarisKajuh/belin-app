@@ -1,0 +1,35 @@
+import { getTranslations } from "next-intl/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { loadSituacijaSource } from "@/lib/pdf/situacija-data";
+import { docMonth } from "@/lib/pdf/doc-format";
+
+// The month-by-month list of začasne situacije under an accepted naročilnica.
+// Server component: it reads the same source the PDF route computes from, so
+// the list never offers a month the route would refuse.
+
+export async function SituacijaLinks({ projectId, locale }: { projectId: string; locale: "sl" | "de" | "en" }) {
+  const source = await loadSituacijaSource(createAdminClient(), projectId);
+  if (!source.po || source.months.length === 0) return null;
+
+  const t = await getTranslations("doc.ui");
+
+  return (
+    <section className="e-sec e-reveal">
+      <div className="e-sec-h">{t("situacijaTitle")}</div>
+      <p className="po-meta">{t("situacijaNote")}</p>
+      <div className="sit-links">
+        {[...source.months].reverse().map((month) => (
+          <a
+            key={month.month}
+            className="hr-pdf"
+            href={`/api/pdf/situacija/${projectId}/${month.month}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("situacijaItem", { number: month.number, month: docMonth(month.month, locale) })}
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}

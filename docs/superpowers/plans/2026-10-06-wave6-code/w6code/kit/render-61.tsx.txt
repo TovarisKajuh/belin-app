@@ -1,0 +1,35 @@
+// VERIFICATION KIT (scratchpad only). Task 6.1b: the six existing documents with the new chrome, offline.
+//   npx tsx --tsconfig tsconfig.scripts.json <scratch>/kit/render-61.tsx <out-dir>
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { renderDocument } from "@/lib/pdf/theme";
+import { InvoiceDocument } from "@/lib/pdf/invoice";
+import { AbnahmeDocument } from "@/lib/pdf/abnahme";
+import { abnahmeStrings, invoiceStrings } from "@/lib/pdf/strings";
+
+const out = process.argv[2];
+mkdirSync(out, { recursive: true });
+const logo = readFileSync("public/icons/icon-192.png");
+
+async function main(): Promise<void> {
+  writeFileSync(`${out}/invoice-61.pdf`, await renderDocument(InvoiceDocument({
+    number: "2026-014", issueDate: "01. 10. 2026", dueDate: "31. 10. 2026", servicePeriod: "21. 09. 2026 - 01. 10. 2026",
+    siteAddress: "Zgornji Brnik 130, 4210 Brnik",
+    supplier: { name: "Montaža Kos d.o.o.", address: "Kidričeva cesta 12, 4220 Škofja Loka", vatId: "SI87654321" },
+    customer: { name: "Solarna Gradnja d.o.o.", address: "Šmartinska cesta 152, 1000 Ljubljana", vatId: "SI12345678" },
+    iban: "SI56 0000 0000 0000 000",
+    lines: [{ description: "Izvedba del na projektu SE Hala Brnik", qty: null, unitPrice: null, total: "100.000,00 EUR" }],
+    totalNet: "100.000,00 EUR", vatMode: "reverse_charge", vatRateLabel: null, totalVat: null, totalGross: "100.000,00 EUR",
+    reverseChargeNote: "Obrnjena davčna obveznost po 76.a členu ZDDV-1",
+    issuer: { name: "Montaža Kos d.o.o.", logo }, s: invoiceStrings("sl"),
+  })));
+  writeFileSync(`${out}/abnahme-61.pdf`, await renderDocument(AbnahmeDocument({
+    projectName: "SE Hala Brnik", clientName: "Solarna Gradnja d.o.o.", contractorName: "Montaža Kos d.o.o.", siteAddress: "Zgornji Brnik 130, 4210 Brnik",
+    kindLabel: "Končni prevzem", conductedOn: "05. 10. 2026", attendees: null, declarationLabel: "Prevzeto s pridržki", penaltyReserved: true,
+    warrantyStart: "05. 10. 2026", note: "Zaključna dela na strehi 2 do 14. 10. 2026. ".repeat(4),
+    defects: Array.from({ length: 30 }, (_, i) => ({ description: `Manjka tesnilo, polje ${i + 1}.`, dueDate: "14. 10. 2026", agreementLabel: "Usklajeno" })),
+    epcSigner: { name: "Marko Golob", image: null }, subSigner: { name: "Boštjan Novak", image: null },
+    issuer: { name: "Solarna Gradnja d.o.o.", logo: null }, s: abnahmeStrings("sl"),
+  })));
+  console.log("ok");
+}
+main();

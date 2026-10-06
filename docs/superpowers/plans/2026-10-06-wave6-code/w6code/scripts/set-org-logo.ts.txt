@@ -1,0 +1,58 @@
+// Gives an organization a letterhead logo for its documents.
+//
+// ORCHESTRATOR ONLY: this writes to the one database that serves production.
+// There is no logo upload in Settings yet (debt, CHANGELOG 2026-10-06); this is
+// how the demo companies, and the buyer's company during the meeting (D2), get
+// their logo onto the naročilnica, the Zapisnik and the invoice.
+//
+//   npx tsx --tsconfig tsconfig.scripts.json --env-file=.env.local scripts/set-org-logo.ts <orgId> <logo.png|logo.jpg>
+//
+// The file goes to a NEW path every time (docs/<orgId>/logo/<uuid>.<ext>) and
+// the old one is left in place: a storage path is written once (DECISIONS
+// 2026-08-12), because Supabase keeps the old bytes on an overwrite.
+
+import { readFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { createClient } from "@supabase/supabase-js";
+import { imageSize } from "@/lib/pdf/image-size";
+
+const [orgId, file] = process.argv.slice(2);
+if (!orgId || !file || !/^[0-9a-f-]{36}$/i.test(orgId)) {
+  console.error("Usage: scripts/set-org-logo.ts <orgId> <logo.png|logo.jpg>");
+  process.exit(2);
+}
+
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!url || !key) {
+  console.error("Missing Supabase env vars: run with --env-file=.env.local");
+  process.exit(2);
+}
+const db = createClient(url, key, { auth: { persistSession: false } });
+
+async function main(): Promise<void> {
+  const bytes = readFileSync(file);
+  const size = imageSize(bytes);
+  if (!size) throw new Error("Only PNG and JPEG can be printed on a PDF");
+  if (bytes.byteLength > 1_500_000) throw new Error("Logo is over 1.5 MB; export it smaller");
+  const isPng = bytes[0] === 0x89;
+
+  const { data: org } = await db.from("organizations").select("id, name, logo_path").eq("id", orgId).maybeSingle();
+  if (!org) throw new Error(`No organization ${orgId}`);
+
+  const path = `${orgId}/logo/${randomUUID()}.${isPng ? "png" : "jpg"}`;
+  const { error: uploadError } = await db.storage
+    .from("docs")
+    .upload(path, bytes, { contentType: isPng ? "image/png" : "image/jpeg", upsert: false });
+  if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+
+  const { error } = await db.from("organizations").update({ logo_path: path }).eq("id", orgId);
+  if (error) throw new Error(`Could not set logo_path: ${error.message}`);
+
+  console.log(`${org.name}: logo ${size.width} x ${size.height} at ${path} (previous: ${org.logo_path ?? "none"})`);
+}
+
+main().catch((err) => {
+  console.error(err instanceof Error ? err.message : String(err));
+  process.exit(1);
+});

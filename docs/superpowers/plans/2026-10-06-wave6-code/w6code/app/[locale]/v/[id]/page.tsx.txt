@@ -1,0 +1,72 @@
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getVerifyView } from "@/lib/data/verify";
+import { docDate } from "@/lib/pdf/doc-format";
+import { HashCheck } from "@/components/docs/HashCheck";
+import { BelinMark } from "@/components/BelinMark";
+
+// The public authenticity page a document's QR opens. No sign-in: whoever holds
+// the paper may check it. It shows exactly five facts (getVerifyView) and a
+// local file check, and it is never indexed.
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
+export default async function VerifyPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+  const { locale, id } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("doc.verify");
+  const view = await getVerifyView(id);
+  const ui = locale === "de" || locale === "en" ? locale : "sl";
+
+  return (
+    <main className="belin-dark vf-wrap">
+      <div className="e-grain" aria-hidden />
+      <div className="vf-card">
+        <div className="vf-brand">
+          <BelinMark />
+          <span className="e-wm">BELIN</span>
+        </div>
+        <h1 className="vf-title">{t("title")}</h1>
+
+        {!view ? (
+          <p className="vf-note">{t("notFound")}</p>
+        ) : (
+          <>
+            <dl className="vf-facts">
+              <dt>{t("kind")}</dt>
+              <dd>{t(`kinds.${view.kind}`)}</dd>
+              <dt>{t("issuer")}</dt>
+              <dd>{view.issuerName}</dd>
+              <dt>{t("date")}</dt>
+              <dd>{docDate(view.issuedAt, ui, view.country)}</dd>
+              <dt>{t("status")}</dt>
+              <dd>
+                {t(`states.${view.state}`)}
+                {view.stateAt ? `, ${docDate(view.stateAt, ui, view.country)}` : ""}
+              </dd>
+              <dt>{t("hash")}</dt>
+              <dd className="vf-hash">{view.sha256 ?? t("pending")}</dd>
+            </dl>
+            <p className="vf-note">{t("privacy")}</p>
+            {view.sha256 ? (
+              <HashCheck
+                expected={view.sha256}
+                labels={{
+                  title: t("checkTitle"),
+                  hint: t("checkHint"),
+                  pick: t("pick"),
+                  match: t("match"),
+                  mismatch: t("mismatch"),
+                }}
+              />
+            ) : null}
+          </>
+        )}
+      </div>
+    </main>
+  );
+}

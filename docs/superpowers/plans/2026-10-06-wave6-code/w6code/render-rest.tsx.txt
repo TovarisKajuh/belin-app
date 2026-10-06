@@ -1,0 +1,49 @@
+import { readFileSync, writeFileSync } from "node:fs";
+import { renderDocument } from "@/lib/pdf/theme";
+import { SituacijaDocument, situacijaStrings } from "@/lib/pdf/situacija";
+import { OviraDocument, oviraStrings } from "@/lib/pdf/ovira";
+import { DodatnoDeloDocument, dodatnoDeloStrings } from "@/lib/pdf/dodatno-delo";
+import { situacijaFigures, situacijaMonths } from "@/lib/situacija-shared";
+import { docText } from "@/lib/pdf/strings";
+import { formatMoney } from "@/lib/po-shared";
+import { imageSize } from "@/lib/pdf/image-size";
+import { reverseChargeNote } from "@/lib/invoice-shared";
+const OUT = "C:/Users/ejand/AppData/Local/Temp/claude/C--DevEnv-belin-app/fc02d7f1-c666-4861-aeb4-7e5eac16051f/scratchpad/w6code/out";
+const pic = (n: string, c: string) => { const b = readFileSync(`C:/DevEnv/belin-app/assets/marketing/site/${n}`); const z = imageSize(b)!; return { bytes: b, width: z.width, height: z.height, caption: c }; };
+const items = [{ name: "Podkonstrukcija", unit: "kos", targetQty: 444, weight: 2 }, { name: "Moduli", unit: "kos", targetQty: 444, weight: 4 }, { name: "DC kabliranje", unit: "m", targetQty: 1000, weight: 1 }];
+const q = [{ item: 0, entryDate: "2026-09-21", qty: 300 }, { item: 0, entryDate: "2026-09-28", qty: 144 }, { item: 1, entryDate: "2026-09-29", qty: 120 }, { item: 1, entryDate: "2026-10-02", qty: 96 }, { item: 2, entryDate: "2026-10-02", qty: 140 }];
+const months = situacijaMonths(q.map((x) => x.entryDate));
+const f = situacijaFigures(100000, items, q, months[1]);
+const m = (n: number) => formatMoney(n, "sl");
+const n = (v: number) => new Intl.NumberFormat("sl", { maximumFractionDigits: 2 }).format(v);
+async function main() {
+  console.log(JSON.stringify(months), f.percentBefore, f.percentToDate, f.valueBefore, f.valueToDate, f.valueThisPeriod);
+  writeFileSync(`${OUT}/situacija.pdf`, await renderDocument(SituacijaDocument({
+    number: 2, periodLabel: "oktober 2026 (01. 10. 2026 - 31. 10. 2026)", poRef: "št. 1 z dne 15. 09. 2026", projectName: "SE Hala Brnik, 199,8 kWp", country: "si",
+    clientName: "Solarna Gradnja d.o.o.", contractorName: "AVESOL d.o.o.", siteAddress: "Zgornji Brnik 130, 4210 Brnik",
+    rows: f.rows.map((r) => [r.name, r.unit, n(r.targetQty), n(r.qtyBefore), n(r.qtyPeriod), n(r.qtyToDate), `${n(r.percentToDate)} %`]),
+    totals: [
+      { label: "Pogodbena vrednost (neto)", value: m(100000) },
+      { label: docText("sl", "doc.situacija.percentToDate", { date: "31. 10. 2026" }), value: `${n(f.percentToDate)} %` },
+      { label: docText("sl", "doc.situacija.valueToDate", { date: "31. 10. 2026" }), value: m(f.valueToDate) },
+      { label: docText("sl", "doc.situacija.previouslyBilled", { last: 1 }), value: m(f.valueBefore) },
+      { label: "Vrednost te situacije (neto)", value: m(f.valueThisPeriod) },
+      { label: "Za plačilo", value: m(f.valueThisPeriod), strong: true },
+    ],
+    reverseChargeNote: reverseChargeNote("si"), paymentPoLine: docText("sl", "doc.situacija.paymentPo", { terms: "30 dni od izdaje računa" }),
+    issuer: { name: "AVESOL d.o.o.", logo: null }, s: situacijaStrings("sl"),
+  })));
+  writeFileSync(`${OUT}/ovira.pdf`, await renderDocument(OviraDocument({
+    number: 1, projectName: "SE Hala Brnik, 199,8 kWp", siteAddress: "Zgornji Brnik 130, 4210 Brnik", clientName: "Solarna Gradnja d.o.o.", contractorName: "AVESOL d.o.o.",
+    poRef: "št. 1 z dne 15. 09. 2026", recordedAt: "01. 10. 2026 ob 10:14", recordedBy: "Luka Zupan", note: "Dostop do strehe je blokiran, dvigalo drugega izvajalca stoji na edinem dovozu. Čakamo od 7:30.",
+    photos: [pic("anlage-weit.jpg", "Fotografija 1")], issuer: { name: "AVESOL d.o.o.", logo: null }, s: oviraStrings("sl", "si"),
+  })));
+  writeFileSync(`${OUT}/co.pdf`, await renderDocument(DodatnoDeloDocument({
+    number: 1, title: "Zamenjava poškodovanih strešnih letev", description: "Pod kritino na strehi 2 so letve trhle na dolžini 14 m, zamenjati jih je treba pred montažo podkonstrukcije.",
+    amount: m(800), status: "approved", statusLabel: "Potrjeno", submittedOn: "24. 09. 2026 ob 15:41", submittedBy: "Luka Zupan", decidedLine: "Marko Golob, 25. 09. 2026 ob 08:12",
+    projectName: "SE Hala Brnik, 199,8 kWp", country: "si", clientName: "Solarna Gradnja d.o.o.", contractorName: "AVESOL d.o.o.", siteAddress: "Zgornji Brnik 130, 4210 Brnik",
+    photos: [pic("dach-weit.jpg", "Fotografija 1"), pic("dc-verkabelung.jpg", "Fotografija 2")], issuer: { name: "AVESOL d.o.o.", logo: null }, s: dodatnoDeloStrings("sl"),
+  })));
+  console.log("ok");
+}
+main();

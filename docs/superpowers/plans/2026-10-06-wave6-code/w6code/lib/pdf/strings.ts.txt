@@ -1,0 +1,251 @@
+// Document strings, resolved in the PROJECT's language rather than the
+// reader's.
+//
+// A naročilnica for a German site is a German document even when the person who
+// pressed the button had the app in Slovenian: the document is evidence between
+// two companies, and its language belongs to the job, not to the browser.
+//
+// @react-pdf components render outside React's tree and cannot call next-intl
+// hooks, so the catalogs are read directly here and handed to the document as a
+// plain object. Missing keys fall back to the key name rather than throwing: a
+// document with one odd label still beats a failed generation on a roof.
+
+import { lookupKey } from "@/lib/notify-shared";
+import sl from "@/messages/sl.json";
+import de from "@/messages/de.json";
+import en from "@/messages/en.json";
+import type { NarocilnicaStrings } from "@/lib/pdf/narocilnica";
+import type { RegieberichtStrings } from "@/lib/pdf/regiebericht";
+import type { CompletionStrings } from "@/lib/pdf/completion";
+import type { AbnahmeStrings } from "@/lib/pdf/abnahme";
+import type { InvoiceStrings } from "@/lib/pdf/invoice";
+
+export type DocLocale = "sl" | "de" | "en";
+
+const CATALOGS: Record<DocLocale, unknown> = { sl, de, en };
+
+export function docString(locale: DocLocale, key: string): string {
+  return lookupKey(CATALOGS[locale], key) ?? lookupKey(CATALOGS.sl, key) ?? key;
+}
+
+/**
+ * A document string with its {placeholders} filled. Plain replacement, not ICU:
+ * document strings carry no plurals, and a value that itself contains braces
+ * (a project named "{x}") must print as typed rather than be parsed.
+ */
+export function docText(
+  locale: DocLocale,
+  key: string,
+  values: Record<string, string | number> = {},
+): string {
+  let out = docString(locale, key);
+  for (const [name, value] of Object.entries(values)) {
+    out = out.split(`{${name}}`).join(String(value));
+  }
+  return out;
+}
+
+/** The project's language as a document locale; anything unknown prints Slovenian. */
+export function docLocaleOf(language: string | null | undefined): DocLocale {
+  return language === "de" || language === "en" ? language : "sl";
+}
+
+/** The naročilnica strings. `country` is the SITE's and picks the contract-basis line. */
+export function poStrings(locale: DocLocale, country: string | null | undefined): NarocilnicaStrings {
+  const t = (key: string) => docString(locale, key);
+  return {
+    title: t("po.title"),
+    docNo: t("po.doc.docNo"),
+    orderer: t("po.doc.orderer"),
+    contractor: t("po.doc.contractor"),
+    vatId: t("po.doc.vatId"),
+    site: t("po.doc.site"),
+    date: t("po.doc.date"),
+    deadline: t("po.doc.deadline"),
+    paymentTerms: t("po.doc.paymentTerms"),
+    regieRate: t("po.doc.regieRate"),
+    perHour: t("po.doc.perHour"),
+    colDescription: t("po.doc.colDescription"),
+    colQty: t("po.doc.colQty"),
+    colUnitPrice: t("po.doc.colUnitPrice"),
+    colTotal: t("po.doc.colTotal"),
+    totalNet: t("po.doc.totalNet"),
+    acceptanceTitle: t("po.doc.acceptanceTitle"),
+    acceptanceBody: t("po.doc.acceptanceBody"),
+    acceptedBy: t("doc.po.acceptedBy"),
+    acceptedAt: t("doc.po.acceptedAt"),
+    hashLabel: t("po.doc.hashLabel"),
+    generated: t("po.doc.generated"),
+    termsTitle: t("doc.po.termsTitle"),
+    regieClause: t("doc.po.regieClause"),
+    basis: t(`doc.po.basis.${country === "de" || country === "at" ? country : "si"}`),
+    acceptedTitle: t("doc.po.acceptedTitle"),
+    acceptedBody: t("doc.po.acceptedBody"),
+    acceptedHash: t("doc.po.acceptedHash"),
+    page: t("doc.page"),
+  };
+}
+
+export function regieStrings(locale: DocLocale): RegieberichtStrings {
+  const t = (key: string) => docString(locale, key);
+  return {
+    title: t("hours.doc.title"),
+    docNo: t("hours.doc.docNo"),
+    project: t("hours.doc.project"),
+    contractor: t("hours.doc.contractor"),
+    submitted: t("hours.doc.submitted"),
+    status: t("hours.doc.status"),
+    decidedBy: t("hours.doc.decidedBy"),
+    colDate: t("hours.doc.colDate"),
+    colPerson: t("hours.doc.colPerson"),
+    colHours: t("hours.doc.colHours"),
+    colDescription: t("hours.doc.colDescription"),
+    totalHours: t("hours.doc.totalHours"),
+    hoursUnit: t("hours.doc.hoursUnit"),
+    deemedNote: t("hours.doc.deemedNote"),
+    generated: t("hours.doc.generated"),
+    rate: t("doc.regie.rate"),
+    noRate: t("doc.regie.noRate"),
+    colAmount: t("doc.regie.colAmount"),
+    totalAmount: t("doc.regie.totalAmount"),
+    confirmTitle: t("doc.regie.confirmTitle"),
+    approvedBy: t("doc.regie.approvedBy"),
+    rejectedBy: t("doc.regie.rejectedBy"),
+    deemedAt: t("doc.regie.deemedAt"),
+    pending: t("doc.regie.pending"),
+    page: t("doc.page"),
+  };
+}
+
+/** Status labels for documents, resolved in the project's language. */
+export function sheetStatusLabel(locale: DocLocale, status: string): string {
+  return docString(locale, `hours.status.${status}`);
+}
+
+export function completionStrings(locale: DocLocale): CompletionStrings {
+  const t = (key: string) => docString(locale, key);
+  return {
+    title: t("final.doc.title"),
+    project: t("final.doc.project"),
+    client: t("final.doc.client"),
+    contractor: t("final.doc.contractor"),
+    site: t("final.doc.site"),
+    period: t("final.doc.period"),
+    power: t("final.doc.power"),
+    days: t("final.doc.days"),
+    totalHours: t("final.doc.totalHours"),
+    registers: t("final.doc.registers"),
+    hoursRegister: t("final.doc.hoursRegister"),
+    coRegister: t("final.doc.coRegister"),
+    incidentRegister: t("final.doc.incidentRegister"),
+    colNo: t("final.doc.colNo"),
+    colHours: t("final.doc.colHours"),
+    colStatus: t("final.doc.colStatus"),
+    colTitle: t("final.doc.colTitle"),
+    colAmount: t("final.doc.colAmount"),
+    colDate: t("final.doc.colDate"),
+    colKind: t("final.doc.colKind"),
+    colNote: t("final.doc.colNote"),
+    none: t("final.doc.none"),
+    generated: t("final.doc.generated"),
+    photos: t("final.doc.photos"),
+    incidents: t("final.doc.incidents"),
+    summary: t("final.doc.summary"),
+    sheetsCount: t("final.doc.sheetsCount"),
+    extrasCount: t("final.doc.extrasCount"),
+    incidentsCount: t("final.doc.incidentsCount"),
+    dayList: t("final.doc.dayList"),
+    crew: t("final.doc.crew"),
+    page: t("doc.page"),
+    day: {
+      // Overwritten by the caller with the site-appropriate diary title.
+      title: t("final.diaryTitleSi"),
+      reportNo: t("final.dayDoc.reportNo"),
+      date: t("final.dayDoc.date"),
+      weather: t("final.dayDoc.weather"),
+      headcount: t("final.dayDoc.headcount"),
+      work: t("final.dayDoc.work"),
+      quantities: t("final.dayDoc.quantities"),
+      incidents: t("final.dayDoc.incidents"),
+      photos: t("final.dayDoc.photos"),
+      author: t("final.dayDoc.author"),
+      signature: t("final.dayDoc.signature"),
+      noWeather: t("final.dayDoc.noWeather"),
+      people: t("final.dayDoc.people"),
+      generated: t("final.dayDoc.generated"),
+      client: t("doc.day.client"),
+      contractor: t("doc.day.contractor"),
+      site: t("doc.day.site"),
+      photosShown: t("doc.day.photosShown"),
+      signPrepared: t("doc.day.signPrepared"),
+      signReceived: t("doc.day.signReceived"),
+      page: t("doc.page"),
+    },
+  };
+}
+
+export function abnahmeStrings(locale: DocLocale): AbnahmeStrings {
+  const t = (key: string) => docString(locale, key);
+  return {
+    title: t("final.doc.title2"),
+    project: t("final.doc.project"),
+    client: t("final.doc.client"),
+    contractor: t("final.doc.contractor"),
+    site: t("final.doc.site"),
+    kind: t("final.doc.kind"),
+    date: t("final.doc.date"),
+    attendees: t("final.doc.attendees"),
+    defects: t("final.doc.defects"),
+    colDefect: t("final.doc.colDefect"),
+    colDue: t("final.doc.colDue"),
+    colAgreement: t("final.doc.colAgreement"),
+    noDefects: t("final.doc.noDefects"),
+    declaration: t("final.doc.declaration"),
+    penaltyTitle: t("final.doc.penaltyTitle"),
+    // The reservation sentence itself is NOT a document string: it is the same
+    // legal text the checkbox promises, so both read from one key.
+    penaltySentence: t("final.penaltySentence"),
+    warranty: t("final.doc.warranty"),
+    note: t("final.doc.note"),
+    signEpc: t("final.doc.signEpc"),
+    signSub: t("final.doc.signSub"),
+    generated: t("final.doc.generated"),
+    poRef: t("doc.abnahme.poRef"),
+    poDeadline: t("doc.abnahme.poDeadline"),
+    lastReport: t("doc.abnahme.lastReport"),
+    colNo: t("doc.abnahme.colNo"),
+    colPhoto: t("doc.abnahme.colPhoto"),
+    photoYes: t("doc.abnahme.photoYes"),
+    reservation: docText(locale, "doc.abnahme.reservation", { disputed: t("final.disputed") }),
+    basisSi: t("doc.abnahme.basisSi"),
+    annexTitle: t("doc.abnahme.annexTitle"),
+    page: t("doc.page"),
+  };
+}
+
+export function invoiceStrings(locale: DocLocale): InvoiceStrings {
+  const t = (key: string) => docString(locale, key);
+  return {
+    title: t("invoice.title"),
+    docNo: t("invoice.doc.docNo"),
+    supplier: t("invoice.doc.supplier"),
+    customer: t("invoice.doc.customer"),
+    vatId: t("invoice.doc.vatId"),
+    issueDate: t("invoice.doc.issueDate"),
+    dueDate: t("invoice.doc.dueDate"),
+    servicePeriod: t("invoice.doc.servicePeriod"),
+    site: t("invoice.doc.site"),
+    colDescription: t("invoice.doc.colDescription"),
+    colQty: t("invoice.doc.colQty"),
+    colUnitPrice: t("invoice.doc.colUnitPrice"),
+    colTotal: t("invoice.doc.colTotal"),
+    totalNet: t("invoice.doc.totalNet"),
+    vat: t("invoice.doc.vat"),
+    totalGross: t("invoice.doc.totalGross"),
+    iban: t("invoice.doc.iban"),
+    reverseChargeTitle: t("invoice.doc.reverseChargeTitle"),
+    generated: t("invoice.doc.generated"),
+    regieLine: t("invoice.doc.regieLine"),
+    page: t("doc.page"),
+  };
+}

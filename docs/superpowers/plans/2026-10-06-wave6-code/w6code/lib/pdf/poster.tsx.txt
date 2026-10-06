@@ -1,0 +1,138 @@
+// The site poster: "Prijava na gradbišče".
+//
+// One A4 sheet the subcontractor tapes to the site container. A new crew member
+// points a phone camera at the code and lands on this project's crew link, in
+// the project's language, with nothing to install and nobody to ask.
+//
+// THE CODE IS THE REAL CREW LINK, a shared secret (DECISIONS 2026-07-17): this
+// document is served only to the subcontractor's office (canIssueCrewLink), the
+// same people who may copy that link in Settings. In the demo it is shown, not
+// handed over to be scanned: per D18 the buyer's own phone joins through the
+// Demo Door's guest QR, never through the real crew link.
+
+import type { ReactNode } from "react";
+import { Circle, Document, Image, Page, Path, Rect, Svg, Text, View } from "@react-pdf/renderer";
+import { C, Footer, styles, type DocIssuer } from "@/lib/pdf/theme";
+import { fitBox, imageSize } from "@/lib/pdf/image-size";
+import { qrViewBox, type QrSvg } from "@/lib/qr";
+
+export interface PosterStrings {
+  title: string;
+  client: string;
+  contractor: string;
+  scan: string;
+  step1: string;
+  step2: string;
+  step3: string;
+  noApp: string;
+  generated: string;
+}
+
+export interface PosterInput {
+  projectName: string;
+  siteAddress: string | null;
+  clientName: string;
+  contractorName: string | null;
+  /** The full crew URL the code encodes, printed small under it for typing by hand. */
+  url: string;
+  qr: QrSvg;
+  /** The subcontractor. */
+  issuer: DocIssuer;
+  s: PosterStrings;
+}
+
+const QR_SIDE = 300;
+const ICON = 34;
+
+function PhoneIcon() {
+  return (
+    <Svg width={ICON} height={ICON} viewBox="0 0 34 34">
+      <Rect x={9} y={2} width={16} height={30} rx={3} stroke={C.ink} strokeWidth={2} fill="none" />
+      <Rect x={13} y={9} width={3} height={3} fill={C.ink} />
+      <Rect x={18} y={9} width={3} height={3} fill={C.ink} />
+      <Rect x={13} y={14} width={3} height={3} fill={C.ink} />
+      <Rect x={18} y={16} width={3} height={3} fill={C.ink} />
+      <Rect x={15} y={27} width={4} height={1.5} fill={C.ink} />
+    </Svg>
+  );
+}
+
+function MailIcon() {
+  return (
+    <Svg width={ICON} height={ICON} viewBox="0 0 34 34">
+      <Rect x={3} y={8} width={28} height={19} rx={2} stroke={C.ink} strokeWidth={2} fill="none" />
+      <Path d="M4 10 L17 19 L30 10" stroke={C.ink} strokeWidth={2} fill="none" />
+    </Svg>
+  );
+}
+
+function CameraIcon() {
+  return (
+    <Svg width={ICON} height={ICON} viewBox="0 0 34 34">
+      <Rect x={3} y={10} width={28} height={18} rx={3} stroke={C.ink} strokeWidth={2} fill="none" />
+      <Path d="M11 10 L13 6 L21 6 L23 10" stroke={C.ink} strokeWidth={2} fill="none" />
+      <Circle cx={17} cy={19} r={5} stroke={C.ink} strokeWidth={2} fill="none" />
+    </Svg>
+  );
+}
+
+function Step({ n, icon, text }: { n: number; icon: ReactNode; text: string }) {
+  return (
+    <View style={{ width: "31%", alignItems: "center" }}>
+      {icon}
+      <Text style={{ fontSize: 11, fontWeight: 700, marginTop: 6 }}>{String(n)}</Text>
+      <Text style={[styles.body, { fontSize: 10.5, textAlign: "center", marginTop: 2 }]}>{text}</Text>
+    </View>
+  );
+}
+
+export function PosterDocument(input: PosterInput) {
+  const { s, qr } = input;
+  const logoSize = input.issuer.logo ? imageSize(input.issuer.logo) : null;
+  const logoBox = logoSize ? fitBox(logoSize, 140, 36) : null;
+  const parties = [
+    `${s.client}: ${input.clientName}`,
+    input.contractorName ? `${s.contractor}: ${input.contractorName}` : null,
+  ]
+    .filter(Boolean)
+    .join("   ·   ");
+
+  return (
+    <Document title={`${s.title}, ${input.projectName}`}>
+      <Page size="A4" style={styles.page}>
+        <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", minHeight: 36 }}>
+          {input.issuer.logo && logoBox ? (
+            <Image src={input.issuer.logo} style={{ width: logoBox.width, height: logoBox.height, marginRight: 8 }} />
+          ) : null}
+          <Text style={styles.issuerName}>{input.issuer.name}</Text>
+        </View>
+
+        <Text style={{ fontSize: 34, fontWeight: 700, letterSpacing: -0.6, marginTop: 8 }}>{s.title}</Text>
+        <Text style={{ fontSize: 19, fontWeight: 700, marginTop: 10 }}>{input.projectName}</Text>
+        {input.siteAddress ? (
+          <Text style={{ fontSize: 12, color: C.inkSoft, marginTop: 4 }}>{input.siteAddress}</Text>
+        ) : null}
+        <Text style={{ fontSize: 10, color: C.inkSoft, marginTop: 6 }}>{parties}</Text>
+
+        <View style={{ alignItems: "center", marginTop: 22 }}>
+          <Svg width={QR_SIDE} height={QR_SIDE} viewBox={qrViewBox(qr)}>
+            <Rect x={-4} y={-4} width={qr.size + 8} height={qr.size + 8} fill="#ffffff" />
+            <Path d={qr.path} fill="#000000" />
+          </Svg>
+          <Text style={{ fontSize: 15, fontWeight: 700, marginTop: 10 }}>{s.scan}</Text>
+          <Text style={{ fontSize: 7, color: C.muted, marginTop: 4 }}>{input.url}</Text>
+        </View>
+
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 26 }}>
+          <Step n={1} icon={<PhoneIcon />} text={s.step1} />
+          <Step n={2} icon={<MailIcon />} text={s.step2} />
+          <Step n={3} icon={<CameraIcon />} text={s.step3} />
+        </View>
+
+        <Text style={{ fontSize: 10, color: C.inkSoft, textAlign: "center", marginTop: 18 }}>{s.noApp}</Text>
+
+        <Footer generatedLabel={s.generated} />
+      </Page>
+    </Document>
+  );
+}

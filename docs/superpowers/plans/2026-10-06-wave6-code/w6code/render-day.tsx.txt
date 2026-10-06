@@ -1,0 +1,82 @@
+// Scratch: renders the new day page and completion report offline, no database.
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { renderDocument } from "@/lib/pdf/theme";
+import { DayReportDocument, type DayReportData } from "@/lib/pdf/day-report";
+import { CompletionDocument } from "@/lib/pdf/completion";
+import { completionStrings, docString, docText } from "@/lib/pdf/strings";
+import { imageSize } from "@/lib/pdf/image-size";
+import type { DocPhoto } from "@/lib/pdf/photos";
+
+const OUT = "C:/Users/ejand/AppData/Local/Temp/claude/C--DevEnv-belin-app/fc02d7f1-c666-4861-aeb4-7e5eac16051f/scratchpad/w6code/out";
+mkdirSync(OUT, { recursive: true });
+
+const photo = (name: string, caption: string): DocPhoto => {
+  const bytes = readFileSync(`C:/DevEnv/belin-app/assets/marketing/site/${name}`);
+  const size = imageSize(bytes)!;
+  return { bytes, width: size.width, height: size.height, caption };
+};
+const logo = readFileSync("C:/DevEnv/belin-app/public/icons/icon-192.png");
+
+const s = completionStrings("sl");
+s.day.title = docString("sl", "final.diaryTitleSi");
+
+const day: DayReportData = {
+  reportNo: 4,
+  dateIso: "2026-10-01",
+  dateLabel: "četrtek, 01. 10. 2026",
+  dateShort: "01. 10. 2026",
+  weatherLabel: "Delno oblačno, 14 °C",
+  headcount: 5,
+  entries: [
+    {
+      note: "Montaža modulov v vrsti 2 in 3. Na polju C manjka 14 srednjih sponk, dobava obljubljena za jutri. Kabelska trasa položena po navodilu vodje gradbišča, krovec preboja 4 še ni zatesnil, zato tam ni modulov.",
+      author: "Luka Zupan",
+      quantities: ["Moduli: 96 kos", "DC kabliranje: 140 m"],
+    },
+  ],
+  incidents: [{ kindLabel: "Ovira", note: "Dostop do strehe blokiran zaradi dostave, 2 uri čakanja." }],
+  photos: [
+    photo("crew-montage.jpg", docText("sl", "doc.day.photoTaken", { time: "09:12" })),
+    photo("dc-verkabelung.jpg", docText("sl", "doc.day.photoTaken", { time: "11:40" })),
+    photo("unterkonstruktion.jpg", docText("sl", "doc.day.photoSubmitted", { time: "15:02" })),
+    photo("crew-module.jpg", docText("sl", "doc.day.photoTaken", { time: "13:25" })),
+  ],
+  photoTotal: 6,
+};
+const meta = {
+  projectName: "SE Hala Brnik, 199,8 kWp",
+  clientName: "Solarna Gradnja d.o.o.",
+  contractorName: "AVESOL d.o.o.",
+  siteAddress: "Zgornji Brnik 130, 4210 Brnik",
+};
+
+async function main() {
+  writeFileSync(
+    `${OUT}/day-sl.pdf`,
+    await renderDocument(DayReportDocument({ day, meta, s: s.day, issuer: { name: "AVESOL d.o.o.", logo } })),
+  );
+  const days = [1, 2, 3, 4].map((n) => ({ ...day, reportNo: n, photos: n % 2 ? day.photos : day.photos.slice(1, 2) }));
+  writeFileSync(
+    `${OUT}/completion-sl.pdf`,
+    await renderDocument(
+      CompletionDocument({
+        projectName: meta.projectName,
+        clientName: meta.clientName,
+        contractorName: meta.contractorName,
+        siteAddress: meta.siteAddress,
+        periodLabel: "28. 09. 2026 - 01. 10. 2026",
+        powerLabel: "199,8 kWp",
+        dayCount: days.length,
+        totalHours: 14,
+        days,
+        hoursRegister: [{ number: 1, hours: 14, status: "Potrjeno" }],
+        coRegister: [{ number: 1, title: "Zamenjava letev", amount: "800,00 EUR", status: "Potrjeno" }],
+        incidentRegister: [{ date: "01. 10. 2026", kindLabel: "Ovira", note: "Dostop blokiran" }],
+        issuer: { name: "AVESOL d.o.o.", logo: null },
+        s,
+      }),
+    ),
+  );
+  console.log("rendered");
+}
+main();

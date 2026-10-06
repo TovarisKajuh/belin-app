@@ -1,0 +1,214 @@
+// The public sample documents: every Belin document type, fetched through the
+// REAL routes with real sessions, checked, and written to public/samples/sl/.
+//
+// Wave 7's landing page links these files, and everything under public/ is
+// served the moment main moves, so this script REFUSES to write anything that
+// could carry a real third party onto the public site:
+//
+//   1. Every organization on the project must be a demo organization
+//      (organizations.is_demo, Task 2.1).
+//   2. The client must carry exactly the invented name passed as --expect-epc,
+//      so a personalized demo (the buyer's own name, D2) can never be sampled.
+//   3. No text layer may contain AVESOL's real price (D3), the forbidden real
+//      company name, or an en or em dash.
+//   4. The invoice (bank details) is written only with --with-invoice.
+//
+// Usage, orchestrator only, dev server running on --base:
+//   node scripts/marketing/samples.mjs --project <uuid> --epc-email <email> --sub-email <email> \
+//     --expect-epc "<invented client name>" [--base http://localhost:3000] [--png <dir>] [--with-invoice]
+//
+// It writes one login_tokens row per persona (the same as marketing:shoot),
+// nothing else.
+
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { createHash, randomBytes } from "node:crypto";
+import { resolve } from "node:path";
+import { chromium } from "playwright";
+import { createClient } from "@supabase/supabase-js";
+import { extractText, getDocumentProxy } from "unpdf";
+
+const args = Object.fromEntries(
+  process.argv.slice(2).reduce((pairs, arg, i, all) => {
+    if (arg.startsWith("--")) pairs.push([arg.slice(2), all[i + 1] && !all[i + 1].startsWith("--") ? all[i + 1] : true]);
+    return pairs;
+  }, []),
+);
+for (const required of ["project", "epc-email", "sub-email", "expect-epc"]) {
+  if (!args[required] || args[required] === true) {
+    console.error(`Missing --${required}`);
+    process.exit(2);
+  }
+}
+const BASE = typeof args.base === "string" ? args.base : "http://localhost:3000";
+const OUT = resolve("public/samples/sl");
+const PNG = typeof args.png === "string" ? resolve(args.png) : null;
+
+const env = Object.fromEntries(
+  readFileSync(".env.local", "utf8")
+    .split(/\r?\n/)
+    .filter((l) => l && !l.startsWith("#") && l.includes("="))
+    .map((l) => {
+      const i = l.indexOf("=");
+      return [l.slice(0, i).trim(), l.slice(i + 1).trim()];
+    }),
+);
+const db = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+
+// ---- 1. Whose documents are these? --------------------------------------------
+const { data: project, error: projectError } = await db
+  .from("projects")
+  .select("id, name, language, epc_org_id, sub_org_id")
+  .eq("id", args.project)
+  .maybeSingle();
+if (projectError || !project) throw new Error(`No project ${args.project}: ${projectError?.message ?? "not found"}`);
+if (project.language !== "sl") throw new Error(`Project language is ${project.language}; these are the Slovenian samples`);
+
+const { data: orgs, error: orgError } = await db
+  .from("organizations")
+  .select("id, name, is_demo")
+  .in("id", [project.epc_org_id, project.sub_org_id].filter(Boolean));
+if (orgError) throw new Error(`Could not read organizations (is Task 2.1's is_demo column there?): ${orgError.message}`);
+const epc = orgs.find((o) => o.id === project.epc_org_id);
+if (orgs.some((o) => o.is_demo !== true)) throw new Error("A party on this project is not a demo organization. Refusing.");
+if (epc?.name !== args["expect-epc"]) {
+  throw new Error(`The client is "${epc?.name}", not the invented "${args["expect-epc"]}". Personalized demo? Refusing.`);
+}
+
+// ---- 2. Sessions, exactly as a person gets one --------------------------------
+async function session(browser, email) {
+  const raw = randomBytes(32).toString("base64url");
+  const { data: person } = await db.from("people").select("id").ilike("email", email).maybeSingle();
+  if (!person) throw new Error(`No person ${email}`);
+  const { error } = await db.from("login_tokens").insert({
+    person_id: person.id,
+    token_hash: createHash("sha256").update(raw, "utf8").digest("hex"),
+    expires_at: new Date(Date.now() + 15 * 60_000).toISOString(),
+  });
+  if (error) throw new Error(error.message);
+  const context = await browser.newContext({ locale: "sl-SI" });
+  const page = await context.newPage();
+  await page.goto(`${BASE}/sl/auth/verify/${raw}`, { waitUntil: "domcontentloaded", timeout: 120_000 });
+  await page.getByRole("button").first().click();
+  await page.waitForURL((url) => !url.pathname.includes("/auth/verify"), { timeout: 90_000 });
+  await page.close();
+  return context;
+}
+
+// ---- 3. What to fetch ----------------------------------------------------------
+const pid = project.id;
+const latest = async (table, select, filters = (q) => q, order = "created_at") => {
+  const { data } = await filters(db.from(table).select(select).eq("project_id", pid))
+    .order(order, { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data;
+};
+
+const po = await latest("purchase_orders", "id, status", (q) => q.in("status", ["sent", "accepted"]), "number");
+const day = await latest("daily_entries", "entry_date", (q) => q, "entry_date");
+const sheet = await latest("hour_sheets", "id", (q) => q.neq("status", "draft"), "number");
+const co = await latest("change_orders", "id", (q) => q, "number");
+const obstruction = await latest("incidents", "id", (q) => q.eq("kind", "obstruction"));
+const acceptance = await latest("acceptances", "id", (q) => q.eq("status", "signed"));
+const report = await latest("generated_documents", "id", (q) => q.eq("kind", "completion_report").neq("storage_path", "pending"));
+const invoice = await latest("invoices", "id");
+const months = [
+  ...new Set(
+    ((await db.from("daily_entries").select("entry_date").eq("project_id", pid)).data ?? []).map((r) => r.entry_date.slice(0, 7)),
+  ),
+].sort();
+
+// [file name, route, who, required for the gate]
+const targets = [
+  ["narocilnica", po && `/api/pdf/po/${po.id}`, "sub", true],
+  ["dnevno-porocilo", day && `/api/pdf/day/${pid}/${day.entry_date}`, "epc", true],
+  ["porocilo-o-rezijskih-urah", sheet && `/api/pdf/regie/${sheet.id}`, "epc", true],
+  ["zahtevek-za-dodatno-delo", co && `/api/pdf/co/${co.id}`, "epc", true],
+  ["plakat-prijava-na-gradbisce", `/api/pdf/poster/${pid}`, "sub", true],
+  ["zapisnik-o-prevzemu", acceptance && `/api/pdf/abnahme/${acceptance.id}`, "epc", true],
+  ["zakljucno-porocilo", report && `/api/pdf/report/${report.id}`, "epc", true],
+  ["zacasna-situacija", months.length > 0 && `/api/pdf/situacija/${pid}/${months[months.length - 1]}`, "sub", false],
+  ["obvestilo-o-oviri", obstruction && `/api/pdf/ovira/${obstruction.id}`, "epc", false],
+  ...(args["with-invoice"] ? [["racun", invoice && `/api/pdf/invoice/${invoice.id}`, "sub", true]] : []),
+];
+
+// ---- 4. Fetch, check, write ----------------------------------------------------
+// The last pattern is the en dash and the em dash, written as escapes.
+const FORBIDDEN = [/118\.500/, /48,00 EUR/, /Sonce Energija/i, /[\u2013\u2014]/];
+const browser = await chromium.launch();
+const contexts = { epc: await session(browser, args["epc-email"]), sub: await session(browser, args["sub-email"]) };
+mkdirSync(OUT, { recursive: true });
+if (PNG) mkdirSync(PNG, { recursive: true });
+
+const problems = [];
+const written = [];
+const note = (required, message) => (required ? problems.push(message) : console.log(message));
+for (const [name, route, who, required] of targets) {
+  if (!route) {
+    note(required, `MANJKA ${name}: no source row on this project`);
+    continue;
+  }
+  const response = await contexts[who].request.get(`${BASE}${route}`);
+  if (response.status() !== 200) {
+    note(required, `${name}: HTTP ${response.status()} for ${route}`);
+    continue;
+  }
+  const found = [];
+  const disposition = response.headers()["content-disposition"] ?? "";
+  if (!disposition.includes("filename*=UTF-8''")) found.push(`${name}: no RFC 5987 filename (${disposition})`);
+  const bytes = Buffer.from(await response.body());
+  const pdf = await getDocumentProxy(new Uint8Array(bytes));
+  const { text } = await extractText(pdf, { mergePages: true });
+  const flat = String(text).replace(/\s+/g, " ");
+  for (const pattern of FORBIDDEN) if (pattern.test(flat)) found.push(`${name}: text matches ${pattern}`);
+  if (!flat.includes("Stran 1 od")) found.push(`${name}: no page number`);
+  // A document that failed a check is NEVER written under public/.
+  if (found.length > 0) {
+    problems.push(...found);
+    continue;
+  }
+  writeFileSync(`${OUT}/${name}.pdf`, bytes);
+  written.push([name, bytes]);
+  console.log(`${name}.pdf ${bytes.length} bytes, ${pdf.numPages} pages`);
+}
+
+// ---- 5. Optional: rasterize every page for LOOKING at -------------------------
+if (PNG && written.length > 0) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 2000 } })).newPage();
+  await page.route("http://raster.local/**", (route) => {
+    const url = route.request().url();
+    if (url.includes("/pdfjs/")) {
+      return route.fulfill({ body: readFileSync(resolve("node_modules/pdfjs-dist/build", url.split("/pdfjs/")[1])), contentType: "text/javascript" });
+    }
+    const hit = written.find(([n]) => url.endsWith(`/${n}.pdf`));
+    if (hit) return route.fulfill({ body: hit[1], contentType: "application/pdf" });
+    return route.fulfill({ body: '<!doctype html><meta charset="utf-8"><canvas id="c"></canvas>', contentType: "text/html" });
+  });
+  await page.goto("http://raster.local/index.html");
+  for (const [name] of written) {
+    const count = await page.evaluate(async (n) => {
+      const pdfjs = await import("/pdfjs/pdf.mjs");
+      pdfjs.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.mjs";
+      window.__doc = await pdfjs.getDocument({ url: `/${n}.pdf` }).promise;
+      return window.__doc.numPages;
+    }, name);
+    for (let p = 1; p <= count; p++) {
+      await page.evaluate(async (n) => {
+        const pg = await window.__doc.getPage(n);
+        const vp = pg.getViewport({ scale: 1.4 });
+        const c = document.getElementById("c");
+        c.width = Math.ceil(vp.width);
+        c.height = Math.ceil(vp.height);
+        await pg.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+      }, p);
+      writeFileSync(`${PNG}/${name}-p${p}.png`, await page.locator("#c").screenshot({ type: "png" }));
+    }
+  }
+}
+
+await browser.close();
+if (problems.length > 0) {
+  console.error(`\nNOT READY FOR PUBLIC:\n- ${problems.join("\n- ")}`);
+  process.exit(1);
+}
+console.log(`\n${written.length} samples in public/samples/sl/`);

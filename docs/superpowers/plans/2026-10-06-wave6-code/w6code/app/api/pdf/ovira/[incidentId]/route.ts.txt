@@ -1,0 +1,98 @@
+import { createAdminClient } from "@/lib/supabase/admin";
+import { isUuid } from "@/lib/actor-shared";
+import { documentReader, notFound, pdfResponse } from "@/lib/data/doc-access";
+import { OviraDocument, oviraStrings } from "@/lib/pdf/ovira";
+import { docLocaleOf, docText } from "@/lib/pdf/strings";
+import { docDate, docDateTime } from "@/lib/pdf/doc-format";
+import { contentDisposition } from "@/lib/pdf/filename";
+import { downloadDocPhotos } from "@/lib/pdf/photo-data";
+import { loadIssuer } from "@/lib/pdf/issuer";
+import { renderDocument } from "@/lib/pdf/theme";
+
+// The written notice of an obstruction, from one incident of kind obstruction.
+// Rain and ordinary incidents get no notice: weather normal for the season is
+// not an obstacle the client answers for.
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function GET(_request: Request, { params }: { params: Promise<{ incidentId: string }> }) {
+  const { incidentId } = await params;
+  if (!isUuid(incidentId)) return notFound();
+
+  const db = createAdminClient();
+  const { data: incident } = await db
+    .from("incidents")
+    .select("id, project_id, kind, note, created_at, people (full_name), incident_photos (storage_path, sort_order)")
+    .eq("id", incidentId)
+    .maybeSingle();
+  if (!incident || incident.kind !== "obstruction") return notFound();
+
+  const reader = await documentReader(incident.project_id);
+  if (!reader.ok) return reader.response;
+
+  const [{ data: project }, { data: earlier }, { data: po }] = await Promise.all([
+    db
+      .from("projects")
+      .select("name, language, country, sub_org_id, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)")
+      .eq("id", incident.project_id)
+      .maybeSingle(),
+    // The notice number: this obstruction's position among the project's.
+    db
+      .from("incidents")
+      .select("id")
+      .eq("project_id", incident.project_id)
+      .eq("kind", "obstruction")
+      .lte("created_at", incident.created_at),
+    db
+      .from("purchase_orders")
+      .select("number, sent_at, created_at")
+      .eq("project_id", incident.project_id)
+      .eq("status", "accepted")
+      .order("number", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  if (!project) return notFound();
+
+  const locale = docLocaleOf(project.language);
+  const country = project.country ?? "si";
+  const s = oviraStrings(locale, country);
+  const number = Math.max(1, (earlier ?? []).length);
+
+  const photos = await downloadDocPhotos(
+    db,
+    (incident.incident_photos ?? [])
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .slice(0, 6)
+      .map((photo, i) => ({ path: photo.storage_path, caption: docText(locale, "doc.co.photoCaption", { n: i + 1 }) })),
+  );
+
+  const siteAddress = [project.address_street, [project.address_zip, project.address_city].filter(Boolean).join(" ")]
+    .filter((part) => part && part.trim())
+    .join(", ");
+
+  const buffer = await renderDocument(
+    OviraDocument({
+      number,
+      projectName: project.name,
+      siteAddress: siteAddress || null,
+      clientName: project.epc?.name ?? "",
+      contractorName: project.sub?.name ?? null,
+      poRef: po
+        ? docText(locale, "doc.abnahme.poRefValue", {
+            number: po.number,
+            date: docDate(po.sent_at ?? po.created_at, locale, country),
+          })
+        : null,
+      recordedAt: docDateTime(incident.created_at, locale, country),
+      recordedBy: incident.people?.full_name ?? null,
+      note: incident.note,
+      photos,
+      issuer: await loadIssuer(db, project.sub_org_id),
+      s,
+    }),
+  );
+
+  return pdfResponse(buffer, contentDisposition([s.title, number, project.name]));
+}

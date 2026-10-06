@@ -1,0 +1,32 @@
+// The authenticity mark printed on stored documents: a small QR to the public
+// verify page and the short link beside it. It is placed at the END of the
+// document's content, unbreakable, so it never splits from its own text.
+
+import { Path, Rect, Svg, Text, View } from "@react-pdf/renderer";
+import { C } from "@/lib/pdf/theme";
+import { qrSvg, qrViewBox } from "@/lib/qr";
+
+export interface VerifyMarkInput {
+  /** The full verify URL the QR encodes. */
+  url: string;
+  /** doc.verify.mark filled with the short URL: "Preverite pristnost: getbelin.com/v/...". */
+  label: string;
+  /** doc.verify.markHint. */
+  hint: string;
+}
+
+export function VerifyMark({ url, label, hint }: VerifyMarkInput) {
+  const qr = qrSvg(url, "M");
+  return (
+    <View wrap={false} style={{ flexDirection: "row", alignItems: "center", marginTop: 18 }}>
+      <Svg width={58} height={58} viewBox={qrViewBox(qr)}>
+        <Rect x={-4} y={-4} width={qr.size + 8} height={qr.size + 8} fill="#ffffff" />
+        <Path d={qr.path} fill="#000000" />
+      </Svg>
+      <View style={{ marginLeft: 8, flexShrink: 1 }}>
+        <Text style={{ fontSize: 7.5, color: C.inkSoft }}>{label}</Text>
+        <Text style={{ fontSize: 7, color: C.muted, marginTop: 2 }}>{hint}</Text>
+      </View>
+    </View>
+  );
+}

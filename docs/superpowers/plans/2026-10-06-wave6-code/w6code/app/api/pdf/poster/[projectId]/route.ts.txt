@@ -1,0 +1,74 @@
+import { createAdminClient } from "@/lib/supabase/admin";
+import { documentReader, notFound, pdfResponse } from "@/lib/data/doc-access";
+import { ensureCrewLink } from "@/lib/data/invites";
+import { canIssueCrewLink } from "@/lib/invites-shared";
+import { appBaseUrl } from "@/lib/app-url";
+import { PosterDocument } from "@/lib/pdf/poster";
+import { docLocaleOf, docString } from "@/lib/pdf/strings";
+import { contentDisposition } from "@/lib/pdf/filename";
+import { loadIssuer } from "@/lib/pdf/issuer";
+import { renderDocument } from "@/lib/pdf/theme";
+import { qrSvg } from "@/lib/qr";
+
+// The A4 site poster with the crew QR, in the PROJECT's language.
+//
+// The code is the real crew link, a shared secret, so this route admits exactly
+// the people who may copy that link in Settings: the subcontractor's office
+// (canIssueCrewLink), on its own project. Not the EPC, not a Bauleiter, not crew.
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function GET(_request: Request, { params }: { params: Promise<{ projectId: string }> }) {
+  const { projectId } = await params;
+
+  const reader = await documentReader(projectId);
+  if (!reader.ok) return reader.response;
+  if (reader.project.role !== "sub" || !canIssueCrewLink(reader.actor.orgType, reader.actor.role)) {
+    return notFound();
+  }
+
+  const db = createAdminClient();
+  const { data: project } = await db
+    .from("projects")
+    .select("name, language, sub_org_id, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (!project) return notFound();
+
+  const locale = docLocaleOf(project.language);
+  const token = await ensureCrewLink(projectId);
+  // Same fallback as the invoice mail: a printed poster must never carry a
+  // localhost address, and production is what a phone on site can reach.
+  const url = `${appBaseUrl() ?? "https://getbelin.com"}/${locale}/p/${token}`;
+  const t = (key: string) => docString(locale, `doc.poster.${key}`);
+
+  const siteAddress = [project.address_street, [project.address_zip, project.address_city].filter(Boolean).join(" ")]
+    .filter((part) => part && part.trim())
+    .join(", ");
+
+  const buffer = await renderDocument(
+    PosterDocument({
+      projectName: project.name,
+      siteAddress: siteAddress || null,
+      clientName: project.epc?.name ?? "",
+      contractorName: project.sub?.name ?? null,
+      url,
+      qr: qrSvg(url, "Q"),
+      issuer: await loadIssuer(db, project.sub_org_id),
+      s: {
+        title: t("title"),
+        client: t("client"),
+        contractor: t("contractor"),
+        scan: t("scan"),
+        step1: t("step1"),
+        step2: t("step2"),
+        step3: t("step3"),
+        noApp: t("noApp"),
+        generated: docString(locale, "final.doc.generated"),
+      },
+    }),
+  );
+
+  return pdfResponse(buffer, contentDisposition([t("title"), project.name]));
+}

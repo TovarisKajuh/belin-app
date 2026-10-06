@@ -1,0 +1,160 @@
+import { NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { resolveActorFromSession } from "@/lib/auth";
+import { requireProjectActor } from "@/lib/actor";
+import { isUuid } from "@/lib/actor-shared";
+import { effectiveStatus, type SheetStatus } from "@/lib/hours-shared";
+import { formatMoney, round2 } from "@/lib/po-shared";
+import { RegieberichtDocument } from "@/lib/pdf/regiebericht";
+import { docLocaleOf, docString, docText, regieStrings, sheetStatusLabel } from "@/lib/pdf/strings";
+import { docDate, docDateTime, docNumber } from "@/lib/pdf/doc-format";
+import { contentDisposition } from "@/lib/pdf/filename";
+import { loadIssuer } from "@/lib/pdf/issuer";
+import { persistDeemed } from "@/lib/data/hours";
+import { renderDocument } from "@/lib/pdf/theme";
+
+// The Regiebericht is rendered ON DEMAND and never stored.
+//
+// Unlike the naročilnica, nothing binds to these bytes: there is no acceptance
+// hashed against them, so a stored copy would only be a second version of the
+// truth waiting to drift from the rows. The rows are the record; this is a view
+// of them.
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function GET(_request: Request, { params }: { params: Promise<{ sheetId: string }> }) {
+  const { sheetId } = await params;
+  if (!isUuid(sheetId)) return new NextResponse("Not found", { status: 404 });
+
+  const actor = await resolveActorFromSession();
+  if (!actor || actor.kind !== "person" || actor.role === "crew") {
+    return new NextResponse("Forbidden", { status: 403 });
+  }
+
+  const db = createAdminClient();
+  const { data: sheet } = await db
+    .from("hour_sheets")
+    .select(
+      "id, number, status, submitted_at, deadline_at, decided_at, note, project_id, people:decided_by_person (full_name), hour_sheet_lines (work_date, hours, description, people (full_name))",
+    )
+    .eq("id", sheetId)
+    .maybeSingle();
+  if (!sheet) return new NextResponse("Not found", { status: 404 });
+
+  try {
+    await requireProjectActor(actor, sheet.project_id);
+  } catch {
+    return new NextResponse("Not found", { status: 404 });
+  }
+
+  // A deadline that has passed since the last page load decides the sheet
+  // before it is printed, so the document can never claim a sheet is still
+  // pending when the clock already approved it.
+  await persistDeemed(sheet.project_id);
+
+  const [{ data: project }, { data: po }] = await Promise.all([
+    db
+      .from("projects")
+      .select("name, language, country, sub_org_id, organizations:sub_org_id (name)")
+      .eq("id", sheet.project_id)
+      .maybeSingle(),
+    // The rate counts only once it was AGREED: the accepted order, never a draft.
+    db
+      .from("purchase_orders")
+      .select("number, regie_hourly_rate")
+      .eq("project_id", sheet.project_id)
+      .eq("status", "accepted")
+      .order("number", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  const locale = docLocaleOf(project?.language);
+  const country = project?.country ?? "si";
+  const s = regieStrings(locale);
+
+  const status = effectiveStatus(
+    { status: sheet.status as SheetStatus, deadline_at: sheet.deadline_at },
+    new Date(),
+  );
+
+  const rate = po?.regie_hourly_rate === null || po?.regie_hourly_rate === undefined ? null : Number(po.regie_hourly_rate);
+
+  const lines = (sheet.hour_sheet_lines ?? [])
+    .map((line) => ({
+      dateIso: line.work_date,
+      person: line.people?.full_name ?? null,
+      hours: Number(line.hours),
+      description: line.description,
+    }))
+    .sort((a, b) => a.dateIso.localeCompare(b.dateIso));
+
+  const totalHours = lines.reduce((sum, line) => sum + line.hours, 0);
+
+  // Who decided, and when; or that the clock did, and when it ran out.
+  const decider = sheet.people?.full_name ?? null;
+  const decisionLine =
+    status === "approved" && decider && sheet.decided_at
+      ? `${s.approvedBy}: ${decider}, ${docDateTime(sheet.decided_at, locale, country)}`
+      : status === "rejected" && decider && sheet.decided_at
+        ? `${s.rejectedBy}: ${decider}, ${docDateTime(sheet.decided_at, locale, country)}`
+        : status === "deemed_approved" && sheet.deadline_at
+          ? `${s.deemedAt}: ${docDateTime(sheet.deadline_at, locale, country)}`
+          : null;
+
+  // The D9 rule with this sheet's own deadline. A deemed sheet already says the
+  // rule in its deemed note, so it gets only the order reference.
+  const ruleLines =
+    status === "draft" || !sheet.deadline_at
+      ? []
+      : [
+          ...(status === "deemed_approved"
+            ? []
+            : [docText(locale, "doc.regie.rule", { deadline: docDate(sheet.deadline_at, locale, country) })]),
+          ...(po ? [docText(locale, "doc.regie.rulePo", { number: po.number })] : []),
+        ];
+
+  const buffer = await renderDocument(
+    RegieberichtDocument({
+      number: sheet.number,
+      projectName: project?.name ?? "",
+      contractorName: project?.organizations?.name ?? null,
+      submittedOn: sheet.submitted_at ? docDateTime(sheet.submitted_at, locale, country) : null,
+      statusLabel: sheetStatusLabel(locale, status),
+      status,
+      decisionLine,
+      // Task 3.6 stores the rejection reason; this reads hour_sheets.note. If
+      // 3.6 chose a different column, read that one here instead.
+      rejectionReason: status === "rejected" ? (sheet.note ?? null) : null,
+      rateLine:
+        rate === null || !po
+          ? null
+          : docText(locale, "doc.regie.rateValue", { rate: formatMoney(rate, locale), number: po.number }),
+      ruleLines,
+      totalHoursLabel: `${docNumber(totalHours, locale)} ${s.hoursUnit}`,
+      totalAmountLabel: rate === null ? null : formatMoney(round2(totalHours * rate), locale),
+      lines: lines.map((line) => ({
+        date: docDate(line.dateIso, locale, country),
+        person: line.person,
+        hours: docNumber(line.hours, locale),
+        description: line.description,
+        amount: rate === null ? null : formatMoney(round2(line.hours * rate), locale),
+      })),
+      issuer: await loadIssuer(db, project?.sub_org_id),
+      s,
+    }),
+  );
+
+  return new NextResponse(new Uint8Array(buffer), {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": contentDisposition([
+        docString(locale, "hours.doc.title"),
+        sheet.number,
+        project?.name,
+      ]),
+      "Cache-Control": "private, max-age=0, must-revalidate",
+    },
+  });
+}

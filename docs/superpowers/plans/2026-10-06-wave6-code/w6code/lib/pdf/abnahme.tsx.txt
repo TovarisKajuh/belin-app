@@ -1,0 +1,205 @@
+// The Zapisnik o prevzemu: the record of the handover.
+//
+// Three things on this page carry more legal weight than anything else Belin
+// produces.
+//
+// 1. THE DECLARATION. Accepted, accepted with reservations, and refused have
+//    three different consequences for warranty, payment and risk. The document
+//    states which one happened, in words, not as a tick somewhere.
+//
+// 2. THE PENALTY RESERVATION. A client who accepts without expressly reserving
+//    the contractual penalty loses it, permanently. So the sentence is fixed
+//    text printed ONLY when the box was ticked, never free text somebody might
+//    paraphrase into something that does not hold. When it was not reserved,
+//    the document says nothing at all about penalties: an absent reservation
+//    must not look like a present one.
+//
+// 3. THE DEFECT RESERVATION. When defects are listed and the work is not
+//    refused, a fixed sentence says that the agreed ones are remedied at the
+//    contractor's cost within their deadlines and that the disputed ones are
+//    not agreed, which is what 112. and 114. uzanca PGU 2020 ask a zapisnik to
+//    record.
+//
+// LAYOUT RULE: the declaration, the warranty start, the penalty box and both
+// signatures are ONE unbreakable block. A signature page with no declaration
+// on it is a page anybody could staple to anything (documents H7: 28 defects
+// used to push both signatures alone onto page 3).
+
+import { Document, Page, Text, View } from "@react-pdf/renderer";
+import {
+  C,
+  FlexTable,
+  Footer,
+  Header,
+  LabelValue,
+  RunningHeader,
+  SignatureBox,
+  styles,
+  type DocIssuer,
+} from "@/lib/pdf/theme";
+import { photoRows, type DocPhoto } from "@/lib/pdf/photos";
+
+export interface AbnahmeStrings {
+  title: string;
+  project: string;
+  client: string;
+  contractor: string;
+  site: string;
+  kind: string;
+  date: string;
+  attendees: string;
+  defects: string;
+  colDefect: string;
+  colDue: string;
+  colAgreement: string;
+  noDefects: string;
+  declaration: string;
+  penaltyTitle: string;
+  penaltySentence: string;
+  warranty: string;
+  note: string;
+  signEpc: string;
+  signSub: string;
+  generated: string;
+  poRef: string;
+  poDeadline: string;
+  lastReport: string;
+  colNo: string;
+  colPhoto: string;
+  photoYes: string;
+  /** Already filled with the localized "disputed" label. */
+  reservation: string;
+  /** The PGU citation; printed only on Slovenian sites. */
+  basisSi: string;
+  annexTitle: string;
+  page: string;
+}
+
+export interface AbnahmeDefect {
+  no: number;
+  description: string;
+  dueDate: string | null;
+  agreementLabel: string;
+  /** The defect photo with its annex caption already set, or null. */
+  photo: DocPhoto | null;
+}
+
+export interface AbnahmeInput {
+  projectName: string;
+  country: string;
+  clientName: string;
+  contractorName: string | null;
+  siteAddress: string | null;
+  kindLabel: string;
+  conductedOn: string | null;
+  attendees: string | null;
+  /** "št. 1 z dne 12. 08. 2026", or null when the project has no accepted naročilnica. */
+  poRef: string | null;
+  poDeadline: string | null;
+  lastReportOn: string | null;
+  declarationLabel: string;
+  /** False for a refusal: a refused handover reserves nothing. */
+  showReservation: boolean;
+  penaltyReserved: boolean;
+  warrantyStart: string | null;
+  note: string | null;
+  defects: AbnahmeDefect[];
+  epcSigner: { name: string; image: Buffer | null };
+  subSigner: { name: string; image: Buffer | null };
+  /** The EPC: the client conducts and issues the protocol. */
+  issuer: DocIssuer;
+  s: AbnahmeStrings;
+}
+
+export function AbnahmeDocument(input: AbnahmeInput) {
+  const { s } = input;
+  const photos = input.defects.flatMap((defect) => (defect.photo ? [defect.photo] : []));
+  const hasDefects = input.defects.length > 0;
+
+  return (
+    <Document title={`${s.title} ${input.projectName}`}>
+      <Page size="A4" style={styles.page}>
+        <RunningHeader title={s.title} projectName={input.projectName} />
+        <Header title={s.title} projectName={input.projectName} issuer={input.issuer} />
+
+        <View style={{ marginBottom: 14 }}>
+          <LabelValue label={s.project} value={input.projectName} />
+          <LabelValue label={s.client} value={input.clientName} />
+          <LabelValue label={s.contractor} value={input.contractorName ?? ""} />
+          <LabelValue label={s.site} value={input.siteAddress ?? ""} />
+          {input.poRef ? <LabelValue label={s.poRef} value={input.poRef} /> : null}
+          <LabelValue label={s.kind} value={input.kindLabel} />
+          {input.conductedOn ? <LabelValue label={s.date} value={input.conductedOn} /> : null}
+          {input.poDeadline ? <LabelValue label={s.poDeadline} value={input.poDeadline} /> : null}
+          {input.lastReportOn ? <LabelValue label={s.lastReport} value={input.lastReportOn} /> : null}
+          {input.attendees ? <LabelValue label={s.attendees} value={input.attendees} /> : null}
+        </View>
+
+        <Text style={styles.sectionTitle}>{s.defects}</Text>
+        <FlexTable
+          columns={[
+            { label: s.colNo, widthPct: 7 },
+            { label: s.colDefect, widthPct: 49 },
+            { label: s.colDue, widthPct: 16 },
+            { label: s.colAgreement, widthPct: 14 },
+            { label: s.colPhoto, widthPct: 14, align: "right" },
+          ]}
+          rows={input.defects.map((defect) => [
+            defect.no,
+            defect.description,
+            defect.dueDate ?? "",
+            defect.agreementLabel,
+            defect.photo ? s.photoYes : "",
+          ])}
+          emptyLabel={s.noDefects}
+        />
+
+        {hasDefects && input.showReservation ? (
+          <View style={{ marginTop: 10 }} wrap={false}>
+            <Text style={styles.body}>{s.reservation}</Text>
+            {input.country === "si" ? (
+              <Text style={[styles.small, { color: C.muted, marginTop: 2 }]}>{s.basisSi}</Text>
+            ) : null}
+          </View>
+        ) : null}
+
+        {input.note ? (
+          <View style={{ marginTop: 14 }}>
+            <Text style={styles.sectionTitle}>{s.note}</Text>
+            <Text style={styles.body}>{input.note}</Text>
+          </View>
+        ) : null}
+
+        {/* ONE BLOCK: declaration, warranty, penalty, signatures. */}
+        <View wrap={false} style={{ marginTop: 16 }}>
+          <LabelValue label={s.declaration} value={input.declarationLabel} />
+          {input.warrantyStart ? <LabelValue label={s.warranty} value={input.warrantyStart} /> : null}
+
+          {/* Printed ONLY when reserved. Silence here is meaningful. */}
+          {input.penaltyReserved ? (
+            <View style={{ marginTop: 12, padding: 10, borderWidth: 1, borderColor: C.ink }}>
+              <Text style={{ fontWeight: 700, marginBottom: 4 }}>{s.penaltyTitle}</Text>
+              <Text style={styles.body}>{s.penaltySentence}</Text>
+            </View>
+          ) : null}
+
+          <View style={[styles.signatureRow, { marginTop: 26 }]}>
+            <SignatureBox name={input.epcSigner.name} image={input.epcSigner.image} caption={s.signEpc} />
+            <SignatureBox name={input.subSigner.name} image={input.subSigner.image} caption={s.signSub} />
+          </View>
+        </View>
+
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
+      </Page>
+
+      {photos.length > 0 ? (
+        <Page size="A4" style={styles.page}>
+          <RunningHeader title={s.annexTitle} projectName={input.projectName} />
+          <Header title={s.annexTitle} projectName={input.projectName} issuer={input.issuer} />
+          {photoRows(photos, { keyPrefix: "defect", targetHeight: 170 })}
+          <Footer generatedLabel={s.generated} pageLabel={s.page} />
+        </Page>
+      ) : null}
+    </Document>
+  );
+}

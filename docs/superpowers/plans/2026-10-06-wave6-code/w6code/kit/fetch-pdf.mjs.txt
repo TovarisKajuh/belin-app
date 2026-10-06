@@ -1,0 +1,49 @@
+// VERIFICATION KIT, lives in the executor's scratchpad, never in the repo.
+// Signs in as one person (one login_tokens row, like scripts/marketing/shoot.mjs)
+// and downloads one PDF route through the running dev server, printing the
+// status, the Content-Disposition and the page count.
+//
+//   cd C:\DevEnv\belin-app   (or the lane-b worktree)
+//   node <scratch>/kit/fetch-pdf.mjs <email> <route> <out.pdf> [base=http://localhost:3001]
+import { readFileSync, writeFileSync } from "node:fs";
+import { createHash, randomBytes } from "node:crypto";
+import { createRequire } from "node:module";
+const require = createRequire(`${process.cwd()}/package.json`);
+const { chromium } = require("playwright");
+const { createClient } = require("@supabase/supabase-js");
+
+const [email, route, out, base = "http://localhost:3001"] = process.argv.slice(2);
+const env = Object.fromEntries(
+  readFileSync(".env.local", "utf8")
+    .split(/\r?\n/)
+    .filter((l) => l && !l.startsWith("#") && l.includes("="))
+    .map((l) => [l.slice(0, l.indexOf("=")).trim(), l.slice(l.indexOf("=") + 1).trim()]),
+);
+const db = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+
+const raw = randomBytes(32).toString("base64url");
+const { data: person } = await db.from("people").select("id").ilike("email", email).maybeSingle();
+if (!person) throw new Error(`no person ${email}`);
+await db.from("login_tokens").insert({
+  person_id: person.id,
+  token_hash: createHash("sha256").update(raw, "utf8").digest("hex"),
+  expires_at: new Date(Date.now() + 10 * 60_000).toISOString(),
+});
+
+const browser = await chromium.launch();
+const context = await browser.newContext({ locale: "sl-SI" });
+const page = await context.newPage();
+await page.goto(`${base}/sl/auth/verify/${raw}`, { waitUntil: "domcontentloaded", timeout: 120_000 });
+await page.getByRole("button").first().click();
+await page.waitForURL((u) => !u.pathname.includes("/auth/verify"), { timeout: 90_000 });
+
+const response = await context.request.get(`${base}${route}`);
+const body = Buffer.from(await response.body());
+console.log("status", response.status());
+console.log("content-type", response.headers()["content-type"]);
+console.log("content-disposition", response.headers()["content-disposition"]);
+if (response.status() === 200) {
+  writeFileSync(out, body);
+  console.log("saved", out, body.length, "bytes");
+}
+await browser.close();

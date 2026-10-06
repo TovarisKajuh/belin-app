@@ -1,0 +1,111 @@
+/**
+ * The company that ISSUES a document, printed where a letterhead carries it.
+ *
+ * Per document (DECISIONS 2026-10-06, D16): the EPC issues the naročilnica and
+ * the Zapisnik o prevzemu; the subcontractor issues the daily report, the
+ * Regiebericht, the completion report, the invoice, the change order, the
+ * situacija, the obstruction notice and the site poster. Belin is the tool,
+ * not the issuer, and appears only in the footer.
+ */
+export interface DocIssuer {
+  name: string;
+  /** PNG or JPEG bytes from organizations.logo_path; null prints the name alone. */
+  logo: Buffer | null;
+}
+
+const LOGO_MAX_WIDTH = 120;
+const LOGO_MAX_HEIGHT = 28;
+
+/**
+ * The document header. `docNo` is the human document number ("št. 3",
+ * "št. 2026-001"), printed under the issuer, where a filing clerk looks for it.
+ */
+export function Header({
+  title,
+  docNo,
+  projectName,
+  issuer,
+}: {
+  title: string;
+  docNo?: string | null;
+  projectName?: string | null;
+  issuer: DocIssuer;
+}) {
+  const logoSize = issuer.logo ? imageSize(issuer.logo) : null;
+  const logoBox = logoSize ? fitBox(logoSize, LOGO_MAX_WIDTH, LOGO_MAX_HEIGHT) : null;
+
+  return (
+    <View style={styles.header}>
+      <View style={styles.headerLeft}>
+        <Text style={styles.headerTitle}>{title}</Text>
+        {projectName ? <Text style={styles.headerProject}>{projectName}</Text> : null}
+      </View>
+      <View style={styles.headerRight}>
+        {issuer.logo && logoBox ? (
+          <Image src={issuer.logo} style={{ width: logoBox.width, height: logoBox.height, marginBottom: 4 }} />
+        ) : null}
+        {issuer.name ? <Text style={styles.issuerName}>{issuer.name}</Text> : null}
+        {docNo ? <Text>{docNo}</Text> : null}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * The slim header repeated on every continuation page of a <Page>: title,
+ * number, project. It reads subPageNumber, not pageNumber, so in the completion
+ * report, where every day is its own <Page>, it appears only when one day runs
+ * onto a second sheet, never on top of a day's own full header.
+ */
+export function RunningHeader({
+  title,
+  docNo,
+  projectName,
+}: {
+  title: string;
+  docNo?: string | null;
+  projectName?: string | null;
+}) {
+  const left = docNo ? `${title} ${docNo}` : title;
+  return (
+    <View
+      fixed
+      style={styles.runningHeader}
+      render={({ subPageNumber }) =>
+        subPageNumber > 1 ? (
+          <View style={styles.runningHeaderRow}>
+            <Text>{left}</Text>
+            {projectName ? <Text>{projectName}</Text> : null}
+          </View>
+        ) : null
+      }
+    />
+  );
+}
+
+/**
+ * The fixed page footer, repeated on every page. Left: who made the file and
+ * where. Right: "Stran n od m", from a template with {n} and {total}, so a
+ * printed and separated document can be put back in order.
+ */
+export function Footer({
+  generatedLabel,
+  pageLabel,
+}: {
+  generatedLabel: string;
+  /** The doc.page template, e.g. "Stran {n} od {total}". */
+  pageLabel?: string;
+}) {
+  return (
+    <View style={styles.footer} fixed>
+      <Text>{`${generatedLabel} · getbelin.com`}</Text>
+      {pageLabel ? (
+        <Text
+          render={({ pageNumber, totalPages }) =>
+            pageLabel.replace("{n}", String(pageNumber)).replace("{total}", String(totalPages))
+          }
+        />
+      ) : null}
+    </View>
+  );
+}
