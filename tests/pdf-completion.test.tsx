@@ -57,11 +57,16 @@ function buildDocument(dayCount: number) {
     contractorName: "AVESOL d.o.o.",
     siteAddress: "Cesta Staneta Žagarja 69, 4000 Kranj",
     periodLabel: "30. 07. 2026 - 11. 08. 2026",
-    powerLabel: "245.7 kWp",
+    powerLabel: "245,7 kWp",
     dayCount,
-    totalHours: 14,
+    approvedHours: "14",
+    summaryRows: [
+      { label: "Režijske ure, potrjene", value: "14 h" },
+      { label: "Dodatna dela, potrjena", value: "1 · 1.200,00 EUR" },
+      { label: "Zapleti", value: "1" },
+    ],
     days,
-    hoursRegister: [{ number: 1, hours: 8, status: "Potrjeno" }],
+    hoursRegister: [{ number: 1, hours: "8", status: "Potrjeno" }],
     coRegister: [
       { number: 1, title: "Zamenjava letev", amount: "1.200,00 EUR", status: "Potrjeno" },
     ],
@@ -103,6 +108,14 @@ describe("completion report", () => {
     const text = await textOf(2);
     expect(text).toContain("Kranj");
     expect(text).toContain("Naročnik");
+  }, 120000);
+
+  it("states the approved hours, the number the invoice bills", async () => {
+    const text = await textOf(2);
+    // The tile label prints in capitals (statLabel), so the text layer reads
+    // it that way; the tile and the summary row carry the same number.
+    expect(text).toContain("POTRJENE REŽIJSKE URE 14");
+    expect(text).toContain("Režijske ure, potrjene 14 h");
   }, 120000);
 });
 

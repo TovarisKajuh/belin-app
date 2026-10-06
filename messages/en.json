@@ -835,7 +835,15 @@
       "extrasCount": "Change orders",
       "incidentsCount": "Incidents",
       "dayList": "Work by day",
-      "crew": "Crew"
+      "crew": "Crew",
+      "approvedHours": "Approved hourly work",
+      "hoursApproved": "Hourly work, approved",
+      "hoursPending": "Hourly work, awaiting decision",
+      "hoursRejected": "Hourly work, rejected",
+      "extrasApproved": "Change orders, approved",
+      "extrasPending": "Change orders, awaiting decision",
+      "extrasRejected": "Change orders, rejected",
+      "extrasUnpriced": "{n} without amount"
     },
     "dayDoc": {
       "reportNo": "No.",

@@ -1,5 +1,6 @@
 "use server";
 import { resolveActorFromSession } from "@/lib/auth";
+import { requireProjectActor } from "@/lib/actor";
 import { requestFinalization } from "@/lib/data/projects";
 import { generateCompletionReport } from "@/lib/data/final-report";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -39,6 +40,9 @@ export async function generateCompletionReportAction(
 ): Promise<{ ok: true; documentId: string }> {
   const actor = await resolveActorFromSession();
   if (!actor || actor.kind !== "person") throw new Error("common.askOffice");
+  // Membership first: the reuse below must never hand a document id of
+  // somebody else's project to a signed-in stranger (flows M10).
+  await requireProjectActor(actor, projectId);
 
   const db = createAdminClient();
   const { data: recent } = await db

@@ -835,7 +835,15 @@
       "extrasCount": "Dodatna dela",
       "incidentsCount": "Zapleti",
       "dayList": "Potek del po dnevih",
-      "crew": "Ekipa"
+      "crew": "Ekipa",
+      "approvedHours": "Potrjene režijske ure",
+      "hoursApproved": "Režijske ure, potrjene",
+      "hoursPending": "Režijske ure, v odločanju",
+      "hoursRejected": "Režijske ure, zavrnjene",
+      "extrasApproved": "Dodatna dela, potrjena",
+      "extrasPending": "Dodatna dela, v odločanju",
+      "extrasRejected": "Dodatna dela, zavrnjena",
+      "extrasUnpriced": "{n} brez zneska"
     },
     "dayDoc": {
       "reportNo": "št.",

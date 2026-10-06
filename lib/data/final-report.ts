@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireProjectActor, type Actor } from "@/lib/actor";
 import { buildDayReports, diaryTitleKey } from "@/lib/report-days-shared";
@@ -12,6 +13,12 @@ import type { DayReportData } from "@/lib/pdf/day-report";
 import { completionStrings, docString, type DocLocale } from "@/lib/pdf/strings";
 import { renderDocument } from "@/lib/pdf/theme";
 import { loadIssuer } from "@/lib/pdf/issuer";
+import type { ChangeOrderStatus } from "@/lib/change-orders-view";
+import { summarizeExtras, summarizeHours } from "@/lib/completion-shared";
+import { mapWithLimit } from "@/lib/async-pool";
+import { formatTemplate } from "@/lib/notify-shared";
+import { fmtDate, fmtNumber } from "@/lib/format";
+import { projectZone } from "@/lib/project-time";
 
 // Assembling the completion report.
 //
@@ -23,12 +30,17 @@ import { loadIssuer } from "@/lib/pdf/issuer";
 //    states the same thing the clock already decided.
 // 2. PHOTOS. They come from private storage, one download each, and a report
 //    with nine days of pictures is a lot of downloads on a weak connection.
-//    They are capped per day and a failed download is skipped rather than
-//    aborting: a report missing one photograph is worth infinitely more than
-//    no report.
+//    They are capped per day, fetched six at a time for the whole job, and
+//    shrunk to print size before they are embedded. A failed download is
+//    skipped rather than aborting: a report missing one photograph is worth
+//    infinitely more than no report.
 
 /** Four is enough to show a day and keeps a nine-day report under a sane size. */
 const PHOTOS_PER_DAY = 4;
+/** Parallel photo downloads: enough to hide latency, few enough for a weak uplink. */
+const PHOTO_CONCURRENCY = 6;
+/** Long edge of a printed photo: two per row on A4 at about 200 dpi need less than this. */
+const PRINT_EDGE_PX = 1200;
 
 export interface CompletionResult {
   documentId: string;
@@ -62,6 +74,7 @@ export async function generateCompletionReport(
   const locale: DocLocale =
     project.language === "de" || project.language === "en" ? project.language : "sl";
   const t = (key: string) => docString(locale, key);
+  const zone = projectZone(project.country);
 
   const [entriesRes, incidentsRes, sheetsRes, ordersRes] = await Promise.all([
     db
@@ -99,41 +112,29 @@ export async function generateCompletionReport(
     incidents.map((incident) => incident.occurred_on),
   );
 
-  const dateFmt = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : locale, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
   const shortFmt = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : locale, {
     day: "2-digit",
     month: "2-digit",
   });
 
-  const days: DayReportData[] = [];
-  for (const ref of dayRefs) {
+  type DayDraft = Omit<DayReportData, "photos"> & { photoPaths: string[] };
+  const drafts: DayDraft[] = dayRefs.map((ref) => {
     const dayEntries = entries.filter((entry) => entry.entry_date === ref.dateIso);
     const dayIncidents = incidents.filter((incident) => incident.occurred_on === ref.dateIso);
-
     // Weather and headcount come from the FIRST entry of the date: several
-    // reports on one day are the same day's weather, and the crew count is the
-    // one recorded when work started.
+    // reports on one day are the same day's weather, and the crew count is
+    // the one recorded when work started.
     const first = dayEntries[0];
     const weather = first?.weather as { code?: number; tempC?: number } | null;
-
-    const photoPaths = dayEntries
-      .flatMap((entry) => entry.entry_photos ?? [])
-      .sort((a, b) => a.sort_order - b.sort_order)
-      .slice(0, PHOTOS_PER_DAY)
-      .map((photo) => photo.storage_path);
-
-    days.push({
+    return {
       reportNo: ref.reportNo,
-      dateLabel: dateFmt.format(new Date(`${ref.dateIso}T12:00:00Z`)),
-      weatherLabel: weather?.code === undefined
-        ? null
-        : `${t(`weather.${weatherCodeToKey(weather.code ?? null)}`)}${
-            weather.tempC === undefined ? "" : `, ${weather.tempC} °C`
-          }`,
+      dateLabel: fmtDate(ref.dateIso, locale, { timeZone: zone }),
+      weatherLabel:
+        weather?.code === undefined
+          ? null
+          : `${t(`weather.${weatherCodeToKey(weather.code ?? null)}`)}${
+              weather.tempC === undefined ? "" : `, ${fmtNumber(weather.tempC, locale, { maxDecimals: 0 })} °C`
+            }`,
       headcount: first?.headcount ?? null,
       entries: dayEntries.map((entry) => ({
         note: entry.note,
@@ -150,15 +151,71 @@ export async function generateCompletionReport(
         kindLabel: t(`incident.kinds.${incident.kind}`),
         note: incident.note,
       })),
-      photos: await downloadPhotos(db, photoPaths),
-    });
-  }
+      photoPaths: dayEntries
+        .flatMap((entry) => entry.entry_photos ?? [])
+        .sort((a, b) => a.sort_order - b.sort_order)
+        .slice(0, PHOTOS_PER_DAY)
+        .map((photo) => photo.storage_path),
+    };
+  });
+
+  // Every photo of the job, six at a time, each shrunk for print. Sequential
+  // downloads cost seconds per day of a long job (flows M10).
+  const photoBytes = await mapWithLimit(
+    drafts.flatMap((day) => day.photoPaths),
+    PHOTO_CONCURRENCY,
+    (path) => loadPrintPhoto(db, path),
+  );
+  let cursor = 0;
+  const days: DayReportData[] = drafts.map(({ photoPaths, ...day }) => {
+    const photos = photoBytes
+      .slice(cursor, cursor + photoPaths.length)
+      .filter((bytes): bytes is Buffer => bytes !== null);
+    cursor += photoPaths.length;
+    return { ...day, photos };
+  });
 
   const now = new Date();
-  const totalHours = sheets.reduce(
-    (sum, sheet) => sum + (sheet.hour_sheet_lines ?? []).reduce((s, l) => s + Number(l.hours), 0),
-    0,
+  const sheetHours = sheets.map((sheet) => ({
+    number: sheet.number,
+    status: sheet.status as SheetStatus,
+    deadline_at: sheet.deadline_at,
+    hours: (sheet.hour_sheet_lines ?? []).reduce((sum, line) => sum + Number(line.hours), 0),
+  }));
+  // The report states the hours the INVOICE bills, and lists the rest apart
+  // (DOC-H3: a report saying 33 h next to an invoice billing 28 h).
+  const hours = summarizeHours(sheetHours, now);
+  const extras = summarizeExtras(
+    orders.map((order) => ({
+      status: order.status as ChangeOrderStatus,
+      amount: order.amount === null ? null : Number(order.amount),
+    })),
   );
+  const h = (n: number) => `${fmtNumber(n, locale)} h`;
+  const summaryRows: { label: string; value: string }[] = [
+    { label: t("final.doc.hoursApproved"), value: h(hours.approved) },
+  ];
+  if (hours.pending > 0) summaryRows.push({ label: t("final.doc.hoursPending"), value: h(hours.pending) });
+  if (hours.rejected > 0) summaryRows.push({ label: t("final.doc.hoursRejected"), value: h(hours.rejected) });
+  summaryRows.push({
+    label: t("final.doc.extrasApproved"),
+    value: [
+      String(extras.approvedCount),
+      extras.approvedCount > extras.approvedUnpriced ? formatMoney(extras.approvedSum, locale) : null,
+      extras.approvedUnpriced > 0
+        ? formatTemplate(t("final.doc.extrasUnpriced"), { n: String(extras.approvedUnpriced) })
+        : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+  });
+  if (extras.pendingCount > 0) {
+    summaryRows.push({ label: t("final.doc.extrasPending"), value: String(extras.pendingCount) });
+  }
+  if (extras.rejectedCount > 0) {
+    summaryRows.push({ label: t("final.doc.extrasRejected"), value: String(extras.rejectedCount) });
+  }
+  summaryRows.push({ label: t("final.doc.incidentsCount"), value: String(incidents.length) });
 
   const address = [
     project.address_street,
@@ -169,8 +226,10 @@ export async function generateCompletionReport(
 
   const period =
     dayRefs.length > 0
-      ? `${dateFmt.format(new Date(`${dayRefs[0].dateIso}T12:00:00Z`))} - ${dateFmt.format(
-          new Date(`${dayRefs[dayRefs.length - 1].dateIso}T12:00:00Z`),
+      ? `${fmtDate(dayRefs[0].dateIso, locale, { timeZone: zone })} - ${fmtDate(
+          dayRefs[dayRefs.length - 1].dateIso,
+          locale,
+          { timeZone: zone },
         )}`
       : null;
 
@@ -186,19 +245,17 @@ export async function generateCompletionReport(
       contractorName: project.sub?.name ?? null,
       siteAddress: address || null,
       periodLabel: period,
-      powerLabel: project.kwp ? `${project.kwp} kWp` : null,
+      powerLabel: project.kwp ? `${fmtNumber(Number(project.kwp), locale, { maxDecimals: 1 })} kWp` : null,
       dayCount: dayRefs.length,
-      totalHours,
+      approvedHours: fmtNumber(hours.approved, locale),
+      summaryRows,
       days,
-      hoursRegister: sheets.map((sheet) => ({
+      hoursRegister: sheetHours.map((sheet) => ({
         number: sheet.number,
-        hours: (sheet.hour_sheet_lines ?? []).reduce((sum, line) => sum + Number(line.hours), 0),
+        hours: fmtNumber(sheet.hours, locale),
         status: docString(
           locale,
-          `hours.status.${effectiveStatus(
-            { status: sheet.status as SheetStatus, deadline_at: sheet.deadline_at },
-            now,
-          )}`,
+          `hours.status.${effectiveStatus({ status: sheet.status, deadline_at: sheet.deadline_at }, now)}`,
         ),
       })),
       coRegister: orders.map((order) => ({
@@ -217,42 +274,57 @@ export async function generateCompletionReport(
     }),
   );
 
-  const { data: doc, error } = await db
-    .from("generated_documents")
-    .insert({
-      project_id: projectId,
-      kind: "completion_report",
-      language: locale,
-      storage_path: "pending",
-    })
-    .select("id")
-    .maybeSingle();
-  if (error || !doc) throw new Error("Could not record the document");
+  // The id is chosen BEFORE the file is stored, so the row is written once,
+  // complete, after the bytes exist. No "pending" row is ever left for a
+  // double click or a failed run to find (flows M10).
+  const documentId = randomUUID();
+  const path = await storeReportPdf(`${projectId}/final/completion-${documentId}.pdf`, buffer);
+  const { error } = await db.from("generated_documents").insert({
+    id: documentId,
+    project_id: projectId,
+    kind: "completion_report",
+    language: locale,
+    storage_path: path,
+  });
+  if (error) throw new Error("Could not record the document");
 
-  const path = await storeReportPdf(`${projectId}/final/completion-${doc.id}.pdf`, buffer);
-  await db.from("generated_documents").update({ storage_path: path }).eq("id", doc.id);
-
-  return { documentId: doc.id, storagePath: path };
+  return { documentId, storagePath: path };
 }
 
 /**
- * Photo bytes for one day. Failures are skipped, never thrown: the report is
- * the point, and a missing photograph is a smaller loss than no document at
- * all on the afternoon somebody needs it.
+ * One photo, ready for paper: downloaded, turned upright, shrunk to print
+ * size and re-encoded. A phone photo is several megabytes and prints a few
+ * centimetres wide; embedding it whole made a nine day report about 10 MB
+ * (DOC-M6). Photo paths are written once, so download() is safe here. A
+ * failed download is skipped, never thrown: a report missing one picture
+ * beats no report.
  */
-async function downloadPhotos(
+async function loadPrintPhoto(
   db: ReturnType<typeof createAdminClient>,
-  paths: string[],
-): Promise<Buffer[]> {
-  const out: Buffer[] = [];
-  for (const path of paths) {
-    try {
-      const file = await db.storage.from("photos").download(path);
-      if (file.error || !file.data) continue;
-      out.push(Buffer.from(await file.data.arrayBuffer()));
-    } catch {
-      // skip
-    }
+  path: string,
+): Promise<Buffer | null> {
+  try {
+    const file = await db.storage.from("photos").download(path);
+    if (file.error || !file.data) return null;
+    return await shrinkForPrint(Buffer.from(await file.data.arrayBuffer()));
+  } catch {
+    return null;
   }
-  return out;
+}
+
+/** If sharp cannot load on the server, the original bytes are used: bigger, never wrong. */
+async function shrinkForPrint(bytes: Buffer): Promise<Buffer> {
+  try {
+    const { default: sharp } = await import("sharp");
+    return await sharp(bytes)
+      .rotate()
+      .resize({ width: PRINT_EDGE_PX, height: PRINT_EDGE_PX, fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 72, mozjpeg: true })
+      .toBuffer();
+  } catch (err) {
+    console.warn(
+      `[completion] sharp unavailable, embedding the original photo: ${err instanceof Error ? err.message : String(err)}`,
+    );
+    return bytes;
+  }
 }

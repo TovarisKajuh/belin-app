@@ -835,7 +835,15 @@
       "extrasCount": "Nachträge",
       "incidentsCount": "Vorfälle",
       "dayList": "Bauablauf nach Tagen",
-      "crew": "Mannschaft"
+      "crew": "Mannschaft",
+      "approvedHours": "Genehmigte Regiestunden",
+      "hoursApproved": "Regiestunden, genehmigt",
+      "hoursPending": "Regiestunden, offen",
+      "hoursRejected": "Regiestunden, abgelehnt",
+      "extrasApproved": "Nachträge, genehmigt",
+      "extrasPending": "Nachträge, offen",
+      "extrasRejected": "Nachträge, abgelehnt",
+      "extrasUnpriced": "{n} ohne Betrag"
     },
     "dayDoc": {
       "reportNo": "Nr.",
