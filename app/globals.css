@@ -2895,3 +2895,55 @@ button.gal-item {
   .lp .lp-pair { grid-template-columns: 1fr; gap: 20px; justify-items: center; }
   .lp .lp-pair > .lp-shot:first-child { max-width: 250px; }
 }
+
+/* === 2.3: Demo Door (presenter panel, guest QR, persona switch) === */
+.dm-page .e-wrap { max-width: 980px; }
+.dm-head { padding: calc(28px + env(safe-area-inset-top)) 0 4px; }
+.dm-title { font-size: 26px; font-weight: 700; letter-spacing: -.01em; color: var(--e-ink); }
+.dm-sub { margin-top: 6px; font-size: 14px; color: var(--e-ink2); }
+.dm-alert { margin-top: 16px; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,122,107,.45); background: rgba(255,122,107,.10); color: #ffd9d4; font-size: 14px; }
+.dm-lights { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; list-style: none; margin: 0; padding: 0; }
+.dm-light { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--e-line); background: var(--e-surface); }
+.dm-dot { flex: none; width: 10px; height: 10px; margin-top: 5px; border-radius: 50%; background: #4a5464; }
+.dm-dot.ok { background: var(--e-ok); }
+.dm-dot.warn { background: #ffb45c; }
+.dm-dot.bad { background: #ff7a6b; }
+.dm-light-l { display: block; font-size: 12px; color: var(--e-muted); }
+.dm-light-v { display: block; font-size: 14px; color: var(--e-ink); font-variant-numeric: tabular-nums; }
+.dm-personas { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.dm-card { padding: 16px; border-radius: 16px; border: 1px solid var(--e-line); background: var(--e-surface-2); }
+.dm-card-name { font-size: 17px; font-weight: 700; color: var(--e-ink); }
+.dm-card-role { margin-top: 2px; font-size: 13px; color: var(--e-gold-2); }
+.dm-card-note { margin-top: 6px; font-size: 13px; color: var(--e-ink2); }
+.dm-card-go { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.dm-btn { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--e-line); background: rgba(255,255,255,.06); color: var(--e-ink); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.dm-btn--primary { background: var(--e-gold); border-color: var(--e-gold); color: #14100a; }
+.dm-guest { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; padding: 16px; border-radius: 16px; border: 1px solid var(--e-line); background: var(--e-surface); }
+.dm-qr { width: 220px; height: 220px; padding: 10px; border-radius: 12px; background: #fff; }
+.dm-qr svg { display: block; width: 100%; height: 100%; }
+.dm-guest-t { font-size: 15px; color: var(--e-ink); }
+.dm-guest-n { margin-top: 6px; font-size: 13px; color: var(--e-muted); }
+.dm-guest-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.dm-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--e-line); color: var(--e-ink); text-decoration: none; font-size: 14px; }
+.dm-link[aria-current="true"] { border-color: var(--e-gold); color: var(--e-gold); }
+.dm-self { margin-top: 18px; font-size: 13px; color: var(--e-muted); }
+.dm-self summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+.dm-self p { margin: 4px 0 12px; }
+@media (max-width: 560px) {
+  .dm-guest { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .dm-guest-links { justify-content: center; }
+  .dm-qr { width: 200px; height: 200px; }
+}
+/* The persona switch. Rendered by the /app layout OUTSIDE .belin-dark, so it
+   carries literal colours instead of the --e-* tokens. It sits bottom right,
+   clear of the logout pill (bottom left), the crew submit bar and the tabs. */
+.dm-switch { position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 61; }
+body:has(.b-submit-bar) .dm-switch { bottom: calc(96px + env(safe-area-inset-bottom)); }
+body:has(.b-tabbed) .dm-switch { bottom: calc(68px + 96px + env(safe-area-inset-bottom)); }
+.dm-chip { list-style: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; background: rgba(12,24,38,.92); border: 1px solid rgba(255,210,26,.55); color: #ffe488; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 26px -10px rgba(0,0,0,.6); backdrop-filter: blur(10px); }
+.dm-chip::-webkit-details-marker { display: none; }
+.dm-menu { position: absolute; right: 0; bottom: calc(100% + 8px); display: grid; gap: 4px; min-width: 240px; padding: 8px; border-radius: 14px; background: rgba(8,14,22,.97); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 40px -12px rgba(0,0,0,.7); }
+.dm-opt { display: flex; flex-direction: column; align-items: flex-start; width: 100%; min-height: 44px; padding: 8px 12px; border-radius: 10px; border: 0; background: transparent; color: #f4f1ea; font: inherit; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }
+.dm-opt span { font-size: 12px; font-weight: 500; color: #8f8a7e; }
+.dm-opt:hover { background: rgba(255,255,255,.06); }
+.dm-opt[aria-current="true"] { color: #ffd21a; cursor: default; }
