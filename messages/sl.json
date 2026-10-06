@@ -881,6 +881,12 @@
     "signerName": "Ime in priimek podpisnika",
     "signHint": "Podpišite se s prstom",
     "clearSignature": "Počisti",
+    "confirmSignature": "Potrdi podpis",
+    "savingSignature": "Shranjujem podpis ...",
+    "signatureSaved": "Podpis je shranjen.",
+    "signAgain": "Podpiši znova",
+    "confirmHint": "Ko je podpis končan, pritisnite Potrdi podpis.",
+    "signFirst": "Pred zaključkom morata podpis potrditi obe strani.",
     "signAndClose": "Podpiši in zaključi prevzem",
     "note": "Opombe",
     "downloadProtocol": "Prenesi zapisnik",
@@ -919,6 +925,8 @@
     "errEmpty": "Ni postavk za račun. Potrebna je sprejeta naročilnica, potrjene ure ali potrjena dodatna dela.",
     "errNoSub": "Na projektu ni podizvajalca.",
     "errSubOnly": "Račun izda podizvajalec.",
+    "errNoAddress": "Manjka naslov pri enem od podjetij. Dopolnite ga v nastavitvah.",
+    "errNoAcceptance": "Račun lahko izdate po podpisanem končnem prevzemu.",
     "conflict": "Računa ni bilo mogoče ustvariti. Osvežite stran.",
     "warnNoRate": "Urna postavka ni določena na naročilnici, zato režijske ure niso zaračunane.",
     "warnCoNoAmount": "Nekatera potrjena dodatna dela nimajo zneska in niso zaračunana.",
@@ -945,7 +953,9 @@
       "reverseChargeTitle": "Davčna klavzula",
       "workLabel": "Izvedba del na projektu",
       "regieLine": "Režijske ure, list št.",
-      "generated": "Ustvarjeno v Belinu"
+      "generated": "Ustvarjeno v Belinu",
+      "poRef": "po naročilnici št. {number} z dne {date}",
+      "coLine": "Dodatno delo št. {number}: {title}"
     },
     "cancel": "Prekliči",
     "byContractor": "Račun izda podizvajalec."
@@ -1024,5 +1034,8 @@
     "switchLabel": "Zamenjaj vlogo",
     "guestExpiredTitle": "Koda ni več veljavna",
     "guestExpiredBody": "Prosite predstavitelja, naj pokaže novo kodo."
+  },
+  "doc": {
+    "page": "Stran {n} od {total}"
   }
 }

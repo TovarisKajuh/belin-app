@@ -1,10 +1,13 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/actor-shared";
 import { requireOfficeActor, requireProjectActor, type Actor } from "@/lib/actor";
 import { emitEventDeferred } from "@/lib/notify";
-import { getSignedPhotoUrlMap, storeReportPdf } from "@/lib/storage";
+import { getSignedPhotoUrlMap, readObjectFresh, storeReportPdf } from "@/lib/storage";
+import { isPng } from "@/lib/acceptance-rules";
 import { renderDocument } from "@/lib/pdf/theme";
+import { loadIssuer } from "@/lib/pdf/issuer";
 import { AbnahmeDocument } from "@/lib/pdf/abnahme";
 import { abnahmeStrings, docString, type DocLocale } from "@/lib/pdf/strings";
 import type {
@@ -245,7 +248,9 @@ export async function saveSignature(
   requireOfficeActor(actor, { allowBauleiter: true });
   if (projectActor.role !== "epc") throw new Error("Forbidden.");
   if (!isUuid(acceptanceId)) throw new Error("Invalid acceptance id");
-  if (png.byteLength === 0 || png.byteLength > 2_000_000) throw new Error("final.err.signature");
+  if (png.byteLength === 0 || png.byteLength > 2_000_000 || !isPng(new Uint8Array(png))) {
+    throw new Error("final.err.signature");
+  }
 
   const db = createAdminClient();
   const { data: acceptance } = await db
@@ -256,10 +261,15 @@ export async function saveSignature(
     .maybeSingle();
   if (!acceptance || acceptance.status !== "draft") throw new Error(CONFLICT);
 
-  const path = `${projectId}/acceptance/${acceptanceId}-${side}.png`;
+  // A NEW path for every confirmed signature. Re-signing writes a second file
+  // instead of overwriting the first: storage keeps the original bytes at a
+  // reused path (docs/known-issues.md entry 2), which is exactly how a
+  // three-stroke signature used to print as one stroke. The superseded file is
+  // left in place; it is a few kilobytes and it is evidence of the re-sign.
+  const path = `${projectId}/acceptance/${acceptanceId}-${side}-${randomUUID()}.png`;
   const { error } = await db.storage
     .from("signatures")
-    .upload(path, Buffer.from(png), { contentType: "image/png", upsert: true });
+    .upload(path, Buffer.from(png), { contentType: "image/png", upsert: false });
   if (error) throw new Error("Could not store the signature");
 
   await db
@@ -347,7 +357,7 @@ async function renderAndStoreProtocol(projectId: string, acceptanceId: string): 
   const { data: project } = await db
     .from("projects")
     .select(
-      "name, language, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)",
+      "name, language, epc_org_id, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)",
     )
     .eq("id", projectId)
     .maybeSingle();
@@ -364,16 +374,10 @@ async function renderAndStoreProtocol(projectId: string, acceptanceId: string): 
   const locale = localeOf(project.language);
   const t = (key: string) => docString(locale, key);
 
-  const signature = async (path: string | null): Promise<Buffer | null> => {
-    if (!path) return null;
-    try {
-      const file = await db.storage.from("signatures").download(path);
-      if (file.error || !file.data) return null;
-      return Buffer.from(await file.data.arrayBuffer());
-    } catch {
-      return null;
-    }
-  };
+  // Read through a cache-busted signed URL, never storage.download(): download()
+  // can hand back an earlier version of the object (docs/known-issues.md entry 2).
+  const signature = async (path: string | null): Promise<Buffer | null> =>
+    path ? readObjectFresh("signatures", path) : null;
 
   const dateFmt = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : locale, {
     day: "2-digit",
@@ -407,6 +411,7 @@ async function renderAndStoreProtocol(projectId: string, acceptanceId: string): 
         })),
       epcSigner: { name: row.epc_signer_name ?? "", image: await signature(row.epc_signature_path) },
       subSigner: { name: row.sub_signer_name ?? "", image: await signature(row.sub_signature_path) },
+      issuer: await loadIssuer(db, project.epc_org_id),
       s: abnahmeStrings(locale),
     }),
   );

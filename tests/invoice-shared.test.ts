@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  addDaysIso,
   composeInvoiceLines,
   computeTotals,
   defaultVatMode,
   nextInvoiceNumber,
+  paymentDays,
   reverseChargeNote,
+  servicePeriod,
   standardVatRate,
 } from "@/lib/invoice-shared";
 
@@ -166,4 +169,49 @@ describe("nextInvoiceNumber", () => {
   it("keeps three digits past ninety nine", () => {
     expect(nextInvoiceNumber(2026, ["2026-099"])).toBe("2026-100");
   });
+});
+
+describe("paymentDays", () => {
+  it("reads the days from the naročilnica's terms", () => {
+    expect(paymentDays("30 dni od izdaje računa")).toBe(30);
+    expect(paymentDays("Zahlbar innerhalb von 14 Tagen")).toBe(14);
+  });
+  it("falls back to 30 days when the terms carry no usable number", () => {
+    expect(paymentDays(null)).toBe(30);
+    expect(paymentDays("takoj")).toBe(30);
+    expect(paymentDays("999 dni")).toBe(30);
+  });
+});
+
+describe("addDaysIso", () => {
+  it("crosses month and year ends", () => {
+    expect(addDaysIso("2026-10-06", 30)).toBe("2026-11-05");
+    expect(addDaysIso("2026-12-20", 30)).toBe("2027-01-19");
+  });
+});
+
+describe("servicePeriod", () => {
+  it("runs from the first report day to the acceptance day", () => {
+    expect(servicePeriod({ firstEntry: "2026-09-21", acceptanceDay: "2026-10-06" })).toEqual({
+      start: "2026-09-21",
+      end: "2026-10-06",
+    });
+  });
+  it("collapses to the acceptance day when nobody reported", () => {
+    expect(servicePeriod({ firstEntry: null, acceptanceDay: "2026-10-06" })).toEqual({
+      start: "2026-10-06",
+      end: "2026-10-06",
+    });
+  });
+});
+
+it("labels an extra with the caller's localized label", () => {
+  const result = composeInvoiceLines({
+    po: null,
+    approvedRegieHours: [],
+    approvedChangeOrders: [
+      { number: 1, title: "Zamenjava letev", amount: 1200, label: "Dodatno delo št. 1: Zamenjava letev" },
+    ],
+  });
+  expect(result.lines[0].description).toBe("Dodatno delo št. 1: Zamenjava letev");
 });

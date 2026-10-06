@@ -11,6 +11,7 @@ import { createHash } from "node:crypto";
 import { NarocilnicaDocument } from "@/lib/pdf/narocilnica";
 import { poStrings, type DocLocale } from "@/lib/pdf/strings";
 import { renderDocument } from "@/lib/pdf/theme";
+import { loadLogo } from "@/lib/pdf/issuer";
 
 export function sha256Of(bytes: Buffer): string {
   return createHash("sha256").update(bytes).digest("hex");
@@ -57,7 +58,7 @@ export async function renderPoPdf(
   const orgIds = [project.epc_org_id, project.sub_org_id].filter(Boolean) as string[];
   const { data: orgs } = await db
     .from("organizations")
-    .select("id, name, address, vat_id")
+    .select("id, name, address, vat_id, logo_path")
     .in("id", orgIds);
 
   const orgById = new Map((orgs ?? []).map((org) => [org.id, org]));
@@ -98,6 +99,7 @@ export async function renderPoPdf(
         vatId: sub?.vat_id ?? null,
       },
       acceptance,
+      issuer: { name: epc?.name ?? "", address: epc?.address ?? null, logo: await loadLogo(db, epc?.logo_path) },
       s: poStrings(locale),
     }),
   );

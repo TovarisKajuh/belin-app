@@ -10,6 +10,12 @@ One line per significant decision: what, why, when.
 
 - 2026-10-06: organizations.is_demo marks the four demo companies; the seed and the Demo Door trust only flagged organizations. Reason: one database serves local, demo and production, and a list of ids in a script was the only guard (D6).
 
+- 2026-10-06: No invoice before a signed final acceptance; the service period runs from the first report day to the acceptance day; the due date follows the naročilnica's payment terms, default 30 days. Reason: the invoice must state the time of supply (§ 14 UStG, 82. člen ZDDV-1) and nobody bills unaccepted work.
+
+- 2026-10-06: Every number and date the product prints goes through lib/format.ts: Slovenian dates as 6. 10. 2026, German and English with two digits, grouping always on, calendar days formatted in UTC and instants in the project's zone. Reason: the screens mixed English and Slovenian decimals and the documents printed yesterday's date after midnight.
+
+- 2026-10-06: Documents name their issuing company top right (name and address; logo once one is set) and carry 'Stran n od m'; Belin moves to the footer line. Issuer per document: the EPC for the naročilnica and the Zapisnik o prevzemu, the subcontractor for the invoice, the Poročilo o režijskih urah, the day report and the completion report (D16). The address follows ZGD-1 32. člen (firma and sedež on business letters) as two secondary sources report it; not yet read on PISRS.
+
 - 2026-10-06: The meeting is built from a Morning cut, not the plan's Minimum winning cut, and self-serve signup moves to after the meeting. Reason: execution started at 09:00 instead of 23:00, leaving about four hours before a 13:00 freeze; the cut keeps what the buyer sees in the run of show (truthful demo data, the presenter door, the visible screen bugs on the demo path, signatures, invoice fields, document spacing, the landing privacy fix, the splash), and signup cannot open today in any case without the operator's legal details.
 
 - 2026-09-16: The workflow document stays an attachment in `assets/marketing/` and is NOT published to `public/p/` like the Salzburg deck. Reason: it is labelled an internal document on its own first screen, and the real generated documents it photographs carry a real EPC's name and AVESOL's demo pricing. The rule for public/p/ is that a push to main publishes it, so anything internal has to stay out by construction rather than by remembering.

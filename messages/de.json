@@ -881,6 +881,12 @@
     "signerName": "Vor- und Nachname des Unterzeichners",
     "signHint": "Unterschreiben Sie mit dem Finger",
     "clearSignature": "Löschen",
+    "confirmSignature": "Unterschrift bestätigen",
+    "savingSignature": "Unterschrift wird gespeichert ...",
+    "signatureSaved": "Unterschrift ist gespeichert.",
+    "signAgain": "Erneut unterschreiben",
+    "confirmHint": "Wenn die Unterschrift fertig ist, tippen Sie auf Unterschrift bestätigen.",
+    "signFirst": "Vor dem Abschluss müssen beide Seiten ihre Unterschrift bestätigen.",
     "signAndClose": "Unterschreiben und Abnahme abschließen",
     "note": "Anmerkungen",
     "downloadProtocol": "Protokoll herunterladen",
@@ -919,6 +925,8 @@
     "errEmpty": "Keine Positionen für die Rechnung. Es braucht eine angenommene Bestellung, anerkannte Stunden oder anerkannte Nachträge.",
     "errNoSub": "Im Projekt gibt es keinen Nachunternehmer.",
     "errSubOnly": "Die Rechnung stellt der Nachunternehmer aus.",
+    "errNoAddress": "Bei einem der Unternehmen fehlt die Adresse. Ergänzen Sie sie in den Einstellungen.",
+    "errNoAcceptance": "Die Rechnung kann erst nach der unterschriebenen Endabnahme erstellt werden.",
     "conflict": "Die Rechnung konnte nicht erstellt werden. Bitte laden Sie die Seite neu.",
     "warnNoRate": "In der Bestellung ist kein Stundensatz festgelegt, daher werden die Regiestunden nicht berechnet.",
     "warnCoNoAmount": "Einige anerkannte Nachträge haben keinen Betrag und werden nicht berechnet.",
@@ -945,7 +953,9 @@
       "reverseChargeTitle": "Steuerklausel",
       "workLabel": "Ausführung der Arbeiten am Projekt",
       "regieLine": "Regiestunden, Stundenzettel Nr.",
-      "generated": "Erstellt in Belin"
+      "generated": "Erstellt in Belin",
+      "poRef": "gemäß Bestellung Nr. {number} vom {date}",
+      "coLine": "Nachtrag Nr. {number}: {title}"
     },
     "cancel": "Abbrechen",
     "byContractor": "Die Rechnung stellt der Nachunternehmer aus."
@@ -1024,5 +1034,8 @@
     "switchLabel": "Rolle wechseln",
     "guestExpiredTitle": "Der Code ist nicht mehr gültig",
     "guestExpiredBody": "Bitten Sie die vortragende Person um einen neuen Code."
+  },
+  "doc": {
+    "page": "Seite {n} von {total}"
   }
 }

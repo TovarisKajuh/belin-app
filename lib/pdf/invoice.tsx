@@ -14,7 +14,7 @@
 // changes its address next year, this document must keep saying what it said.
 
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { C, FlexTable, Footer, Header, LabelValue, styles } from "@/lib/pdf/theme";
+import { C, FlexTable, Footer, Header, LabelValue, RunningHeader, styles, type DocIssuer } from "@/lib/pdf/theme";
 
 export interface InvoiceParty {
   name: string;
@@ -43,6 +43,7 @@ export interface InvoiceStrings {
   reverseChargeTitle: string;
   generated: string;
   regieLine: string;
+  page: string;
 }
 
 export interface InvoiceInput {
@@ -61,6 +62,8 @@ export interface InvoiceInput {
   totalVat: string | null;
   totalGross: string;
   reverseChargeNote: string | null;
+  /** The subcontractor: the supplier issues its own invoice. */
+  issuer: DocIssuer;
   s: InvoiceStrings;
 }
 
@@ -70,7 +73,8 @@ export function InvoiceDocument(input: InvoiceInput) {
   return (
     <Document title={`${s.title} ${input.number}`}>
       <Page size="A4" style={styles.page}>
-        <Header title={s.title} docNo={`${s.docNo} ${input.number}`} />
+        <RunningHeader title={s.title} docNo={`${s.docNo} ${input.number}`} />
+        <Header title={s.title} docNo={`${s.docNo} ${input.number}`} issuer={input.issuer} />
 
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 16 }}>
           <View style={{ width: "48%" }}>
@@ -123,6 +127,10 @@ export function InvoiceDocument(input: InvoiceInput) {
           /* REVERSE CHARGE. There is no VAT row here, by construction. */
           <View style={{ marginTop: 12, alignItems: "flex-end" }} wrap={false}>
             <View style={{ width: "58%" }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
+                <Text>{s.totalNet}</Text>
+                <Text>{input.totalNet}</Text>
+              </View>
               <View
                 style={{
                   flexDirection: "row",
@@ -139,7 +147,7 @@ export function InvoiceDocument(input: InvoiceInput) {
             {input.reverseChargeNote ? (
               <View style={{ width: "100%", marginTop: 14 }}>
                 <Text style={{ fontWeight: 700, marginBottom: 3 }}>{s.reverseChargeTitle}</Text>
-                <Text style={{ lineHeight: 1.5 }}>{input.reverseChargeNote}</Text>
+                <Text style={styles.body}>{input.reverseChargeNote}</Text>
               </View>
             ) : null}
           </View>
@@ -177,7 +185,7 @@ export function InvoiceDocument(input: InvoiceInput) {
           </View>
         ) : null}
 
-        <Footer generatedLabel={s.generated} />
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
       </Page>
     </Document>
   );

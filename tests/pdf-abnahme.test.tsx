@@ -38,6 +38,7 @@ function protocol(penaltyReserved: boolean) {
     ],
     epcSigner: { name: "Matej Kovač", image: null },
     subSigner: { name: "Boštjan Novak", image: null },
+    issuer: { name: "Sonce Energija d.o.o.", logo: null },
     s: abnahmeStrings("sl"),
   });
 }

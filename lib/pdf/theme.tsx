@@ -27,6 +27,7 @@ import { Font, Image, StyleSheet, Text, View, renderToBuffer } from "@react-pdf/
 // as an internal namespace. Importing it here keeps the table cell helper
 // typed instead of widening its width and textAlign to plain strings.
 import type { Style } from "@react-pdf/types";
+import { fitBox, imageSize } from "@/lib/pdf/image-size";
 
 const interPath = path.join(process.cwd(), "public", "fonts", "InterVariable.ttf");
 
@@ -85,7 +86,7 @@ export const styles = StyleSheet.create({
   page: {
     flexDirection: "column",
     backgroundColor: C.paper,
-    paddingTop: 36,
+    paddingTop: 40, // room for the running header on continuation pages
     paddingBottom: 56, // room for the fixed footer
     paddingHorizontal: 36,
     fontSize: 9,
@@ -112,17 +113,56 @@ export const styles = StyleSheet.create({
     color: C.inkSoft,
     marginTop: 3,
   },
+  headerLeft: {
+    flexShrink: 1,
+    paddingRight: 16,
+  },
   headerRight: {
+    alignItems: "flex-end",
+    maxWidth: "45%",
     textAlign: "right",
     fontSize: 8,
     color: C.muted,
     lineHeight: 1.5,
   },
-  brand: {
-    fontSize: 11,
+  issuerName: {
+    fontSize: 9,
     fontWeight: 700,
-    letterSpacing: 1.2,
     color: C.ink,
+  },
+  // The repeated header on every continuation page: title, number, project.
+  runningHeader: {
+    position: "absolute",
+    top: 16,
+    left: 36,
+    right: 36,
+  },
+  runningHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingBottom: 3,
+    borderBottomWidth: 1,
+    borderBottomColor: C.line,
+    fontSize: 7,
+    color: C.muted,
+  },
+  // Body text. fontSize and lineHeight MUST sit on the same element: a
+  // unitless lineHeight on a Text without its own fontSize resolves against
+  // @react-pdf's 18 point default, which is the double spacing every paragraph
+  // printed until 2026-10-06 (tests/pdf-body-text.test.tsx pins it).
+  body: {
+    fontSize: 9,
+    lineHeight: 1.5,
+  },
+  small: {
+    fontSize: 8.5,
+    lineHeight: 1.5,
+  },
+  photoCaption: {
+    fontSize: 7,
+    lineHeight: 1.3,
+    color: C.muted,
+    marginTop: 2,
   },
   // The cover's figure band: four numbers across, each in its own quiet box.
   statBand: {
@@ -140,6 +180,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   statLabel: {
+    minHeight: 18, // two lines, so a wrapping label never pushes its number lower than its neighbours
     fontSize: 7.5,
     letterSpacing: 0.7,
     textTransform: "uppercase",
@@ -238,10 +279,72 @@ export type Column = {
 };
 
 /**
- * The document header. `docNo` is the human document number ("N-3",
- * "2026-001"), printed right of the title where a filing clerk looks for it.
+ * The company that ISSUES a document, printed where a letterhead carries it.
+ *
+ * Per document (DECISIONS 2026-10-06, D16): the EPC issues the naročilnica and
+ * the Zapisnik o prevzemu; the subcontractor issues the daily report, the
+ * Regiebericht, the completion report, the invoice, the change order, the
+ * situacija, the obstruction notice and the site poster. Belin is the tool,
+ * not the issuer, and appears only in the footer.
+ */
+export interface DocIssuer {
+  name: string;
+  /**
+   * organizations.address, printed under the name: a business letter names the
+   * company and its seat (ZGD-1, 32. člen, as two secondary sources report it;
+   * not yet read on PISRS). Optional, so a caller without it prints the name only.
+   */
+  address?: string | null;
+  /** PNG or JPEG bytes from organizations.logo_path; null prints the name alone. */
+  logo: Buffer | null;
+}
+
+const LOGO_MAX_WIDTH = 120;
+const LOGO_MAX_HEIGHT = 28;
+
+/**
+ * The document header. `docNo` is the human document number ("št. 3",
+ * "št. 2026-001"), printed under the issuer, where a filing clerk looks for it.
  */
 export function Header({
+  title,
+  docNo,
+  projectName,
+  issuer,
+}: {
+  title: string;
+  docNo?: string | null;
+  projectName?: string | null;
+  issuer: DocIssuer;
+}) {
+  const logoSize = issuer.logo ? imageSize(issuer.logo) : null;
+  const logoBox = logoSize ? fitBox(logoSize, LOGO_MAX_WIDTH, LOGO_MAX_HEIGHT) : null;
+
+  return (
+    <View style={styles.header}>
+      <View style={styles.headerLeft}>
+        <Text style={styles.headerTitle}>{title}</Text>
+        {projectName ? <Text style={styles.headerProject}>{projectName}</Text> : null}
+      </View>
+      <View style={styles.headerRight}>
+        {issuer.logo && logoBox ? (
+          <Image src={issuer.logo} style={{ width: logoBox.width, height: logoBox.height, marginBottom: 4 }} />
+        ) : null}
+        {issuer.name ? <Text style={styles.issuerName}>{issuer.name}</Text> : null}
+        {issuer.address ? <Text>{issuer.address}</Text> : null}
+        {docNo ? <Text>{docNo}</Text> : null}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * The slim header repeated on every continuation page of a <Page>: title,
+ * number, project. It reads subPageNumber, not pageNumber, so in the completion
+ * report, where every day is its own <Page>, it appears only when one day runs
+ * onto a second sheet, never on top of a day's own full header.
+ */
+export function RunningHeader({
   title,
   docNo,
   projectName,
@@ -250,43 +353,46 @@ export function Header({
   docNo?: string | null;
   projectName?: string | null;
 }) {
+  const left = docNo ? `${title} ${docNo}` : title;
   return (
-    <View style={styles.header}>
-      <View>
-        <Text style={styles.headerTitle}>{title}</Text>
-        {projectName ? <Text style={styles.headerProject}>{projectName}</Text> : null}
-      </View>
-      <View style={styles.headerRight}>
-        <Text style={styles.brand}>BELIN</Text>
-        {docNo ? <Text>{docNo}</Text> : null}
-      </View>
-    </View>
+    <View
+      fixed
+      style={styles.runningHeader}
+      render={({ subPageNumber }) =>
+        subPageNumber > 1 ? (
+          <View style={styles.runningHeaderRow}>
+            <Text>{left}</Text>
+            {projectName ? <Text>{projectName}</Text> : null}
+          </View>
+        ) : null
+      }
+    />
   );
 }
 
 /**
- * The fixed page footer. `fixed` repeats it on every page of the document,
- * which is what makes multi page documents (the completion report) legible
- * once printed and separated.
+ * The fixed page footer, repeated on every page. Left: who made the file and
+ * where. Right: "Stran n od m", from a template with {n} and {total}, so a
+ * printed and separated document can be put back in order.
  */
 export function Footer({
   generatedLabel,
   pageLabel,
 }: {
   generatedLabel: string;
-  /** Optional "Stran {n}" style label; @react-pdf supplies the numbers. */
-  pageLabel?: (info: { pageNumber: number; totalPages: number }) => string;
+  /** The doc.page template, e.g. "Stran {n} od {total}". */
+  pageLabel?: string;
 }) {
   return (
     <View style={styles.footer} fixed>
-      <Text>{generatedLabel}</Text>
+      <Text>{`${generatedLabel} · getbelin.com`}</Text>
       {pageLabel ? (
         <Text
-          render={({ pageNumber, totalPages }) => pageLabel({ pageNumber, totalPages })}
+          render={({ pageNumber, totalPages }) =>
+            pageLabel.replace("{n}", String(pageNumber)).replace("{total}", String(totalPages))
+          }
         />
-      ) : (
-        <Text>getbelin.com</Text>
-      )}
+      ) : null}
     </View>
   );
 }
@@ -327,11 +433,14 @@ export function FlexTable({
   columns,
   rows,
   emptyLabel,
+  hideHeader = false,
 }: {
   columns: Column[];
   rows: (string | number | null)[][];
   /** Printed instead of an empty body, so a register never looks truncated. */
   emptyLabel?: string;
+  /** For a two column summary whose rows label themselves: no empty grey bar on top. */
+  hideHeader?: boolean;
 }) {
   const cellStyle = (col: Column): Style => ({
     width: `${col.widthPct}%`,
@@ -341,13 +450,15 @@ export function FlexTable({
 
   return (
     <View>
-      <View style={styles.tableHead} fixed>
-        {columns.map((col, i) => (
-          <Text key={i} style={[styles.tableHeadCell, cellStyle(col)]}>
-            {col.label}
-          </Text>
-        ))}
-      </View>
+      {hideHeader ? null : (
+        <View style={styles.tableHead} fixed>
+          {columns.map((col, i) => (
+            <Text key={i} style={[styles.tableHeadCell, cellStyle(col)]}>
+              {col.label}
+            </Text>
+          ))}
+        </View>
+      )}
       {rows.length === 0 && emptyLabel ? (
         <View style={styles.tableRow}>
           <Text style={[styles.tableCell, { color: C.muted }]}>{emptyLabel}</Text>

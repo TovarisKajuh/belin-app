@@ -15,7 +15,7 @@
 //    must not look like a present one.
 
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { C, FlexTable, Footer, Header, LabelValue, SignatureBox, styles } from "@/lib/pdf/theme";
+import { C, FlexTable, Footer, Header, LabelValue, RunningHeader, SignatureBox, styles, type DocIssuer } from "@/lib/pdf/theme";
 
 export interface AbnahmeStrings {
   title: string;
@@ -39,6 +39,7 @@ export interface AbnahmeStrings {
   signEpc: string;
   signSub: string;
   generated: string;
+  page: string;
 }
 
 export interface AbnahmeInput {
@@ -56,6 +57,8 @@ export interface AbnahmeInput {
   defects: { description: string; dueDate: string | null; agreementLabel: string }[];
   epcSigner: { name: string; image: Buffer | null };
   subSigner: { name: string; image: Buffer | null };
+  /** The EPC: the client conducts and issues the protocol. */
+  issuer: DocIssuer;
   s: AbnahmeStrings;
 }
 
@@ -65,7 +68,8 @@ export function AbnahmeDocument(input: AbnahmeInput) {
   return (
     <Document title={`${s.title} ${input.projectName}`}>
       <Page size="A4" style={styles.page}>
-        <Header title={s.title} projectName={input.projectName} />
+        <RunningHeader title={s.title} projectName={input.projectName} />
+        <Header title={s.title} projectName={input.projectName} issuer={input.issuer} />
 
         <View style={{ marginBottom: 14 }}>
           <LabelValue label={s.project} value={input.projectName} />
@@ -113,14 +117,14 @@ export function AbnahmeDocument(input: AbnahmeInput) {
             wrap={false}
           >
             <Text style={{ fontWeight: 700, marginBottom: 4 }}>{s.penaltyTitle}</Text>
-            <Text style={{ lineHeight: 1.5 }}>{s.penaltySentence}</Text>
+            <Text style={styles.body}>{s.penaltySentence}</Text>
           </View>
         ) : null}
 
         {input.note ? (
           <View style={{ marginTop: 14 }}>
             <Text style={styles.sectionTitle}>{s.note}</Text>
-            <Text style={{ lineHeight: 1.5 }}>{input.note}</Text>
+            <Text style={styles.body}>{input.note}</Text>
           </View>
         ) : null}
 
@@ -129,7 +133,7 @@ export function AbnahmeDocument(input: AbnahmeInput) {
           <SignatureBox name={input.subSigner.name} image={input.subSigner.image} caption={s.signSub} />
         </View>
 
-        <Footer generatedLabel={s.generated} />
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
       </Page>
     </Document>
   );

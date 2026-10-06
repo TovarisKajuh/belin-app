@@ -3034,3 +3034,13 @@ body:has(.b-tabbed) .dm-switch { bottom: calc(68px + 96px + env(safe-area-inset-
 .dm-opt span { font-size: 12px; font-weight: 500; color: #8f8a7e; }
 .dm-opt:hover { background: rgba(255,255,255,.06); }
 .dm-opt[aria-current="true"] { color: #ffd21a; cursor: default; }
+
+/* === 3.1b: Signature confirm === */
+.belin-dark .sig-btns { display: flex; gap: 8px; align-items: center; }
+.belin-dark .sig-btns .rp-send { margin-top: 0; min-height: 44px; }
+.belin-dark .sig-btns .sig-clear { min-height: 44px; padding: 0 10px; }
+.belin-dark .sig-saved {
+  display: flex; align-items: center; justify-content: center; margin: 0;
+  height: 150px; border-radius: 12px; border: 1px dashed var(--e-line);
+  color: var(--e-ok); font-weight: 700; font-size: 14px;
+}

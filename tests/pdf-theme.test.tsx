@@ -12,7 +12,7 @@ function SmokeDocument() {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <Header title="Naročilnica" docNo="N-1" projectName="Belin test" />
+        <Header title="Naročilnica" docNo="N-1" projectName="Belin test" issuer={{ name: "Solarna Gradnja d.o.o.", logo: null }} />
         <LabelValue label="Naročnik" value="Sonce Energija d.o.o." />
         <FlexTable
           columns={[

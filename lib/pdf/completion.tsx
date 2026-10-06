@@ -12,7 +12,7 @@
 // only the summary.
 
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { C, FlexTable, Footer, Header, LabelValue, StatTile, styles } from "@/lib/pdf/theme";
+import { FlexTable, Footer, Header, LabelValue, RunningHeader, StatTile, styles, type DocIssuer } from "@/lib/pdf/theme";
 import { DayReportPage, type DayReportData, type DayReportStrings } from "@/lib/pdf/day-report";
 
 export interface CompletionStrings {
@@ -47,6 +47,7 @@ export interface CompletionStrings {
   incidentsCount: string;
   dayList: string;
   crew: string;
+  page: string;
   day: DayReportStrings;
 }
 
@@ -63,6 +64,8 @@ export interface CompletionInput {
   hoursRegister: { number: number; hours: number; status: string }[];
   coRegister: { number: number; title: string; amount: string; status: string }[];
   incidentRegister: { date: string; kindLabel: string; note: string }[];
+  /** The subcontractor: the report is its account of the job. */
+  issuer: DocIssuer;
   s: CompletionStrings;
 }
 
@@ -78,7 +81,8 @@ export function CompletionDocument(input: CompletionInput) {
   return (
     <Document title={`${s.title} ${input.projectName}`}>
       <Page size="A4" style={styles.page}>
-        <Header title={s.title} projectName={input.projectName} />
+        <RunningHeader title={s.title} projectName={input.projectName} />
+        <Header title={s.title} projectName={input.projectName} issuer={input.issuer} />
 
         <View style={{ marginTop: 8 }}>
           <LabelValue label={s.project} value={input.projectName} />
@@ -120,6 +124,7 @@ export function CompletionDocument(input: CompletionInput) {
             [s.incidentsCount, String(input.incidentRegister.length)],
           ]}
           emptyLabel={s.none}
+          hideHeader
         />
 
         {/* The shape of the job on one page: which days carried work, how many
@@ -147,17 +152,18 @@ export function CompletionDocument(input: CompletionInput) {
           emptyLabel={s.none}
         />
 
-        <Footer generatedLabel={s.generated} />
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
       </Page>
 
       {/* Every day that carried work or an incident, in order. The numbering
           comes from buildDayReports, so it can never skip. */}
       {input.days.map((day) => (
-        <DayReportPage key={day.reportNo} day={day} s={s.day} />
+        <DayReportPage key={day.reportNo} day={day} s={s.day} issuer={input.issuer} />
       ))}
 
       <Page size="A4" style={styles.page}>
-        <Header title={s.registers} projectName={input.projectName} />
+        <RunningHeader title={s.registers} projectName={input.projectName} />
+        <Header title={s.registers} projectName={input.projectName} issuer={input.issuer} />
 
         <Text style={styles.sectionTitle}>{s.hoursRegister}</Text>
         <FlexTable
@@ -193,8 +199,7 @@ export function CompletionDocument(input: CompletionInput) {
           emptyLabel={s.none}
         />
 
-        <Text style={{ marginTop: 20, fontSize: 8, color: C.muted }}>{s.generated}</Text>
-        <Footer generatedLabel={s.generated} />
+        <Footer generatedLabel={s.generated} pageLabel={s.page} />
       </Page>
     </Document>
   );

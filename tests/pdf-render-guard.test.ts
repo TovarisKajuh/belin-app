@@ -49,6 +49,23 @@ describe("pdf render guard", () => {
     expect(offenders).toEqual([]);
   });
 
+  // The double-spacing bug (documents H1) returns the moment a style says a
+  // unitless lineHeight without its own fontSize: it then resolves against
+  // @react-pdf's 18 point default. So every style object literal under lib/pdf
+  // that says lineHeight must also say fontSize. styles.body and styles.small
+  // do, the brochure's styles do, and a later template (Wave 8's pilot
+  // agreement, the reklamacija) may write its own as long as it does too.
+  it("never sets lineHeight without fontSize in the same style object", () => {
+    const offenders: string[] = [];
+    for (const file of walk("lib/pdf").map((f) => f.split("\\").join("/"))) {
+      const source = readFileSync(file, "utf8");
+      for (const match of source.matchAll(/\{[^{}]*lineHeight[^{}]*\}/g)) {
+        if (!/fontSize/.test(match[0])) offenders.push(`${file}: ${match[0].replace(/\s+/g, " ").slice(0, 90)}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it("keeps the font re-registration inside the render helper", () => {
     const theme = readFileSync("lib/pdf/theme.tsx", "utf8");
     const helper = theme.slice(theme.indexOf("export async function renderDocument"));

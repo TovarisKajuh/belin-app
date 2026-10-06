@@ -66,6 +66,7 @@ function buildDocument(dayCount: number) {
       { number: 1, title: "Zamenjava letev", amount: "1.200,00 EUR", status: "Potrjeno" },
     ],
     incidentRegister: [{ date: "02. 08.", kindLabel: "Dež, prekinitev", note: "" }],
+    issuer: { name: "AVESOL d.o.o.", logo: null },
     s: completionStrings("sl"),
   });
 }

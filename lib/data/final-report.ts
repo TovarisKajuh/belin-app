@@ -11,6 +11,7 @@ import { CompletionDocument } from "@/lib/pdf/completion";
 import type { DayReportData } from "@/lib/pdf/day-report";
 import { completionStrings, docString, type DocLocale } from "@/lib/pdf/strings";
 import { renderDocument } from "@/lib/pdf/theme";
+import { loadIssuer } from "@/lib/pdf/issuer";
 
 // Assembling the completion report.
 //
@@ -52,7 +53,7 @@ export async function generateCompletionReport(
   const { data: project } = await db
     .from("projects")
     .select(
-      "id, name, language, country, kwp, address_street, address_zip, address_city, planned_start, planned_end, epc:epc_org_id (name), sub:sub_org_id (name)",
+      "id, name, language, country, kwp, sub_org_id, address_street, address_zip, address_city, planned_start, planned_end, epc:epc_org_id (name), sub:sub_org_id (name)",
     )
     .eq("id", projectId)
     .maybeSingle();
@@ -211,6 +212,7 @@ export async function generateCompletionReport(
         kindLabel: t(`incident.kinds.${incident.kind}`),
         note: incident.note,
       })),
+      issuer: await loadIssuer(db, project.sub_org_id),
       s: strings,
     }),
   );

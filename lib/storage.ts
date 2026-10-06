@@ -254,3 +254,31 @@ export async function getSignedReportUrl(path: string, expiresIn = 300): Promise
   if (error || !data) return null;
   return data.signedUrl;
 }
+
+/**
+ * The CURRENT bytes of a stored object, or null when it cannot be read.
+ *
+ * Read through a short signed URL with a cache-busting query, never through
+ * storage.download(): download() can hand back a previous version of an
+ * object at the same path (docs/known-issues.md entry 2, trap B). Anything
+ * that hashes, embeds or serves a document whose CONTENT matters reads here.
+ * Callers pass only paths read from rows they were already authorized to load.
+ */
+export async function readObjectFresh(
+  bucket: "signatures" | "reports" | "photos",
+  path: string,
+): Promise<Buffer | null> {
+  const db = createAdminClient();
+  const { data, error } = await db.storage.from(bucket).createSignedUrl(path, 60);
+  if (error || !data) return null;
+  const separator = data.signedUrl.includes("?") ? "&" : "?";
+  try {
+    const response = await fetch(`${data.signedUrl}${separator}cb=${randomUUID()}`, {
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    return Buffer.from(await response.arrayBuffer());
+  } catch {
+    return null;
+  }
+}

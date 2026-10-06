@@ -11,7 +11,7 @@
 // missing picture must never cost the page it belonged to.
 
 import { Document, Page, Text, View, Image } from "@react-pdf/renderer";
-import { C, Footer, Header, styles } from "@/lib/pdf/theme";
+import { C, Footer, Header, RunningHeader, styles, type DocIssuer } from "@/lib/pdf/theme";
 
 export interface DayReportStrings {
   title: string;
@@ -28,6 +28,7 @@ export interface DayReportStrings {
   noWeather: string;
   generated: string;
   people: string;
+  page: string;
 }
 
 export interface DayReportData {
@@ -44,10 +45,11 @@ export interface DayReportData {
   photos: Buffer[];
 }
 
-export function DayReportPage({ day, s }: { day: DayReportData; s: DayReportStrings }) {
+export function DayReportPage({ day, s, issuer }: { day: DayReportData; s: DayReportStrings; issuer: DocIssuer }) {
   return (
     <Page size="A4" style={styles.page} wrap>
-      <Header title={s.title} docNo={`${s.reportNo} ${day.reportNo}`} projectName={day.dateLabel} />
+      <RunningHeader title={s.title} docNo={`${s.reportNo} ${day.reportNo}`} projectName={day.dateLabel} />
+      <Header title={s.title} docNo={`${s.reportNo} ${day.reportNo}`} projectName={day.dateLabel} issuer={issuer} />
 
       <View style={{ flexDirection: "row", gap: 24, marginBottom: 14 }}>
         <View style={{ width: "50%" }}>
@@ -66,7 +68,7 @@ export function DayReportPage({ day, s }: { day: DayReportData; s: DayReportStri
       ) : (
         day.entries.map((entry, i) => (
           <View key={i} style={{ marginBottom: 8 }} wrap={false}>
-            {entry.note ? <Text style={{ lineHeight: 1.5 }}>{entry.note}</Text> : null}
+            {entry.note ? <Text style={styles.body}>{entry.note}</Text> : null}
             {entry.quantities.length > 0 ? (
               <Text style={{ color: C.inkSoft, marginTop: 3 }}>
                 {entry.quantities
@@ -85,7 +87,7 @@ export function DayReportPage({ day, s }: { day: DayReportData; s: DayReportStri
         <>
           <Text style={styles.sectionTitle}>{s.incidents}</Text>
           {day.incidents.map((incident, i) => (
-            <Text key={i} style={{ marginBottom: 3, lineHeight: 1.5 }}>
+            <Text key={i} style={[styles.body, { marginBottom: 3 }]}>
               {incident.note ? `${incident.kindLabel}: ${incident.note}` : incident.kindLabel}
             </Text>
           ))}
@@ -114,16 +116,16 @@ export function DayReportPage({ day, s }: { day: DayReportData; s: DayReportStri
         </View>
       </View>
 
-      <Footer generatedLabel={s.generated} />
+      <Footer generatedLabel={s.generated} pageLabel={s.page} />
     </Page>
   );
 }
 
 /** A single day as its own document, for the crew-facing "print today" case. */
-export function DayReportDocument({ day, s }: { day: DayReportData; s: DayReportStrings }) {
+export function DayReportDocument({ day, s, issuer }: { day: DayReportData; s: DayReportStrings; issuer: DocIssuer }) {
   return (
     <Document title={`${s.title} ${day.reportNo}`}>
-      <DayReportPage day={day} s={s} />
+      <DayReportPage day={day} s={s} issuer={issuer} />
     </Document>
   );
 }
