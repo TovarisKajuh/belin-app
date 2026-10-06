@@ -1044,6 +1044,31 @@
     "guestExpiredBody": "Prosite predstavitelja, naj pokaže novo kodo."
   },
   "doc": {
-    "page": "Stran {n} od {total}"
+    "page": "Stran {n} od {total}",
+    "dateTime": "{date} ob {time}",
+    "ui": {
+      "coPdf": "Zahtevek v PDF"
+    },
+    "co": {
+      "title": "Zahtevek za dodatno delo",
+      "project": "Projekt",
+      "client": "Naročnik",
+      "contractor": "Izvajalec",
+      "site": "Lokacija",
+      "submitted": "Oddano",
+      "submittedBy": "Oddal",
+      "status": "Stanje",
+      "decided": "Odločil",
+      "description": "Opis dela",
+      "amount": "Znesek (neto)",
+      "noAmount": "Znesek ni določen. Brez zneska se delo ne zaračuna.",
+      "photos": "Fotografije",
+      "photoCaption": "Fotografija {n}",
+      "basisSi": "Pogodbena cena ne obsega dodatnih del (34. uzanca PGU 2020) niti nepredvidenih del, za katera izvajalec ob sklenitvi pogodbe ni vedel niti ni mogel vedeti (32. uzanca); njihova cena se dogovori posebej.",
+      "rejectedReason": "Razlog zavrnitve",
+      "approvedNote": "Naročnik je zahtevek potrdil v aplikaciji Belin.",
+      "rejectedNote": "Naročnik je zahtevek zavrnil v aplikaciji Belin.",
+      "pendingNote": "Zahtevek čaka na odločitev naročnika."
+    }
   }
 }

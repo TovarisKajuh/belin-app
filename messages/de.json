@@ -1044,6 +1044,31 @@
     "guestExpiredBody": "Bitten Sie die vortragende Person um einen neuen Code."
   },
   "doc": {
-    "page": "Seite {n} von {total}"
+    "page": "Seite {n} von {total}",
+    "dateTime": "{date} um {time} Uhr",
+    "ui": {
+      "coPdf": "Nachtrag als PDF"
+    },
+    "co": {
+      "title": "Nachtrag",
+      "project": "Bauvorhaben",
+      "client": "Auftraggeber",
+      "contractor": "Auftragnehmer",
+      "site": "Baustelle",
+      "submitted": "Eingereicht",
+      "submittedBy": "Eingereicht von",
+      "status": "Status",
+      "decided": "Entschieden von",
+      "description": "Leistungsbeschreibung",
+      "amount": "Betrag (netto)",
+      "noAmount": "Kein Betrag angegeben. Ohne Betrag wird die Leistung nicht abgerechnet.",
+      "photos": "Fotos",
+      "photoCaption": "Foto {n}",
+      "basisSi": "Der Vertragspreis umfasst weder Zusatzleistungen (Usance 34 der slowenischen Besonderen Bauusancen 2020) noch unvorhergesehene Leistungen, von denen der Auftragnehmer bei Vertragsschluss weder wusste noch wissen konnte (Usance 32); ihr Preis wird gesondert vereinbart.",
+      "rejectedReason": "Ablehnungsgrund",
+      "approvedNote": "Der Auftraggeber hat den Nachtrag in Belin bestätigt.",
+      "rejectedNote": "Der Auftraggeber hat den Nachtrag in Belin abgelehnt.",
+      "pendingNote": "Der Nachtrag wartet auf die Entscheidung des Auftraggebers."
+    }
   }
 }

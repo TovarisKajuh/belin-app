@@ -1,0 +1,97 @@
+import { createAdminClient } from "@/lib/supabase/admin";
+import { isUuid } from "@/lib/actor-shared";
+import { documentReader, notFound, pdfResponse } from "@/lib/data/doc-access";
+import { formatMoney } from "@/lib/po-shared";
+import { DodatnoDeloDocument, dodatnoDeloStrings } from "@/lib/pdf/dodatno-delo";
+import { docLocaleOf, docString, docText } from "@/lib/pdf/strings";
+import { docDateTime } from "@/lib/pdf/doc-format";
+import { contentDisposition } from "@/lib/pdf/filename";
+import { downloadDocPhotos } from "@/lib/pdf/photo-data";
+import { loadIssuer } from "@/lib/pdf/issuer";
+import { renderDocument } from "@/lib/pdf/theme";
+
+// One change order as a PDF, rendered on demand from the rows.
+// Office people of both parties; never crew (the amount is money, D11), never
+// a project link.
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const MAX_PHOTOS = 6;
+
+export async function GET(_request: Request, { params }: { params: Promise<{ changeOrderId: string }> }) {
+  const { changeOrderId } = await params;
+  if (!isUuid(changeOrderId)) return notFound();
+
+  const db = createAdminClient();
+  const { data: order } = await db
+    .from("change_orders")
+    .select(
+      "id, project_id, number, title, description, amount, status, created_at, decided_at, author:created_by_person (full_name), decider:decided_by_person (full_name), change_order_photos (storage_path, sort_order)",
+    )
+    .eq("id", changeOrderId)
+    .maybeSingle();
+  if (!order) return notFound();
+
+  const reader = await documentReader(order.project_id);
+  if (!reader.ok) return reader.response;
+
+  const { data: project } = await db
+    .from("projects")
+    .select(
+      "name, language, country, sub_org_id, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)",
+    )
+    .eq("id", order.project_id)
+    .maybeSingle();
+  if (!project) return notFound();
+
+  const locale = docLocaleOf(project.language);
+  const country = project.country ?? "si";
+  const status = order.status as "submitted" | "approved" | "rejected";
+
+  const photos = await downloadDocPhotos(
+    db,
+    (order.change_order_photos ?? [])
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .slice(0, MAX_PHOTOS)
+      .map((photo, i) => ({
+        path: photo.storage_path,
+        caption: docText(locale, "doc.co.photoCaption", { n: i + 1 }),
+      })),
+  );
+
+  const siteAddress = [project.address_street, [project.address_zip, project.address_city].filter(Boolean).join(" ")]
+    .filter((part) => part && part.trim())
+    .join(", ");
+
+  const buffer = await renderDocument(
+    DodatnoDeloDocument({
+      number: order.number,
+      title: order.title,
+      description: order.description,
+      amount: order.amount === null ? null : formatMoney(Number(order.amount), locale),
+      status,
+      statusLabel: docString(locale, `co.status.${status}`),
+      // change_orders.rejection_reason arrives with Task 3.1a's migration, which
+      // is not applied yet (morning cut). Until then a rejected claim prints the
+      // rejection sentence without a reason; select the column once it exists.
+      rejectionReason: null,
+      submittedOn: docDateTime(order.created_at, locale, country),
+      submittedBy: order.author?.full_name ?? null,
+      decidedLine:
+        order.decider?.full_name && order.decided_at
+          ? `${order.decider.full_name}, ${docDateTime(order.decided_at, locale, country)}`
+          : null,
+      projectName: project.name,
+      country,
+      clientName: project.epc?.name ?? "",
+      contractorName: project.sub?.name ?? null,
+      siteAddress: siteAddress || null,
+      photos,
+      issuer: await loadIssuer(db, project.sub_org_id),
+      s: dodatnoDeloStrings(locale),
+    }),
+  );
+
+  return pdfResponse(buffer, contentDisposition([docString(locale, "doc.co.title"), order.number, project.name]));
+}
