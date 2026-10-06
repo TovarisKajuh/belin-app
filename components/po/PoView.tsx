@@ -30,6 +30,7 @@ export function PoView({
   isSubSide: boolean;
 }) {
   const t = useTranslations("po");
+  const tDoc = useTranslations("doc.ui");
   const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -115,6 +116,7 @@ export function PoView({
       {po.status === "sent" && canDecide && !rejecting ? (
         <div className="b-card po-confirm">
           <p className="po-confirm-t">{t("acceptNote")}</p>
+          <p className="po-meta">{tDoc("poTermsHint")}</p>
           <label className="po-check">
             <input
               type="checkbox"

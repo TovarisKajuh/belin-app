@@ -201,7 +201,11 @@
       "withdrawReview": "Anfrage zurückziehen",
       "acceptReview": "Bestätigen und abschließen",
       "sendBack": "Zurück in Bearbeitung"
-    }
+    },
+    "confirmCancel": "Ein abgebrochenes Projekt lässt sich nicht wieder öffnen. Wirklich abbrechen?",
+    "confirmYes": "Ja, Projekt abbrechen",
+    "confirmNo": "Nein, zurück",
+    "finishViaAcceptance": "Abschluss: Abnahmeprotokoll unterschreiben"
   },
   "landing": {
     "eyebrow": "SOLARBAUSTELLEN",
@@ -739,7 +743,7 @@
       "colDescription": "Beschreibung der Arbeit",
       "totalHours": "Summe der Stunden",
       "hoursUnit": "h",
-      "deemedNote": "Dieser Stundenzettel wurde nach Ablauf der Rückmeldefrist anerkannt: Der Auftraggeber hat sich innerhalb der vereinbarten Frist von sechs Werktagen nicht geäußert, daher gilt er als anerkannt.",
+      "deemedNote": "Dieser Stundenzettel gilt nach Fristablauf als anerkannt: Der Auftraggeber hat sich nicht innerhalb von sechs Werktagen nach Einreichung geäußert, gezählt nach den Bestellbedingungen (Montag bis Samstag ohne gesetzliche Feiertage); nach diesen Bedingungen gilt er als anerkannt.",
       "generated": "Erstellt in Belin"
     },
     "tabHours": "Regiestunden",
@@ -903,11 +907,17 @@
       "declaration": "Bitte wählen Sie die Abnahmeerklärung.",
       "signatures": "Die Unterschrift einer Seite fehlt.",
       "signerNames": "Bitte tragen Sie die Namen beider Unterzeichner ein.",
-      "signature": "Die Unterschrift konnte nicht gespeichert werden."
+      "signature": "Die Unterschrift konnte nicht gespeichert werden.",
+      "refusedNeedsDefects": "Bei einer verweigerten Abnahme mindestens einen Mangel eintragen, der die Verweigerung begründet.",
+      "reservationsNeedDefects": "Bei einer Abnahme unter Vorbehalt mindestens einen Mangel eintragen, auf den sich der Vorbehalt bezieht.",
+      "warrantyBeforeAcceptance": "Die Gewährleistung kann nicht vor dem Tag der Abnahme beginnen."
     },
     "noAcceptance": "Die Abnahme ist noch nicht begonnen.",
     "acceptanceByClient": "Die Abnahme führt der Auftraggeber durch.",
-    "acceptanceSignedShort": "Die Abnahme ist durchgeführt."
+    "acceptanceSignedShort": "Die Abnahme ist durchgeführt.",
+    "warrantyHint": "Standard ist der Tag der Abnahme. Früher kann die Gewährleistung nicht beginnen.",
+    "needsDefect": "Bei dieser Erklärung mindestens einen Mangel eintragen.",
+    "startFinal": "Schlussabnahme beginnen"
   },
   "invoice": {
     "title": "Rechnung",
@@ -1037,7 +1047,24 @@
     "guestExpiredBody": "Bitten Sie die vortragende Person um einen neuen Code."
   },
   "doc": {
-    "page": "Seite {n} von {total}"
+    "page": "Seite {n} von {total}",
+    "po": {
+      "termsTitle": "Bestellbedingungen",
+      "regieClause": "Regiestunden. Der Auftragnehmer erfasst Stundenlohnarbeiten auf Regieberichten in Belin. Der Auftraggeber bestätigt oder beanstandet einen eingereichten Bericht innerhalb von sechs Werktagen nach Einreichung; gezählt werden Montag bis Samstag ohne {holidays}, der Tag der Einreichung zählt nicht. Äußert sich der Auftraggeber innerhalb dieser Frist nicht, gilt der Bericht als anerkannt. Anerkannte Stunden werden zum Stundensatz dieser Bestellung abgerechnet.",
+      "basis": {
+        "si": "Ergänzend gelten das slowenische Obligationengesetzbuch (Obligacijski zakonik) und die Besonderen Bauusancen 2020 (Posebne gradbene uzance 2020).",
+        "de": "Ergänzend gilt die VOB/B in der bei Vertragsschluss gültigen Fassung.",
+        "at": "Ergänzend gilt die ÖNORM B 2110 in der bei Vertragsschluss gültigen Fassung."
+      }
+    },
+    "holidays": {
+      "si": "die gesetzlich arbeitsfreien Tage in Slowenien",
+      "de": "die bundeseinheitlichen gesetzlichen Feiertage",
+      "at": "die gesetzlichen Feiertage in Österreich"
+    },
+    "ui": {
+      "poTermsHint": "Die Bestellbedingungen, auch die Frist für Regieberichte, stehen am Ende der Bestellung."
+    }
   },
   "legal": {
     "termsLink": "Nutzungsbedingungen"

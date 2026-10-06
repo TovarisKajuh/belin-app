@@ -30,6 +30,10 @@ export interface AcceptanceView {
   hasSubSignature: boolean;
   note: string | null;
   defects: AcceptanceDefect[];
+  /** The calendar day at the site, yyyy-mm-dd: the earliest allowed warranty start. */
+  siteToday: string;
+  /** conducted_at as a site calendar day, yyyy-mm-dd, for display. */
+  conductedDay: string | null;
 }
 
 export interface AcceptanceStepPayload {

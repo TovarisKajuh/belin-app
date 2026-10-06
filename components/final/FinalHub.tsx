@@ -212,7 +212,8 @@ export function FinalHub({
         )}
         {/* Billing opens once the work has been accepted, or once an invoice
             exists: invoicing for work nobody signed off is how disputes start. */}
-        {acceptance?.status === "signed" || invoice ? (
+        {(acceptance?.status === "signed" && acceptance.kind === "final" && acceptance.declaration !== "refused") ||
+        invoice ? (
           <InvoiceCard
             projectId={projectId}
             locale={locale}

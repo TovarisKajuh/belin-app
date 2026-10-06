@@ -1,8 +1,7 @@
 import Link from "next/link";
 
-// DEV ONLY. Jumps to the other party's view of the same connected project so
-// one person can build and review both intertwined sides. Remove before launch;
-// real magic-link auth will separate the two accounts (DECISIONS.md 2026-07-17).
+// DEVELOPMENT ONLY (the gate is in getSiblingToken). Jumps to the other party's
+// view of the same connected project so one person can build and review both sides.
 export function DevSwapBar({
   locale,
   siblingToken,

@@ -23,16 +23,20 @@ export function asProjectStatus(value: string): ProjectStatus {
 
 export function statusTransitions(role: PartyRole, current: ProjectStatus): ProjectStatus[] {
   if (role === "epc") {
+    // "finished" is deliberately absent (D10). A project is finished by the
+    // signed final acceptance (lib/data/acceptances.ts signAcceptance), which is
+    // the moment the client actually took the work over. A menu item that did
+    // the same with one click finished a demo project by accident.
     switch (current) {
       case "draft":
         return ["active", "cancelled"];
       case "active":
-        return ["paused", "finished", "cancelled"];
+        return ["paused", "cancelled"];
       case "paused":
-        return ["active", "finished", "cancelled"];
+        return ["active", "cancelled"];
       case "reviewing":
-        // Accept the sub's review (finished), send it back (active), or cancel.
-        return ["finished", "active", "cancelled"];
+        // Send the handover back, or cancel. Accepting it is the acceptance.
+        return ["active", "cancelled"];
       default:
         return [];
     }
@@ -60,6 +64,11 @@ export function canTransition(
   next: ProjectStatus
 ): boolean {
   return statusTransitions(role, current).includes(next);
+}
+
+/** A move with no way back asks first. Cancelling is the only one left on the menu. */
+export function needsConfirm(target: ProjectStatus): boolean {
+  return target === "cancelled";
 }
 
 // The verb shown on a transition button depends on who is acting and where

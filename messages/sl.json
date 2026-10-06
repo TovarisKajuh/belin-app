@@ -201,7 +201,11 @@
       "withdrawReview": "Prekliči zahtevo",
       "acceptReview": "Potrdi in zaključi",
       "sendBack": "Vrni v delo"
-    }
+    },
+    "confirmCancel": "Preklicanega projekta ni mogoče znova odpreti. Ga res želite preklicati?",
+    "confirmYes": "Da, prekliči projekt",
+    "confirmNo": "Ne, nazaj",
+    "finishViaAcceptance": "Zaključek: podpis zapisnika o prevzemu"
   },
   "landing": {
     "eyebrow": "SOLARNA GRADBIŠČA",
@@ -739,7 +743,7 @@
       "colDescription": "Opis dela",
       "totalHours": "Skupaj ur",
       "hoursUnit": "h",
-      "deemedNote": "Ta list je bil potrjen po poteku roka za odziv: naročnik se v dogovorjenem roku šestih delovnih dni ni odzval, zato se šteje za potrjenega.",
+      "deemedNote": "Ta list je potrjen s potekom roka: naročnik se ni odzval v šestih dneh po oddaji, kot jih štejejo pogoji naročilnice (od ponedeljka do sobote razen dela prostih dni), zato se po teh pogojih šteje za potrjenega.",
       "generated": "Ustvarjeno v Belinu"
     },
     "tabHours": "Režijske ure",
@@ -903,11 +907,17 @@
       "declaration": "Izberite izjavo o prevzemu.",
       "signatures": "Manjka podpis ene od strani.",
       "signerNames": "Vpišite imeni obeh podpisnikov.",
-      "signature": "Podpisa ni bilo mogoče shraniti."
+      "signature": "Podpisa ni bilo mogoče shraniti.",
+      "refusedNeedsDefects": "Pri zavrnitvi prevzema vpišite vsaj eno pomanjkljivost, zaradi katere prevzem zavračate.",
+      "reservationsNeedDefects": "Pri prevzemu s pridržki vpišite vsaj eno pomanjkljivost, na katero se pridržek nanaša.",
+      "warrantyBeforeAcceptance": "Garancijska doba ne more začeti pred dnem prevzema."
     },
     "noAcceptance": "Prevzem še ni začet.",
     "acceptanceByClient": "Prevzem izvede naročnik.",
-    "acceptanceSignedShort": "Prevzem je opravljen."
+    "acceptanceSignedShort": "Prevzem je opravljen.",
+    "warrantyHint": "Privzeto je dan prevzema. Garancijska doba ne more začeti prej.",
+    "needsDefect": "Pri tej izjavi vpišite vsaj eno pomanjkljivost.",
+    "startFinal": "Začni končni prevzem"
   },
   "invoice": {
     "title": "Račun",
@@ -1037,7 +1047,24 @@
     "guestExpiredBody": "Prosite predstavitelja, naj pokaže novo kodo."
   },
   "doc": {
-    "page": "Stran {n} od {total}"
+    "page": "Stran {n} od {total}",
+    "po": {
+      "termsTitle": "Pogoji naročila",
+      "regieClause": "Režijske ure. Izvajalec režijska dela vpisuje na liste režijskih ur v aplikaciji Belin. Naročnik oddani list potrdi ali zavrne v šestih dneh po oddaji; štejejo se dnevi od ponedeljka do sobote razen {holidays}, dan oddaje se ne šteje. Če se naročnik v tem roku ne odzove, se list šteje za potrjenega. Potrjene ure se obračunajo po urni postavki iz te naročilnice.",
+      "basis": {
+        "si": "Za vprašanja, ki jih ta naročilnica ne ureja, se uporabljata Obligacijski zakonik in Posebne gradbene uzance 2020.",
+        "de": "Za vprašanja, ki jih ta naročilnica ne ureja, se uporablja VOB/B v različici, veljavni ob sklenitvi pogodbe.",
+        "at": "Za vprašanja, ki jih ta naročilnica ne ureja, se uporablja ÖNORM B 2110 v različici, veljavni ob sklenitvi pogodbe."
+      }
+    },
+    "holidays": {
+      "si": "dela prostih dni v Republiki Sloveniji",
+      "de": "zakonskih praznikov, ki veljajo v vsej Nemčiji",
+      "at": "zakonskih praznikov v Avstriji"
+    },
+    "ui": {
+      "poTermsHint": "Pogoji naročila, tudi rok za potrjevanje režijskih ur, so zapisani na koncu naročilnice."
+    }
   },
   "legal": {
     "termsLink": "Pogoji uporabe"

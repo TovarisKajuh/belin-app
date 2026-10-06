@@ -52,6 +52,11 @@ export interface NarocilnicaStrings {
   generated: string;
   perHour: string;
   page: string;
+  termsTitle: string;
+  /** The režijske ure clause, the site country's non-working days already filled in. */
+  regieClause: string;
+  /** The contract-basis line for the SITE's country, already chosen. */
+  basis: string;
 }
 
 export interface NarocilnicaInput {
@@ -156,6 +161,14 @@ export function NarocilnicaDocument(input: NarocilnicaInput) {
           }}
         >
           <Text style={{ fontWeight: 700 }}>{`${s.totalNet}: ${money(input.totalNet)}`}</Text>
+        </View>
+
+        {/* The order terms (D9): the deemed approval of hour sheets is a term the
+            subcontractor accepts with this order, not a statute. */}
+        <View style={{ marginTop: 18 }} wrap={false}>
+          <Text style={styles.sectionTitle}>{s.termsTitle}</Text>
+          <Text style={styles.body}>{s.regieClause}</Text>
+          <Text style={[styles.body, { marginTop: 4 }]}>{s.basis}</Text>
         </View>
 
         <View style={{ marginTop: 22 }}>

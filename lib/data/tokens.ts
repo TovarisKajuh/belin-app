@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { ProjectActor } from "@/lib/actor";
 import { isShotMode } from "@/lib/shot-mode";
 
-// Dev-only: find the other party's active token for the same project so one
+// Development only: find the other party's active token for the same project so one
 // person can swap between the connected EPC and sub views while building.
 //
 // This hands the caller a capability, not a convenience. A crew link is meant to
@@ -13,12 +13,13 @@ import { isShotMode } from "@/lib/shot-mode";
 //
 // So the gate lives here rather than at the two render sites: a page that
 // forgets it would ship the hole again, while a data function that refuses
-// cannot be misused. Off unless DEMO_LOGIN is exactly "1", which is set in
-// .env.local and in no Vercel environment.
+// cannot be misused. Development only: Next sets NODE_ENV to "production" in
+// every build, so no deployed environment can switch this on with a variable.
+// (It used to follow DEMO_LOGIN, retired with the password login on 2026-10-06.)
 export async function getSiblingToken(
   actor: ProjectActor
 ): Promise<{ token: string; role: "epc" | "sub" } | null> {
-  if (process.env.DEMO_LOGIN !== "1") return null;
+  if (process.env.NODE_ENV !== "development") return null;
   // And never in a product shot, where it would float over the corner.
   if (await isShotMode()) return null;
 
