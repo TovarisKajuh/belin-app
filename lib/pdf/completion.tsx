@@ -14,6 +14,7 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { FlexTable, Footer, Header, LabelValue, RunningHeader, StatTile, styles, type DocIssuer } from "@/lib/pdf/theme";
 import { DayReportPage, type DayReportData, type DayReportStrings } from "@/lib/pdf/day-report";
+import { clipAtWord } from "@/lib/pdf/doc-format";
 
 export interface CompletionStrings {
   title: string;
@@ -131,11 +132,13 @@ export function CompletionDocument(input: CompletionInput) {
             day.reportNo,
             day.dateLabel,
             day.headcount ?? "",
-            day.entries
-              .map((entry) => entry.note)
-              .filter(Boolean)
-              .join(" ")
-              .slice(0, 90),
+            clipAtWord(
+              day.entries
+                .map((entry) => entry.note)
+                .filter(Boolean)
+                .join(" "),
+              90,
+            ),
           ])}
           emptyLabel={s.none}
         />

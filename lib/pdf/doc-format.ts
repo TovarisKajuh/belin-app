@@ -52,3 +52,18 @@ export function docMonth(month: string, locale: DocLocale): string {
 export function docNumber(value: number, locale: DocLocale, maxDecimals = 2): string {
   return fmtNumber(value, locale, { maxDecimals });
 }
+
+/**
+ * A summary cut to at most `max` characters, ending at a word boundary with an
+ * ellipsis. A plain slice printed "...zaradi dostave drugega iz" on the
+ * completion report cover (production verification, 2026-10-06).
+ */
+export function clipAtWord(text: string, max: number): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  // Room for the ellipsis, then back to the last space inside the limit.
+  const cut = clean.slice(0, max - 1);
+  const space = cut.lastIndexOf(" ");
+  const head = (space > max / 2 ? cut.slice(0, space) : cut).replace(/[\s,;:.-]+$/, "");
+  return `${head}…`;
+}
