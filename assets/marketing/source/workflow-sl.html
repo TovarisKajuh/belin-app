@@ -1,0 +1,1306 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Belin ERP, delovni tok</title>
+<meta name="description" content="Celoten proces v petih fazah, od leada do priklopa elektrarne.">
+<style>
+@font-face{font-family:"BelinInter";src:url({{FONT}}) format("truetype");font-weight:100 900;font-display:swap}
+
+/* ==========================================================================
+   Belin brand, the locked set from app/globals.css (.belin-dark) and
+   scripts/marketing/lockup.mjs. Gold on navy, Inter, nothing invented here.
+   ========================================================================== */
+:root{
+  --ink:#f4f1ea; --ink2:#cfcabf; --muted:#8f8a7e;
+  --gold:#ffd21a; --gold-2:#ffe488;
+  --glow:rgba(255,210,26,.45); --glow-2:rgba(255,210,26,.16);
+  --sign:#ff9f6b;            /* the product's own warm accent: a person must act */
+  --ext:#7c8898;             /* outside Belin */
+  --ok:#4ad07a;
+  --cell:#2a3242;            /* the unlit cells of the mark */
+  --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.20);
+  --surf:rgba(255,255,255,.035); --surf-2:rgba(255,255,255,.06);
+  --paper:#fff; --p-ink:#0a1628; --p-soft:#3c4a5e; --p-muted:#8a95a6;
+  --p-line:#e6e9ef; --p-bg:#f5f6f8;
+  --font:"BelinInter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  margin:0; font-family:var(--font); font-size:16px; line-height:1.55; color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(1200px 640px at 10% -6%, rgba(255,210,26,.09) 0%, transparent 52%),
+    radial-gradient(1000px 720px at 104% 6%, rgba(43,120,180,.10) 0%, transparent 50%),
+    linear-gradient(158deg,#0c1826 0%,#0a1220 46%,#070d16 100%);
+  background-attachment:fixed;
+}
+.wrap{max-width:1000px; margin:0 auto; padding:0 20px}
+
+/* ---------- the mark ---------- */
+.mark{display:block; flex:0 0 auto}
+
+/* ---------- header ---------- */
+header.top{padding:60px 0 34px}
+.brandline{display:flex; align-items:center; gap:13px; margin-bottom:30px}
+.brandline .mark{width:24px;height:auto}
+.brandline b{font-size:17px; font-weight:700; letter-spacing:.17em}
+.brandline span{
+  padding-left:14px; margin-left:3px; border-left:1px solid var(--line);
+  font-size:12.5px; color:var(--muted); letter-spacing:.02em;
+}
+.kicker{
+  font-weight:700; font-size:11px; letter-spacing:.24em; text-transform:uppercase;
+  color:var(--gold); margin:0 0 16px; display:inline-flex; align-items:center; gap:10px;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--glow)}
+h1{
+  font-weight:700; font-size:clamp(31px,5.4vw,54px); line-height:1.04;
+  letter-spacing:-.03em; margin:0 0 20px;
+}
+.lede{font-size:16.5px; line-height:1.6; color:var(--ink2); max-width:66ch; margin:0}
+.lede b{color:var(--ink); font-weight:600}
+
+/* ---------- legend ---------- */
+.legend{
+  display:flex; flex-wrap:wrap; gap:11px 24px; margin:32px 0 6px;
+  padding:19px 21px; background:var(--surf); border:1px solid var(--line); border-radius:16px;
+}
+.legend .li{display:inline-flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink2)}
+.legend .li b{color:var(--ink); font-weight:600}
+.swatch{width:15px;height:15px;border-radius:5px;flex:0 0 auto}
+.sw-auto{background:var(--gold); box-shadow:0 0 12px var(--glow-2)}
+.sw-sign{background:var(--sign)}
+.sw-ext{background:transparent;border:1.5px dashed var(--ext)}
+.sw-doc{background:#fff;border-left:5px solid var(--gold)}
+.sw-actor{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.34)}
+
+/* ---------- phase nav ---------- */
+nav.phasenav{
+  position:sticky; top:0; z-index:30; margin-top:28px;
+  background:rgba(8,14,22,.72); backdrop-filter:saturate(1.4) blur(14px);
+  border-bottom:1px solid var(--line);
+}
+nav.phasenav .wrap{display:flex; gap:7px; overflow-x:auto; padding:11px 20px; scrollbar-width:none}
+nav.phasenav .wrap::-webkit-scrollbar{display:none}
+nav.phasenav a{
+  flex:0 0 auto; text-decoration:none; font-size:12.5px; font-weight:600; color:var(--muted);
+  padding:7px 13px; border-radius:999px; border:1px solid transparent; white-space:nowrap;
+  transition:color .18s, background .18s, border-color .18s;
+}
+nav.phasenav a:hover{color:var(--ink2); border-color:var(--line-2)}
+nav.phasenav a b{color:var(--gold); font-weight:700; margin-right:6px}
+nav.phasenav a[data-on="1"]{color:#0c1826; background:var(--gold)}
+nav.phasenav a[data-on="1"] b{color:#0c1826}
+nav.phasenav a:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+
+/* ---------- phase ---------- */
+.phase{padding:50px 0 8px; scroll-margin-top:66px}
+.phase-head{display:flex; gap:19px; align-items:flex-start; margin-bottom:24px}
+.pnum{
+  font-weight:700; font-size:21px; line-height:1; width:54px;height:54px;flex:0 0 auto;
+  border-radius:15px; display:flex;align-items:center;justify-content:center;
+  background:var(--gold); color:#0c1826; box-shadow:0 8px 28px var(--glow-2);
+}
+.phase.ext .pnum{background:transparent; color:var(--ext); border:2px dashed var(--ext); box-shadow:none}
+.phase-head h2{font-weight:700; font-size:23px; letter-spacing:-.02em; margin:3px 0 5px}
+.phase-head p{margin:0; font-size:14.5px; line-height:1.55; color:var(--ink2); max-width:62ch}
+
+/* ---------- steps rail ---------- */
+.rail{position:relative; margin-left:26px; padding-left:36px; border-left:1px solid var(--line-2)}
+.phase.ext .rail{border-left-style:dashed; border-left-color:rgba(124,136,152,.45)}
+.step{position:relative; margin-bottom:18px}
+.step::before{
+  content:""; position:absolute; left:-42px; top:24px; width:11px;height:11px;border-radius:50%;
+  background:var(--gold); box-shadow:0 0 0 4px #0a1220, 0 0 14px var(--glow);
+}
+.phase.ext .step::before{background:var(--ext); box-shadow:0 0 0 4px #0a1220}
+.card{background:var(--surf); border:1px solid var(--line); border-radius:17px; padding:18px 20px}
+.card .ct{display:flex; flex-wrap:wrap; align-items:center; gap:9px 11px; margin-bottom:8px}
+.card .code{font-weight:700; font-size:12px; color:var(--gold); letter-spacing:.08em; font-variant-numeric:tabular-nums}
+.phase.ext .card .code{color:var(--ext)}
+.card h3{font-weight:700; font-size:16.5px; margin:0; letter-spacing:-.015em; line-height:1.3}
+.card p{margin:0; font-size:14.5px; line-height:1.55; color:var(--ink2)}
+.card p + p{margin-top:8px}
+
+/* ---------- tags ---------- */
+.tag{
+  display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700;
+  letter-spacing:.04em; padding:4px 10px; border-radius:999px; line-height:1.4; white-space:nowrap;
+}
+.tag svg{width:11px;height:11px;flex:0 0 auto}
+.t-auto{background:rgba(255,210,26,.11); color:var(--gold); border:1px solid rgba(255,210,26,.30)}
+.t-sign{background:rgba(255,159,107,.10); color:var(--sign); border:1px solid rgba(255,159,107,.30)}
+.t-actor{background:var(--surf-2); color:var(--ink2); border:1px solid var(--line); font-weight:600}
+
+/* ---------- generated documents ---------- */
+.docs{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; padding-top:13px; border-top:1px solid var(--line)}
+.docs .dl{
+  font-size:10px; font-weight:700; letter-spacing:.20em; color:var(--muted);
+  width:100%; margin-bottom:3px; display:flex; align-items:center; gap:7px;
+}
+.doc{
+  display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600;
+  padding:5px 11px 5px 10px; border-radius:9px; background:var(--surf-2);
+  border:1px solid var(--line); border-left:3px solid var(--gold); color:var(--ink);
+}
+.doc svg{width:11px;height:13px;color:var(--gold)}
+
+/* ---------- pictures ---------- */
+.shots{margin-top:16px; padding-top:14px; border-top:1px solid var(--line)}
+.shots-label{
+  font-weight:700; font-size:10px; letter-spacing:.20em; color:var(--muted);
+  margin:0 0 12px; display:flex; align-items:center; gap:7px;
+}
+.shots-label svg{width:12px;height:12px;color:var(--gold)}
+.shot-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px}
+.shot-grid.one{grid-template-columns:minmax(0,1fr)}
+.slot.wide{grid-column:1 / -1}
+.shot-grid.two{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.slot{margin:0; min-width:0}
+.slot-box{
+  position:relative; aspect-ratio:4/3; border-radius:12px; overflow:hidden;
+  background:#0a1220; border:1px solid var(--line-2);
+  box-shadow:0 14px 34px rgba(0,0,0,.42);
+}
+.slot-box img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top center}
+.slot-box.paper{background:var(--paper)}
+.slot-box.paper img{object-fit:contain; object-position:center}
+.slot-box.tall{aspect-ratio:3/4}
+.slot-box.free{aspect-ratio:auto}
+.slot-box.free img{position:static; height:auto}
+.slot-box.contain img{object-fit:contain; object-position:center}
+.slot-badge{
+  position:absolute; top:9px; left:9px; z-index:2; font-weight:700; font-size:9.5px;
+  letter-spacing:.14em; text-transform:uppercase; padding:3px 8px; border-radius:6px;
+  background:rgba(6,11,18,.78); backdrop-filter:blur(8px); border:1px solid var(--line-2);
+}
+.b-app{color:var(--gold); border-color:rgba(255,210,26,.35)}
+.b-teren{color:var(--ok); border-color:rgba(74,208,122,.35)}
+.b-dok{color:#9db6d8; border-color:rgba(157,182,216,.35)}
+.b-predlog{color:var(--ink2)}
+.slot figcaption{font-size:12.5px; line-height:1.4; color:var(--ink2); margin-top:9px}
+
+/* a slot with no honest picture yet: named, not faked */
+.slot-box.todo{
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.022) 0 9px,transparent 9px 18px),#0a1220;
+  border-style:dashed; border-color:rgba(255,255,255,.16); display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center; padding:20px;
+  aspect-ratio:auto; min-height:150px; box-shadow:none;
+}
+.slot-box.todo span{font-size:11.5px; line-height:1.45; color:var(--muted); max-width:22ch}
+.slot-box.todo svg{width:21px;height:21px;color:rgba(255,255,255,.22);flex:0 0 auto;margin-bottom:10px}
+
+/* ---------- handoff ---------- */
+.handoff{
+  margin:10px 0 6px; padding:21px 23px; border-radius:18px; display:flex; gap:17px; align-items:center;
+  background:linear-gradient(100deg,rgba(255,210,26,.13) 0%,rgba(255,210,26,.05) 62%,transparent 100%);
+  border:1px solid rgba(255,210,26,.26);
+}
+.handoff .hi{
+  width:42px;height:42px;flex:0 0 auto;border-radius:12px;background:var(--gold);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 8px 26px var(--glow-2);
+}
+.handoff .hi svg{width:21px;height:21px;color:#0c1826}
+.handoff .htxt strong{font-weight:700; font-size:17px; display:block; margin-bottom:3px; letter-spacing:-.015em}
+.handoff .htxt span{font-size:14px; line-height:1.5; color:var(--ink2)}
+
+/* ---------- parallel tracks ---------- */
+.tracks{display:grid; grid-template-columns:1fr 1fr; gap:17px; margin-top:18px}
+.track{background:var(--surf); border:1px solid var(--line); border-radius:17px; overflow:hidden}
+.track .th{padding:14px 17px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:11px; background:var(--surf-2)}
+.track .th svg{width:17px;height:17px;color:var(--gold);flex:0 0 auto}
+.track .th h3{font-weight:700; font-size:15.5px; margin:0; letter-spacing:-.015em}
+.track .th small{display:block; font-size:12px; color:var(--muted); font-weight:500; margin-top:2px}
+.track .tb{padding:15px 17px}
+.track ul{margin:0; padding:0; list-style:none}
+.track li{position:relative; padding:0 0 11px 21px; font-size:14px; line-height:1.5; color:var(--ink2)}
+.track li:last-child{padding-bottom:0}
+.track li::before{content:""; position:absolute; left:3px; top:8px; width:6px;height:6px;border-radius:50%; background:var(--ink2); opacity:.45}
+.track li.auto::before{background:var(--gold); opacity:1; box-shadow:0 0 8px var(--glow)}
+.track li b{color:var(--ink); font-weight:600}
+.track .out{margin-top:15px; padding-top:13px; border-top:1px solid var(--line)}
+
+/* ==========================================================================
+   Paper. The measurements come from the app's own PDF theme, so a document
+   drawn here and a document the product renders are the same object.
+   ========================================================================== */
+.sheet{
+  background:var(--paper); color:var(--p-ink); border-radius:4px; padding:26px 28px 18px;
+  font-size:10.5px; line-height:1.42; box-shadow:0 20px 48px rgba(0,0,0,.5);
+}
+.sheet .st{display:flex; justify-content:space-between; align-items:flex-start; gap:18px; padding-bottom:11px; border-bottom:1px solid var(--p-line)}
+.sheet .st h4{margin:0; font-size:19px; font-weight:400; letter-spacing:-.01em}
+.sheet .st p{margin:3px 0 0; font-size:10.5px; color:var(--p-muted)}
+.sheet .sm{font-size:10.5px; letter-spacing:.24em; padding-top:3px; white-space:nowrap}
+.sheet dl{display:grid; grid-template-columns:118px minmax(0,1fr); gap:3px 12px; margin:14px 0 0}
+.sheet dt{color:var(--p-muted)}
+.sheet dd{margin:0}
+.sheet h5{margin:16px 0 7px; font-size:11.5px; font-weight:400}
+.sheet table{width:100%; border-collapse:collapse; font-size:9.5px}
+.sheet thead th{background:var(--p-bg); color:var(--p-muted); font-weight:400; text-align:left; padding:5px 7px; font-size:9px; white-space:nowrap}
+.sheet tbody td{padding:5px 7px; border-bottom:1px solid var(--p-line); vertical-align:top; font-variant-numeric:tabular-nums}
+.sheet .r{text-align:right}
+.sheet .sf{display:flex; justify-content:space-between; margin-top:18px; padding-top:9px; border-top:1px solid var(--p-line); font-size:8.5px; color:var(--p-muted)}
+.sheet .note{margin:12px 0 0; font-size:10px; color:var(--p-soft)}
+.sheet .sigline{margin-top:22px; padding-top:7px; border-top:1px solid var(--p-ink); width:190px; font-size:9.5px; color:var(--p-muted)}
+
+/* ==========================================================================
+   The signing demo. Ported from components/SignaturePad.tsx: pointer events,
+   device-pixel sizing, 2.2px round stroke. The stroke that plays by itself is
+   the same canvas a reader can draw on with a finger.
+   ========================================================================== */
+.sign{
+  margin-top:18px; padding:20px; border-radius:18px; border:1px solid rgba(255,159,107,.26);
+  background:linear-gradient(140deg,rgba(255,159,107,.07) 0%,rgba(255,159,107,.02) 55%,transparent 100%);
+  display:grid; grid-template-columns:238px minmax(0,1fr); gap:24px; align-items:center;
+}
+.sign-copy .eyebrow{
+  font-size:10px; font-weight:700; letter-spacing:.20em; text-transform:uppercase;
+  color:var(--sign); margin:0 0 9px; display:flex; align-items:center; gap:7px;
+}
+.sign-copy .eyebrow svg{width:12px;height:12px}
+.sign-copy h4{margin:0 0 7px; font-size:16px; font-weight:700; letter-spacing:-.015em}
+.sign-copy p{margin:0; font-size:13.5px; line-height:1.5; color:var(--ink2)}
+.sign-copy .hint{margin-top:11px; font-size:12px; color:var(--muted)}
+.sign-btns{display:flex; gap:9px; margin-top:14px; flex-wrap:wrap}
+.sbtn{
+  font-family:inherit; font-size:12.5px; font-weight:700; cursor:pointer; border-radius:999px;
+  padding:8px 15px; border:1px solid var(--line-2); background:var(--surf-2); color:var(--ink2);
+  transition:color .18s, border-color .18s, background .18s;
+}
+.sbtn:hover{color:var(--ink); border-color:var(--ink2)}
+.sbtn:focus-visible{outline:2px solid var(--sign); outline-offset:2px}
+
+/* the phone */
+.phone{
+  width:100%; max-width:300px; margin:0 auto; border-radius:32px; padding:9px;
+  background:linear-gradient(160deg,#2a3242 0%,#151c29 100%);
+  box-shadow:0 26px 60px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.phone-in{
+  border-radius:25px; overflow:hidden; background:#fff; color:var(--p-ink);
+  display:flex; flex-direction:column; min-height:430px;
+}
+.ph-bar{
+  padding:11px 14px 9px; display:flex; align-items:center; gap:8px;
+  border-bottom:1px solid var(--p-line); background:var(--p-bg);
+}
+.ph-bar .mark{width:13px}
+.ph-bar b{font-size:10.5px; font-weight:700; letter-spacing:.16em; color:var(--p-ink)}
+.ph-bar .state{
+  margin-left:auto; font-size:9px; font-weight:700; letter-spacing:.10em; text-transform:uppercase;
+  color:var(--p-muted); padding:3px 8px; border-radius:999px; border:1px solid var(--p-line);
+  white-space:nowrap; transition:color .3s, border-color .3s, background .3s;
+}
+.ph-bar .state.done{color:#117a26; background:#e3f7e7; border-color:#bfe9c8}
+.ph-doc{padding:15px 15px 0; flex:1 1 auto; min-height:0}
+.ph-doc h5{margin:0 0 3px; font-size:13.5px; font-weight:500; letter-spacing:-.01em}
+.ph-doc .sub{margin:0 0 12px; font-size:9.5px; color:var(--p-muted)}
+.ph-doc dl{display:grid; grid-template-columns:62px minmax(0,1fr); gap:3px 9px; margin:0; font-size:9.5px}
+.ph-doc dt{color:var(--p-muted)}
+.ph-doc dd{margin:0}
+.ph-doc .body{margin:11px 0 0; font-size:9.5px; line-height:1.5; color:var(--p-soft)}
+.ph-sig{padding:13px 15px 15px}
+.ph-sig .lbl{font-size:8.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--p-muted); margin-bottom:6px}
+.sig-pad{position:relative; border:1px dashed #c9d0dc; border-radius:9px; background:#fbfcfe; height:104px; overflow:hidden}
+.sig-pad canvas{position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:crosshair; display:block}
+.sig-pad .placeholder{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:10px; color:#b3bcca; pointer-events:none; transition:opacity .25s;
+}
+.sig-pad.inked .placeholder{opacity:0}
+.sig-foot{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-top:6px}
+.sig-foot .who{font-size:9.5px; color:var(--p-muted)}
+.sig-foot .who b{display:block; color:var(--p-ink); font-weight:600; font-size:10px}
+.ph-cta{
+  margin:12px 15px 15px; padding:12px; border-radius:13px; text-align:center;
+  font-size:13px; font-weight:700; background:#eef1f5; color:#aab3c0;
+  transition:background .35s, color .35s, box-shadow .35s;
+}
+.ph-cta.live{background:var(--gold); color:#0c1826; box-shadow:0 8px 22px rgba(255,210,26,.35)}
+.ph-cta.sent{background:#e3f7e7; color:#117a26; box-shadow:none}
+
+@media (max-width:820px){
+  .sign{grid-template-columns:minmax(0,1fr); gap:20px}
+  .sign-copy{order:2}
+}
+
+/* ---------- single line diagram ---------- */
+.sld{background:var(--paper); border-radius:4px; padding:34px 18px 20px; box-shadow:0 20px 48px rgba(0,0,0,.5)}
+.sld svg{display:block; width:100%; height:auto}
+
+footer{padding:46px 0 70px; color:var(--muted); font-size:13px; text-align:center}
+footer .brandfoot{display:flex; align-items:center; justify-content:center; gap:11px; margin-bottom:14px}
+footer .brandfoot .mark{width:19px}
+footer .brandfoot b{font-size:13px; font-weight:700; letter-spacing:.18em; color:var(--ink2)}
+footer p{margin:0; line-height:1.6}
+
+@media (max-width:640px){
+  header.top{padding:42px 0 26px}
+  .rail{margin-left:15px; padding-left:25px}
+  .step::before{left:-31px}
+  .phase-head{gap:14px}
+  .pnum{width:45px;height:45px;font-size:18px;border-radius:13px}
+  .tracks{grid-template-columns:1fr}
+  .legend{gap:10px 18px; padding:16px 17px}
+  .shot-grid{grid-template-columns:minmax(0,1fr)}
+  /* An A4 page inside a 4:3 box on a 390px screen is 220px of unreadable grey.
+     Portrait paper gets portrait boxes here. */
+  .slot-box.paper.contain{aspect-ratio:3/4}
+  .sign{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ikone -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-auto" viewBox="0 0 24 24"><path fill="currentColor" d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H13z"/></symbol>
+  <symbol id="i-sign" viewBox="0 0 24 24"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75zM20.7 7.04a1 1 0 0 0 0-1.41l-2.33-2.34a1 1 0 0 0-1.42 0l-1.83 1.83 3.75 3.75z"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm0 1.5L18.5 8H14zM8 13h8v1.5H8zm0 3h8v1.5H8zm0-6h4v1.5H8z"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="currentColor" d="M13 5l7 7-7 7v-4H4v-6h9z"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24"><path fill="currentColor" d="M22 5.5 18.5 9 15 5.5 18.5 2A5 5 0 0 0 12 8.6L3 17.6 6.4 21l9-9A5 5 0 0 0 22 5.5"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path fill="currentColor" d="M11 21h-1l1-7H6.5a.5.5 0 0 1-.4-.8L13 3h1l-1 7h4.5a.5.5 0 0 1 .4.8z"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6"/></symbol>
+
+  <!-- Belin, the rising grid. Geometry from scripts/marketing/lockup.mjs:
+       3 columns, 4 rows, 22px cells on a 28px step, gold rising from the
+       bottom at 1, 2 and 3 cells. -->
+  <symbol id="i-mark" viewBox="0 0 78 106">
+    <g fill="#2a3242">
+      <rect x="0" y="0" width="22" height="22" rx="2.5"/>
+      <rect x="0" y="28" width="22" height="22" rx="2.5"/>
+      <rect x="0" y="56" width="22" height="22" rx="2.5"/>
+      <rect x="28" y="0" width="22" height="22" rx="2.5"/>
+      <rect x="28" y="28" width="22" height="22" rx="2.5"/>
+      <rect x="56" y="0" width="22" height="22" rx="2.5"/>
+    </g>
+    <g fill="#ffd21a">
+      <rect x="0" y="84" width="22" height="22" rx="2.5"/>
+      <rect x="28" y="56" width="22" height="22" rx="2.5"/>
+      <rect x="28" y="84" width="22" height="22" rx="2.5"/>
+      <rect x="56" y="28" width="22" height="22" rx="2.5"/>
+      <rect x="56" y="56" width="22" height="22" rx="2.5"/>
+      <rect x="56" y="84" width="22" height="22" rx="2.5"/>
+    </g>
+  </symbol>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brandline">
+      <svg class="mark" viewBox="0 0 78 106"><use href="#i-mark"/></svg>
+      <b>BELIN</b>
+      <span>Interni dokument za razvoj in ekipo</span>
+    </div>
+
+    <p class="kicker"><span class="dot"></span>BELIN ERP, SOLARNA INDUSTRIJA</p>
+    <h1>Delovni tok: od leada do priklopa elektrarne</h1>
+    <p class="lede">Celoten proces v petih fazah. Prikazuje, kje danes delo poteka v <b>zunanjih orodjih</b> in kje ga <b>prevzame Belin</b>, katere dokumente sistem generira samodejno in kje so potrebni podpisi. Interni dokument za razvoj in ekipo.</p>
+
+    <div class="legend">
+      <span class="li"><span class="swatch sw-ext"></span><b>Zunaj Belina</b>, trenutno zunanji sistem</span>
+      <span class="li"><span class="swatch sw-auto"></span><b>Belin avtomatizira</b></span>
+      <span class="li"><span class="swatch sw-sign"></span><b>Točka podpisa</b></span>
+      <span class="li"><span class="swatch sw-doc"></span><b>Generiran dokument</b></span>
+      <span class="li"><span class="swatch sw-actor"></span><b>Akter</b>, kdo izvede korak</span>
+    </div>
+  </div>
+</header>
+
+<nav class="phasenav">
+  <div class="wrap">
+    <a href="#f0"><b>0</b>Pred Belinom</a>
+    <a href="#f1"><b>1</b>Projekt in ponudba</a>
+    <a href="#f2"><b>2</b>Soglasje</a>
+    <a href="#f3"><b>3</b>Izvedba</a>
+    <a href="#f4"><b>4</b>Priključitev</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- FAZA 0 -->
+  <section class="phase ext" id="f0">
+    <div class="phase-head">
+      <div class="pnum">0</div>
+      <div>
+        <h2>Pred Belinom</h2>
+        <p>Pridobivanje in kvalifikacija stranke ter izdelava načrta. Trenutno poteka v zunanjih aplikacijah.</p>
+      </div>
+    </div>
+    <div class="rail">
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">0.1</span><h3>CRM, baza potencialnih strank</h3><span class="tag t-actor">CRM (zunanji)</span></div>
+        <p>CRM vodi sezname potencialnih strank (leadov).</p>
+      </div></div>
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">0.2</span><h3>Klicanje leadov</h3><span class="tag t-actor">EPC, prodaja</span></div>
+        <p>Prodajna ekipa EPC pokliče leade in pridobi povpraševanja.</p>
+      </div></div>
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">0.3</span><h3>Ogled in ocena lokacije</h3><span class="tag t-actor">EPC</span></div>
+        <p>Predstavnik solarnega podjetja (EPC) obišče lokacijo in jo oceni.</p>
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid two">
+            <figure class="slot"><div class="slot-box"><span class="slot-badge b-teren">teren</span><img src="{{IMG:p-dach}}" alt="Ravna streha pred montažo"></div><figcaption>Ogled ravne strehe pred montažo</figcaption></figure>
+            <figure class="slot"><div class="slot-box"><span class="slot-badge b-teren">teren</span><img src="{{IMG:p-flug3}}" alt="Posnetek lokacije iz zraka"></div><figcaption>Posnetek lokacije iz zraka</figcaption></figure>
+          </div>
+        </div>
+      </div></div>
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">0.4</span><h3>Izdelava načrta</h3><span class="tag t-actor">EPC, projektant</span><span class="tag t-actor">zunanja aplikacija</span></div>
+        <p>Nastane načrt s ključnimi podatki: seznam materiala, naslov, tip sistema. Ti podatki so vhod za Belin.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- HANDOFF -->
+  <div class="handoff">
+    <div class="hi"><svg><use href="#i-arrow"/></svg></div>
+    <div class="htxt">
+      <strong>Tu prevzame Belin</strong>
+      <span>Belin uporabi podatke iz načrta (material, naslov, tip sistema) in od tu naprej vodi celoten proces.</span>
+    </div>
+  </div>
+
+  <!-- FAZA 1 -->
+  <section class="phase" id="f1">
+    <div class="phase-head">
+      <div class="pnum">1</div>
+      <div>
+        <h2>Projekt, ponudba in pooblastilo</h2>
+        <p>Belin iz načrta ustvari projekt ter samodejno pripravi ponudbo in pooblastilo za podpis stranke.</p>
+      </div>
+    </div>
+    <div class="rail">
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">1.1</span><h3>Nastane projekt</h3><span class="tag t-auto"><svg><use href="#i-auto"/></svg>Avtomatsko</span></div>
+        <p>Belin uvozi podatke iz načrta in samodejno ustvari projekt.</p>
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid two">
+            <figure class="slot"><div class="slot-box"><span class="slot-badge b-app">app</span><img src="{{IMG:k2-upload}}" alt="Nalaganje K2 načrta"></div><figcaption>Nalaganje načrta v Belin</figcaption></figure>
+            <figure class="slot"><div class="slot-box"><span class="slot-badge b-app">app</span><img src="{{IMG:k2-result}}" alt="Podatki, prebrani iz načrta"></div><figcaption>Ustvarjen projekt s prevzetimi podatki (naslov, tip sistema, material)</figcaption></figure>
+          </div>
+        </div>
+      </div></div>
+
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">1.2</span><h3>Samodejna ponudba</h3><span class="tag t-auto"><svg><use href="#i-auto"/></svg>Avtomatsko</span></div>
+        <p>Na podlagi podatkov iz načrta (ki naj bi vsebovali vse potrebno) Belin sam generira ponudbo za stranko, ki kupuje elektrarno.</p>
+        <div class="docs"><span class="dl">GENERIRA</span><span class="doc"><svg><use href="#i-doc"/></svg>Ponudba</span></div>
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid one">
+            <figure class="slot">
+              <div class="slot-box paper free"><span class="slot-badge b-predlog">predlog</span>
+                <div class="sheet">
+                  <div class="st">
+                    <div><h4>Ponudba</h4><p>Št. 2026-0142 &middot; PSE Trgovski center Kranj</p></div>
+                    <div class="sm">BELIN</div>
+                  </div>
+                  <dl>
+                    <dt>Naročnik</dt><dd>PSE Nepremičnine d.o.o.</dd>
+                    <dt>Lokacija</dt><dd>Cesta Staneta Žagarja 69, 4000 Kranj</dd>
+                    <dt>Sistem</dt><dd>Ravna streha, K2 Dome 6.10</dd>
+                    <dt>Moč</dt><dd>245,7 kWp</dd>
+                    <dt>Veljavnost</dt><dd>30 dni od 02. 06. 2026</dd>
+                  </dl>
+                  <h5>Postavke</h5>
+                  <table>
+                    <thead><tr><th>Postavka</th><th>Količina</th><th class="r">Cena/enoto</th><th class="r">Skupaj</th></tr></thead>
+                    <tbody>
+                      <tr><td>Modul Trina Vertex S+ 450 W</td><td>546 kos</td><td class="r">98,00</td><td class="r">53.508,00</td></tr>
+                      <tr><td>Nosilna konstrukcija K2 Dome 6.10</td><td>546 kpl</td><td class="r">41,00</td><td class="r">22.386,00</td></tr>
+                      <tr><td>Razsmernik Huawei SUN2000-100KTL</td><td>2 kos</td><td class="r">5.940,00</td><td class="r">11.880,00</td></tr>
+                      <tr><td>DC in AC kabel, konektorji, zaščita</td><td>1 kpl</td><td class="r">14.260,00</td><td class="r">14.260,00</td></tr>
+                      <tr><td>Montaža, zagon in dokumentacija</td><td>245,7 kWp</td><td class="r">97,00</td><td class="r">23.832,90</td></tr>
+                    </tbody>
+                  </table>
+                  <p class="note">Skupaj brez DDV: 125.866,90 EUR &middot; Cena na kWp: 512,27 EUR/kWp</p>
+                  <p class="note">Ponudba je pripravljena samodejno iz podatkov načrta. EPC jo pregleda in potrdi, ne tipka.</p>
+                  <div class="sf"><span>Ustvarjeno v Belinu</span><span>getbelin.com</span></div>
+                </div>
+              </div>
+              <figcaption>Predogled samodejno generirane ponudbe</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div></div>
+
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">1.3</span><h3>Samodejno pooblastilo</h3><span class="tag t-auto"><svg><use href="#i-auto"/></svg>Avtomatsko</span></div>
+        <p>Belin generira pooblastilo, s katerim EPC v imenu stranke ureja dokumentacijo, in ga pošlje na želeni email stranke.</p>
+        <div class="docs"><span class="dl">GENERIRA</span><span class="doc"><svg><use href="#i-doc"/></svg>Pooblastilo</span></div>
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid two">
+            <figure class="slot">
+              <div class="slot-box paper free"><span class="slot-badge b-predlog">predlog</span>
+                <div class="sheet">
+                  <div class="st">
+                    <div><h4>Pooblastilo</h4><p>Za urejanje dokumentacije za priključitev</p></div>
+                    <div class="sm">BELIN</div>
+                  </div>
+                  <dl>
+                    <dt>Pooblastitelj</dt><dd>PSE Nepremičnine d.o.o., Cesta Staneta Žagarja 69, 4000 Kranj</dd>
+                    <dt>Pooblaščenec</dt><dd>AVESOL d.o.o., Ulica Mirka Vadnova 3a, 4000 Kranj</dd>
+                    <dt>Projekt</dt><dd>SE PSE Trgovski center Kranj, 245,7 kWp</dd>
+                    <dt>Datum</dt><dd>02. 06. 2026</dd>
+                  </dl>
+                  <p class="note">Pooblastitelj pooblašča pooblaščenca, da v njegovem imenu pri operaterju distribucijskega omrežja vloži vlogo za izdajo soglasja za priključitev, dopolnjuje vlogo, prevzema dokumente in ureja vse s tem povezane postopke do priključitve proizvodne naprave na omrežje.</p>
+                  <p class="note">Pooblastilo velja do preklica oziroma do dokončanja postopka priključitve.</p>
+                  <div class="sigline">Podpis pooblastitelja</div>
+                  <div class="sf"><span>Ustvarjeno v Belinu</span><span>getbelin.com</span></div>
+                </div>
+              </div>
+              <figcaption>Generirano pooblastilo</figcaption>
+            </figure>
+            <figure class="slot">
+              <div class="slot-box paper free"><span class="slot-badge b-predlog">predlog</span>
+                <div class="sheet">
+                  <div class="st">
+                    <div><h4>Pošiljam v podpis</h4><p>Pooblastilo &middot; PSE Trgovski center Kranj</p></div>
+                    <div class="sm">BELIN</div>
+                  </div>
+                  <dl>
+                    <dt>Za</dt><dd>marko.golob@pse-demo.si</dd>
+                    <dt>Zadeva</dt><dd>Pooblastilo za podpis, SE PSE Trgovski center Kranj</dd>
+                    <dt>Priloga</dt><dd>pooblastilo-2026-0142.pdf</dd>
+                    <dt>Povezava</dt><dd>getbelin.com/p/8f3ac1</dd>
+                  </dl>
+                  <p class="note">Spoštovani, v podpis vam pošiljamo pooblastilo za urejanje dokumentacije za priključitev sončne elektrarne. Dokument lahko podpišete kar na telefonu, s prstom po zaslonu. Podpis traja manj kot minuto, aplikacije ni treba nameščati.</p>
+                  <p class="note">Ko podpišete, podpisan dokument samodejno prejmemo nazaj v Belin.</p>
+                  <div class="sf"><span>Poslano prek Belina</span><span>getbelin.com</span></div>
+                </div>
+              </div>
+              <figcaption>Pošiljanje pooblastila na email stranke</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div></div>
+
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">1.4</span><h3>Digitalni podpis stranke</h3><span class="tag t-sign"><svg><use href="#i-sign"/></svg>Podpis: stranka</span></div>
+        <p>Stranka podpiše digitalno, z risanjem po zaslonu telefona ali z miško. EPC prejme podpisano pooblastilo.</p>
+
+        <div class="sign" data-sign
+             data-title="Pooblastilo"
+             data-sub="SE PSE Trgovski center Kranj &middot; 245,7 kWp"
+             data-who="Marko Golob"
+             data-role="Za pooblastitelja, PSE Nepremičnine d.o.o."
+             data-cta="Podpiši in pošlji"
+             data-sent="Podpisano in poslano"
+             data-state="Za podpis"
+             data-done="Podpisano">
+          <div class="sign-copy">
+            <p class="eyebrow"><svg><use href="#i-sign"/></svg>Kako izgleda podpis</p>
+            <h4>S prstom po zaslonu</h4>
+            <p>Stranka odpre povezavo iz e-pošte, prebere dokument in podpiše s prstom. Brez namestitve, brez digitalnega potrdila, brez tiskalnika.</p>
+            <p class="hint">Podpis se nariše sam. Lahko pa ga izbrišete in se podpišete sami, s prstom ali z miško.</p>
+            <div class="sign-btns">
+              <button type="button" class="sbtn" data-replay>Ponovi podpis</button>
+              <button type="button" class="sbtn" data-clear>Počisti in poskusi sam</button>
+            </div>
+          </div>
+          <div class="sign-phone"></div>
+        </div>
+
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid one">
+            <figure class="slot"><div class="slot-box paper contain"><span class="slot-badge b-dok">dokument</span><img src="{{IMG:doc-abnahme}}" alt="Podpisan dokument s pravimi podpisi"></div><figcaption>Stranka digitalno podpiše na telefonu. Tako podpis pride na dokument: to je zapisnik iz Belina, s podpisoma, zajetima s prstom.</figcaption></figure>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- FAZA 2 -->
+  <section class="phase" id="f2">
+    <div class="phase-head">
+      <div class="pnum">2</div>
+      <div>
+        <h2>Soglasje za priključitev</h2>
+        <p>Belin pripravi celotno dokumentacijo za operaterja distribucijskega omrežja. Po prejemu soglasja se ta shrani nazaj v aplikacijo.</p>
+      </div>
+    </div>
+    <div class="rail">
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">2.1</span><h3>Vloga za soglasje in dokumentacija</h3><span class="tag t-auto"><svg><use href="#i-auto"/></svg>Avtomatsko</span></div>
+        <p>Tradicionalno je treba pripraviti veliko dokumentacije. Belin izpolni vlogo za soglasje, generira enopolno shemo in vso ostalo potrebno dokumentacijo, na podlagi podatkov, ki jih že ima.</p>
+        <div class="docs"><span class="dl">GENERIRA</span><span class="doc"><svg><use href="#i-doc"/></svg>Vloga za soglasje</span><span class="doc"><svg><use href="#i-doc"/></svg>Enopolna shema</span><span class="doc"><svg><use href="#i-doc"/></svg>Ostala dokumentacija</span></div>
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid two">
+            <figure class="slot"><div class="slot-box paper contain tall"><span class="slot-badge b-dok">dokument</span><img src="{{IMG:vloga-1}}" alt="Izpolnjena vloga za soglasje, stran 1"></div><figcaption>Samodejno izpolnjena vloga za soglasje. Pravi obrazec operaterja, izpolnjen s podatki projekta.</figcaption></figure>
+            <figure class="slot"><div class="slot-box paper contain tall"><span class="slot-badge b-dok">dokument</span><img src="{{IMG:vloga-2}}" alt="Izpolnjena vloga za soglasje, stran 2, s podpisom"></div><figcaption>Druga stran: pooblaščenec in podpis. Obrazec sam pravi, da se podpis lahko nariše.</figcaption></figure>
+          </div>
+          <div class="shot-grid one" style="margin-top:14px">
+            <figure class="slot">
+              <div class="slot-box paper free"><span class="slot-badge b-predlog">predlog</span>
+                <div class="sld">
+                  <svg viewBox="0 0 900 300" role="img" aria-label="Enopolna shema">
+                    <style>
+                      .sld-l{stroke:#0a1628;stroke-width:1.6;fill:none}
+                      .sld-d{stroke:#8a95a6;stroke-width:1.2;fill:none;stroke-dasharray:4 3}
+                      .sld-b{fill:none;stroke:#0a1628;stroke-width:1.6}
+                      .sld-t{font:600 14px "BelinInter",sans-serif;fill:#0a1628}
+                      .sld-s{font:400 11.5px "BelinInter",sans-serif;fill:#8a95a6}
+                      .sld-h{font:700 12px "BelinInter",sans-serif;fill:#0a1628;letter-spacing:.14em}
+                    </style>
+                    <text x="0" y="14" class="sld-h">ENOPOLNA SHEMA</text>
+                    <text x="0" y="30" class="sld-s">SE PSE Trgovski center Kranj &#183; 245,7 kWp &#183; 200 kVA</text>
+
+                    <!-- generator -->
+                    <rect x="0" y="58" width="132" height="86" rx="4" class="sld-b"/>
+                    <path d="M14 76h104M14 94h104M14 112h104M14 130h104" class="sld-d"/>
+                    <text x="0" y="162" class="sld-t">FV generator</text>
+                    <text x="0" y="177" class="sld-s">546 &#215; Trina Vertex S+ 450 W</text>
+                    <text x="0" y="191" class="sld-s">28 nizov &#215; 19 modulov + 1 niz &#215; 14</text>
+                    <text x="0" y="205" class="sld-s">Uoc (STC) 985 V &#183; 1071 V pri &#8722;10 &#176;C</text>
+
+                    <path d="M132 101h56" class="sld-l"/>
+                    <text x="140" y="94" class="sld-s">DC</text>
+
+                    <!-- dc protection -->
+                    <rect x="188" y="74" width="92" height="54" rx="4" class="sld-b"/>
+                    <path d="M206 92v18M222 92l14 18M244 101h18" class="sld-l"/>
+                    <text x="188" y="146" class="sld-t">DC zaščita</text>
+                    <text x="188" y="161" class="sld-s">ločilnik, prenapetostna</text>
+                    <text x="188" y="175" class="sld-s">zaščita tip 2</text>
+
+                    <path d="M280 101h58" class="sld-l"/>
+
+                    <!-- inverters -->
+                    <rect x="338" y="62" width="110" height="78" rx="4" class="sld-b"/>
+                    <path d="M356 122 434 80" class="sld-l"/>
+                    <path d="M356 86c8 0 8 12 16 12s8-12 16-12" class="sld-l"/>
+                    <path d="M398 118h30" class="sld-l"/>
+                    <text x="338" y="158" class="sld-t">Razsmernika</text>
+                    <text x="338" y="173" class="sld-s">2 &#215; Huawei SUN2000-100KTL</text>
+                    <text x="338" y="187" class="sld-s">2 &#215; 100 kVA &#183; 400 V &#183; 50 Hz</text>
+                    <text x="338" y="201" class="sld-s">DC/AC 1,23</text>
+
+                    <path d="M448 101h58" class="sld-l"/>
+                    <text x="458" y="94" class="sld-s">AC</text>
+
+                    <!-- ac protection -->
+                    <rect x="506" y="74" width="92" height="54" rx="4" class="sld-b"/>
+                    <path d="M524 92v18M546 92v18M568 92v18" class="sld-l"/>
+                    <text x="506" y="146" class="sld-t">AC zaščita</text>
+                    <text x="506" y="161" class="sld-s">glavno stikalo,</text>
+                    <text x="506" y="175" class="sld-s">zaščita vmesnika</text>
+
+                    <path d="M598 101h58" class="sld-l"/>
+
+                    <!-- meter -->
+                    <rect x="656" y="74" width="72" height="54" rx="4" class="sld-b"/>
+                    <circle cx="692" cy="101" r="17" class="sld-b"/>
+                    <text x="686" y="106" class="sld-t">kWh</text>
+                    <text x="656" y="146" class="sld-t">Merilno mesto</text>
+                    <text x="656" y="161" class="sld-s">2-104377</text>
+                    <text x="656" y="175" class="sld-s">dvosmerni števec</text>
+
+                    <path d="M728 101h58" class="sld-l"/>
+
+                    <!-- grid -->
+                    <path d="M812 66v70M792 78h40M796 96h32M800 114h24" class="sld-l"/>
+                    <text x="786" y="160" class="sld-t">Omrežje</text>
+                    <text x="786" y="175" class="sld-s">NN 0,4 kV</text>
+
+                    <path d="M0 240h900" stroke="#e6e9ef" stroke-width="1"/>
+                    <text x="0" y="262" class="sld-s">Način obratovanja: paralelno z distribucijskim omrežjem, mešani (za lastne potrebe in oddajo).</text>
+                    <text x="0" y="278" class="sld-s">Predvidena letna proizvodnja 258.000 kWh, od tega 180.600 kWh za lastne potrebe in 77.400 kWh za oddajo.</text>
+                  </svg>
+                </div>
+              </div>
+              <figcaption>Generirana enopolna shema</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div></div>
+
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">2.2</span><h3>Podpis EPC</h3><span class="tag t-sign"><svg><use href="#i-sign"/></svg>Podpis: EPC</span></div>
+        <p>EPC podpiše z risanjem po telefonu ali s SMS-geslom na računalniku.</p>
+
+        <div class="sign" data-sign
+             data-title="Vloga za soglasje"
+             data-sub="Elektro Gorenjska d.d. &middot; SE PSE Trgovski center Kranj"
+             data-who="Boštjan Novak"
+             data-role="Za pooblaščenca, AVESOL d.o.o."
+             data-cta="Podpiši in oddaj"
+             data-sent="Podpisano in oddano"
+             data-state="Za podpis"
+             data-done="Oddano">
+          <div class="sign-copy">
+            <p class="eyebrow"><svg><use href="#i-sign"/></svg>Kako izgleda podpis</p>
+            <h4>Isti gib, drug dokument</h4>
+            <p>Vloga za soglasje se podpiše enako kot pooblastilo. Obrazec operaterja sam navaja, da se podpis lahko nariše, če podpisnik nima digitalnega potrdila.</p>
+            <p class="hint">Podpis se nariše sam. Lahko pa ga izbrišete in se podpišete sami, s prstom ali z miško.</p>
+            <div class="sign-btns">
+              <button type="button" class="sbtn" data-replay>Ponovi podpis</button>
+              <button type="button" class="sbtn" data-clear>Počisti in poskusi sam</button>
+            </div>
+          </div>
+          <div class="sign-phone"></div>
+        </div>
+
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid one">
+            <figure class="slot"><div class="slot-box todo"><svg><use href="#i-cam"/></svg><span>Posnetek zaslona: podpis s SMS-geslom na računalniku. Modul še ni zgrajen.</span></div><figcaption>Podpis EPC (telefon ali SMS-geslo na računalniku)</figcaption></figure>
+          </div>
+        </div>
+      </div></div>
+
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">2.3</span><h3>Čakanje na soglasje</h3><span class="tag t-actor">Operater omrežja</span></div>
+        <p>Soglasje prispe po navadni pošti čez nekaj mesecev.</p>
+      </div></div>
+
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">2.4</span><h3>Zajem soglasja v Belin</h3><span class="tag t-actor">EPC</span></div>
+        <p>EPC s telefonom fotografira vse strani soglasja in jih shrani v aplikacijo. Belin te podatke uporablja pri nadaljnji obdelavi.</p>
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid one">
+            <figure class="slot"><div class="slot-box todo"><svg><use href="#i-cam"/></svg><span>Posnetek zaslona: fotografiranje strani soglasja v aplikaciji. Modul še ni zgrajen.</span></div><figcaption>Fotografiranje in nalaganje strani soglasja</figcaption></figure>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- FAZA 3 -->
+  <section class="phase" id="f3">
+    <div class="phase-head">
+      <div class="pnum">3</div>
+      <div>
+        <h2>Izvedba projekta</h2>
+        <p>Z veljavnim soglasjem EPC začne izvedbo: naročilo materiala, mehanska montaža in elektro montaža. Vse se sproti dokumentira.</p>
+      </div>
+    </div>
+    <div class="rail">
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">3.1</span><h3>Naročilo materiala</h3><span class="tag t-auto"><svg><use href="#i-auto"/></svg>Avtomatsko</span></div>
+        <p>Belin ustvari seznam materiala in povpraševanje. EPC ga pošlje na želeni email ali izbere dobavitelja s seznama (Krannich, K2 ...).</p>
+        <div class="docs"><span class="dl">GENERIRA</span><span class="doc"><svg><use href="#i-doc"/></svg>Seznam materiala</span><span class="doc"><svg><use href="#i-doc"/></svg>Povpraševanje</span></div>
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid two">
+            <figure class="slot">
+              <div class="slot-box paper free"><span class="slot-badge b-predlog">predlog</span>
+                <div class="sheet">
+                  <div class="st">
+                    <div><h4>Povpraševanje</h4><p>Št. 2026-0142-M &middot; PSE Trgovski center Kranj</p></div>
+                    <div class="sm">BELIN</div>
+                  </div>
+                  <dl>
+                    <dt>Dobava na</dt><dd>Cesta Staneta Žagarja 69, 4000 Kranj</dd>
+                    <dt>Rok dobave</dt><dd>do 27. 07. 2026</dd>
+                    <dt>Kontakt</dt><dd>Boštjan Novak, AVESOL d.o.o.</dd>
+                  </dl>
+                  <h5>Seznam materiala</h5>
+                  <table>
+                    <thead><tr><th>Postavka</th><th class="r">Količina</th><th>Enota</th></tr></thead>
+                    <tbody>
+                      <tr><td>Modul Trina Vertex S+ 450 W</td><td class="r">546</td><td>kos</td></tr>
+                      <tr><td>Nosilna konstrukcija K2 Dome 6.10</td><td class="r">546</td><td>kpl</td></tr>
+                      <tr><td>Razsmernik Huawei SUN2000-100KTL</td><td class="r">2</td><td>kos</td></tr>
+                      <tr><td>DC kabel 6 mm&#178;</td><td class="r">1.200</td><td>m</td></tr>
+                      <tr><td>Konektorji MC4</td><td class="r">120</td><td>par</td></tr>
+                      <tr><td>AC kabel 4&#215;120 mm&#178;</td><td class="r">250</td><td>m</td></tr>
+                      <tr><td>Prenapetostna zaščita tip 2</td><td class="r">4</td><td>kos</td></tr>
+                    </tbody>
+                  </table>
+                  <p class="note">Seznam je prevzet iz načrta. Ista številka postavke se kasneje uporabi pri prevzemu materiala na gradbišču.</p>
+                  <div class="sf"><span>Ustvarjeno v Belinu</span><span>getbelin.com</span></div>
+                </div>
+              </div>
+              <figcaption>Seznam materiala s povpraševanjem</figcaption>
+            </figure>
+            <figure class="slot"><div class="slot-box todo"><svg><use href="#i-cam"/></svg><span>Posnetek zaslona: izbira dobavitelja s seznama. Modul še ni zgrajen.</span></div><figcaption>Izbira dobavitelja (Krannich, K2 ...)</figcaption></figure>
+          </div>
+        </div>
+      </div></div>
+
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">3.2</span><h3>Vključitev izvajalcev in naloge</h3><span class="tag t-actor">EPC</span></div>
+        <p>EPC vključi podizvajalce (za mehansko ali elektro montažo) ali projekt dodeli svojim zaposlenim (mehanski in elektro računi). Vsi prejmejo naloge.</p>
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid one">
+            <figure class="slot"><div class="slot-box"><span class="slot-badge b-app">app</span><img src="{{IMG:roster}}" alt="Ekipa na gradbišču in povezave za ekipo"></div><figcaption>Dodelitev izvajalca in prejete naloge</figcaption></figure>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- vzporedni track -->
+    <div class="tracks">
+      <div class="track">
+        <div class="th"><svg><use href="#i-wrench"/></svg><div><h3>Mehanska montaža</h3><small>monter, podizvajalec ali zaposleni</small></div></div>
+        <div class="tb">
+          <ul>
+            <li>Ob prihodu na lokacijo <b>preveri seznam materiala</b>, ali je vse dostavljeno.</li>
+            <li>Ves čas <b>dokumentira</b>: dnevne fotografije, foto končane konstrukcije, kabliranja in nameščenih modulov, logirani podatki.</li>
+            <li class="auto">Slabo vreme se <b>samodejno zabeleži</b> prek vremenskega API-ja.</li>
+            <li>Lahko <b>opozori EPC</b> na manjkajoč material ali povzročeno škodo in beleži ure (Regiestunden).</li>
+          </ul>
+          <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE, MEHANSKA MONTAŽA</p>
+            <div class="shot-grid">
+              <figure class="slot"><div class="slot-box tall"><span class="slot-badge b-app">app</span><img src="{{IMG:crew-phone}}" alt="Preverjanje materiala na telefonu"></div><figcaption>Preverjanje dostavljenega materiala (checklist)</figcaption></figure>
+              <figure class="slot"><div class="slot-box"><span class="slot-badge b-teren">teren</span><img src="{{IMG:p-unterkonstruktion}}" alt="Končana montažna konstrukcija"></div><figcaption>Končana montažna konstrukcija</figcaption></figure>
+              <figure class="slot"><div class="slot-box"><span class="slot-badge b-teren">teren</span><img src="{{IMG:p-dc}}" alt="Dokončano kabliranje"></div><figcaption>Dokončano kabliranje</figcaption></figure>
+              <figure class="slot"><div class="slot-box"><span class="slot-badge b-teren">teren</span><img src="{{IMG:p-anlage}}" alt="Nameščeni moduli"></div><figcaption>Nameščeni moduli</figcaption></figure>
+              <figure class="slot"><div class="slot-box"><span class="slot-badge b-teren">teren</span><img src="{{IMG:p-crew}}" alt="Dnevna fotografija terena"></div><figcaption>Dnevna fotografija terena</figcaption></figure>
+              <figure class="slot"><div class="slot-box paper contain"><span class="slot-badge b-dok">dokument</span><img src="{{IMG:doc-day}}" alt="Dnevno poročilo z zabeleženim vremenom"></div><figcaption>Samodejni zapis vremena (vremenski API)</figcaption></figure>
+              <figure class="slot"><div class="slot-box"><span class="slot-badge b-app">app</span><img src="{{IMG:hours}}" alt="Režijske ure in potrditev"></div><figcaption>Opozorilo (manjka material ali škoda) in vnos ur</figcaption></figure>
+              <figure class="slot"><div class="slot-box paper contain"><span class="slot-badge b-dok">dokument</span><img src="{{IMG:doc-completion}}" alt="Zaključno poročilo"></div><figcaption>Generirana poročila, mehanska montaža</figcaption></figure>
+            </div>
+          </div>
+          <div class="out">
+            <div class="docs" style="border:0;padding:0;margin:0">
+              <span class="dl"><svg style="width:11px;height:11px;color:var(--gold)"><use href="#i-auto"/></svg> BELIN SAMODEJNO GENERIRA</span>
+              <span class="doc"><svg><use href="#i-doc"/></svg>Zaključno poročilo s fotodokumentacijo</span>
+              <span class="doc"><svg><use href="#i-doc"/></svg>Gradbeni dnevnik (Bautagesbericht)</span>
+              <span class="doc"><svg><use href="#i-doc"/></svg>Protokol meritev nizov (string)</span>
+              <span class="doc"><svg><use href="#i-doc"/></svg>Poročilo ur (Regiestunden)</span>
+              <span class="doc"><svg><use href="#i-doc"/></svg>Račun (če je podizvajalec)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="track">
+        <div class="th"><svg><use href="#i-bolt"/></svg><div><h3>Elektro montaža</h3><small>elektroinštalater, podizvajalec ali zaposleni</small></div></div>
+        <div class="tb">
+          <ul>
+            <li>Ves čas <b>dokumentira in logira</b> potek elektro del enako kot pri mehanski montaži.</li>
+            <li class="auto">Slabo vreme se <b>samodejno zabeleži</b> prek vremenskega API-ja.</li>
+            <li>Lahko <b>opozori EPC</b> na manjkajoč material ali povzročeno škodo in beleži ure (Regiestunden).</li>
+          </ul>
+          <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE, ELEKTRO MONTAŽA</p>
+            <div class="shot-grid">
+              <figure class="slot"><div class="slot-box"><span class="slot-badge b-teren">teren</span><img src="{{IMG:p-dc}}" alt="DC in AC ožičenje"></div><figcaption>DC in AC ožičenje</figcaption></figure>
+              <figure class="slot"><div class="slot-box todo"><svg><use href="#i-cam"/></svg><span>Fotografija montaže razsmernika. Še ni posneta.</span></div><figcaption>Montaža razsmernika</figcaption></figure>
+              <figure class="slot"><div class="slot-box todo"><svg><use href="#i-cam"/></svg><span>Fotografija priključkov in meritev. Še ni posneta.</span></div><figcaption>Priključki in meritve</figcaption></figure>
+              <figure class="slot wide">
+                <div class="slot-box paper free"><span class="slot-badge b-predlog">predlog</span>
+                  <div class="sheet">
+                    <div class="st">
+                      <div><h4>Protokol meritev nizov</h4><p>PSE Trgovski center Kranj &middot; 11. 08. 2026</p></div>
+                      <div class="sm">BELIN</div>
+                    </div>
+                    <dl>
+                      <dt>Razsmernik</dt><dd>Huawei SUN2000-100KTL, št. 1</dd>
+                      <dt>Modul</dt><dd>Trina Vertex S+ 450 W</dd>
+                      <dt>Temperatura</dt><dd>42 &#176;C, sončno</dd>
+                      <dt>Merilnik</dt><dd>Benning PV 2, kal. do 03. 2027</dd>
+                    </dl>
+                    <h5>Meritve</h5>
+                    <table>
+                      <thead><tr><th>Niz</th><th class="r">Modulov</th><th class="r">Uoc (V)</th><th class="r">Isc (A)</th><th class="r">Riso (M&#937;)</th></tr></thead>
+                      <tbody>
+                        <tr><td>1.1</td><td class="r">19</td><td class="r">944</td><td class="r">10,4</td><td class="r">&gt; 500</td></tr>
+                        <tr><td>1.2</td><td class="r">19</td><td class="r">941</td><td class="r">10,5</td><td class="r">&gt; 500</td></tr>
+                        <tr><td>1.3</td><td class="r">19</td><td class="r">946</td><td class="r">10,4</td><td class="r">&gt; 500</td></tr>
+                        <tr><td>1.4</td><td class="r">19</td><td class="r">943</td><td class="r">10,3</td><td class="r">&gt; 500</td></tr>
+                        <tr><td>1.5</td><td class="r">14</td><td class="r">695</td><td class="r">10,4</td><td class="r">&gt; 500</td></tr>
+                      </tbody>
+                    </table>
+                    <p class="note">Uoc pri 42 &#176;C. Pri &#8722;10 &#176;C najdaljši niz doseže 1071 V, pod sistemsko mejo 1100 V.</p>
+                    <div class="sigline">Podpis elektroinštalaterja</div>
+                    <div class="sf"><span>Ustvarjeno v Belinu</span><span>getbelin.com</span></div>
+                  </div>
+                </div>
+                <figcaption>Vnos protokola elektro meritev</figcaption>
+              </figure>
+              <figure class="slot"><div class="slot-box"><span class="slot-badge b-app">app</span><img src="{{IMG:hours}}" alt="Režijske ure in potrditev"></div><figcaption>Opozorilo (manjka material ali škoda) in vnos ur</figcaption></figure>
+              <figure class="slot"><div class="slot-box paper contain"><span class="slot-badge b-dok">dokument</span><img src="{{IMG:doc-completion}}" alt="Zaključno poročilo elektro montaže"></div><figcaption>Generirana poročila, elektro montaža</figcaption></figure>
+            </div>
+          </div>
+          <div class="out">
+            <div class="docs" style="border:0;padding:0;margin:0">
+              <span class="dl"><svg style="width:11px;height:11px;color:var(--gold)"><use href="#i-auto"/></svg> BELIN SAMODEJNO GENERIRA</span>
+              <span class="doc"><svg><use href="#i-doc"/></svg>Zaključno poročilo s fotodokumentacijo</span>
+              <span class="doc"><svg><use href="#i-doc"/></svg>Protokol elektro meritev</span>
+              <span class="doc"><svg><use href="#i-doc"/></svg>Poročilo ur (Regiestunden)</span>
+              <span class="doc"><svg><use href="#i-doc"/></svg>Račun (če je podizvajalec)</span>
+              <span class="doc"><svg><use href="#i-doc"/></svg>Ostala dokumentacija</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAZA 4 -->
+  <section class="phase" id="f4">
+    <div class="phase-head">
+      <div class="pnum">4</div>
+      <div>
+        <h2>Priključitev na omrežje</h2>
+        <p>Ko je projekt končan in vsa poročila združena, Belin pripravi, podpiše in odda dokumentacijo za priklop elektrarne.</p>
+      </div>
+    </div>
+    <div class="rail">
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">4.1</span><h3>Združitev poročil</h3><span class="tag t-auto"><svg><use href="#i-auto"/></svg>Avtomatsko</span></div>
+        <p>Vsa poročila projekta (mehanska in elektro) se združijo, kombinirajo in shranijo.</p>
+      </div></div>
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">4.2</span><h3>Izpolnjeni dokumenti za priključitev</h3><span class="tag t-auto"><svg><use href="#i-auto"/></svg>Avtomatsko</span></div>
+        <p>Belin vse dokumente za priključitev izpolni neposredno v aplikaciji, ker že ima vse potrebne podatke.</p>
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid one">
+            <figure class="slot"><div class="slot-box paper contain tall"><span class="slot-badge b-dok">dokument</span><img src="{{IMG:vloga-1}}" alt="Izpolnjen obrazec operaterja"></div><figcaption>Izpolnjeni dokumenti za priključitev v aplikaciji</figcaption></figure>
+          </div>
+        </div>
+      </div></div>
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">4.3</span><h3>Podpisi vseh udeležencev</h3><span class="tag t-sign"><svg><use href="#i-sign"/></svg>Podpis: vsi</span></div>
+        <p>Dokumenti se podpišejo v aplikaciji. Stranka prejme povezavo, da svoj del podpiše kasneje.</p>
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid one">
+            <figure class="slot"><div class="slot-box paper contain tall"><span class="slot-badge b-dok">dokument</span><img src="{{IMG:doc-abnahme}}" alt="Zapisnik o prevzemu s podpisi obeh strani"></div><figcaption>Podpisi vseh udeležencev in povezava za stranko</figcaption></figure>
+          </div>
+        </div>
+      </div></div>
+      <div class="step"><div class="card">
+        <div class="ct"><span class="code">4.4</span><h3>Oddaja institucijam</h3><span class="tag t-auto"><svg><use href="#i-auto"/></svg>Avtomatsko</span></div>
+        <p>Dokumenti se samodejno pošljejo ustreznim institucijam. Elektrarna je pripravljena na priklop.</p>
+        <div class="shots"><p class="shots-label"><svg><use href="#i-cam"/></svg>SLIKE ZA TA KORAK</p>
+          <div class="shot-grid two">
+            <figure class="slot"><div class="slot-box todo"><svg><use href="#i-cam"/></svg><span>Posnetek zaslona: potrditev oddaje institucijam. Modul še ni zgrajen.</span></div><figcaption>Potrditev samodejne oddaje institucijam</figcaption></figure>
+            <figure class="slot"><div class="slot-box"><span class="slot-badge b-teren">teren</span><img src="{{IMG:p-montage}}" alt="Končana elektrarna"></div><figcaption>Elektrarna je pripravljena na priklop</figcaption></figure>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="brandfoot">
+      <svg class="mark" viewBox="0 0 78 106"><use href="#i-mark"/></svg>
+      <b>BELIN</b>
+    </div>
+    <p>ERP, delovni tok. Interni dokument za razvoj in ekipo.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- phase nav ----------
+  var links = Array.prototype.slice.call(document.querySelectorAll("nav.phasenav a"));
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute("href").slice(1)] = a; });
+  if (window.IntersectionObserver) {
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (!e.isIntersecting) return;
+        var a = map[e.target.id];
+        if (!a) return;
+        links.forEach(function(x){ x.removeAttribute("data-on"); });
+        a.setAttribute("data-on", "1");
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    document.querySelectorAll("section.phase").forEach(function(s){ obs.observe(s); });
+  }
+
+  // ==========================================================================
+  // THE SIGNING DEMO
+  //
+  // The drawing half is components/SignaturePad.tsx: pointer events so a
+  // finger, a stylus and a mouse all work, touch-action none so the page does
+  // not scroll out from under the stroke, the canvas sized in DEVICE pixels and
+  // scaled back so a signature captured on a phone is not a blurry 2x mess.
+  //
+  // The playing half samples an SVG path with getPointAtLength, which is what
+  // makes the auto-signature a real curve drawn at a human speed rather than an
+  // image that fades in. Same canvas, same 2.2px round stroke, either way.
+  // ==========================================================================
+  var SIG_MAIN = "M18 78 C 26 40, 44 18, 58 22 C 70 26, 62 58, 52 74 C 44 88, 40 92, 46 86 "
+               + "C 58 74, 78 52, 92 56 C 104 60, 96 82, 104 86 C 112 90, 126 72, 138 56 "
+               + "C 150 40, 160 30, 168 36 C 176 42, 166 66, 172 76 C 178 86, 196 74, 210 58 "
+               + "C 224 42, 238 32, 248 38 C 258 44, 248 68, 256 76 C 262 82, 274 74, 284 62";
+  var SIG_UNDER = "M40 94 C 100 100, 200 98, 262 90";
+  var SIG_VIEW = { w: 300, h: 110 };
+  var INK = "#0a1628";
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // One hidden SVG, shared, so the paths can be sampled with getPointAtLength.
+  var bench = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  bench.setAttribute("width", "0");
+  bench.setAttribute("height", "0");
+  bench.setAttribute("aria-hidden", "true");
+  bench.style.position = "absolute";
+  document.body.appendChild(bench);
+
+  function sample(d, step) {
+    var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    bench.appendChild(path);
+    var len = path.getTotalLength();
+    var pts = [];
+    for (var at = 0; at <= len; at += step) {
+      var p = path.getPointAtLength(at);
+      pts.push([p.x, p.y]);
+    }
+    var last = path.getPointAtLength(len);
+    pts.push([last.x, last.y]);
+    bench.removeChild(path);
+    return pts;
+  }
+
+  var STROKES = null;
+  function strokes() {
+    if (!STROKES) STROKES = [sample(SIG_MAIN, 1.6), sample(SIG_UNDER, 1.6)];
+    return STROKES;
+  }
+
+  function phoneMarkup(cfg) {
+    return ''
+      + '<div class="phone"><div class="phone-in">'
+      +   '<div class="ph-bar">'
+      +     '<svg class="mark" viewBox="0 0 78 106"><use href="#i-mark"/></svg>'
+      +     '<b>BELIN</b><span class="state">' + cfg.state + '</span>'
+      +   '</div>'
+      +   '<div class="ph-doc">'
+      +     '<h5>' + cfg.title + '</h5>'
+      +     '<p class="sub">' + cfg.sub + '</p>'
+      +     '<dl>'
+      +       '<dt>Projekt</dt><dd>PSE Trgovski center Kranj</dd>'
+      +       '<dt>Moč</dt><dd>245,7 kWp</dd>'
+      +       '<dt>Datum</dt><dd>16. 09. 2026</dd>'
+      +     '</dl>'
+      +     '<p class="body">S podpisom potrjujem, da sem dokument prebral in se strinjam z njegovo vsebino.</p>'
+      +   '</div>'
+      +   '<div class="ph-sig">'
+      +     '<div class="lbl">Podpis</div>'
+      +     '<div class="sig-pad"><canvas></canvas><span class="placeholder">Podpišite se s prstom</span></div>'
+      +     '<div class="sig-foot"><span class="who"><b>' + cfg.who + '</b>' + cfg.role + '</span></div>'
+      +   '</div>'
+      +   '<div class="ph-cta">' + cfg.cta + '</div>'
+      + '</div></div>';
+  }
+
+  function build(root) {
+    var cfg = {
+      title: root.dataset.title, sub: root.dataset.sub,
+      who: root.dataset.who, role: root.dataset.role,
+      cta: root.dataset.cta, sent: root.dataset.sent,
+      state: root.dataset.state, done: root.dataset.done
+    };
+    root.querySelector(".sign-phone").innerHTML = phoneMarkup(cfg);
+
+    var pad = root.querySelector(".sig-pad");
+    var canvas = pad.querySelector("canvas");
+    var stateEl = root.querySelector(".ph-bar .state");
+    var cta = root.querySelector(".ph-cta");
+    var ctx = null;
+    var timer = null;
+    var drawing = false;
+    var inked = false;
+    var mode = "empty";     // empty | auto | hand
+    var cssSize = "";       // guards the resize handler against scroll-bar noise
+
+    function setup() {
+      var ratio = window.devicePixelRatio || 1;
+      var rect = canvas.getBoundingClientRect();
+      if (!rect.width) return;
+      cssSize = Math.round(rect.width) + "x" + Math.round(rect.height);
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      ctx = canvas.getContext("2d");
+      ctx.scale(ratio, ratio);
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = INK;
+    }
+
+    function reset() {
+      if (timer) { cancelAnimationFrame(timer); timer = null; }
+      setup();
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      inked = false;
+      mode = "empty";
+      pad.classList.remove("inked");
+      stateEl.textContent = cfg.state;
+      stateEl.classList.remove("done");
+      cta.textContent = cfg.cta;
+      cta.classList.remove("live", "sent");
+    }
+
+    function ink() {
+      if (inked) return;
+      inked = true;
+      pad.classList.add("inked");
+      cta.classList.add("live");
+    }
+
+    /** Fit the 300x110 signature into whatever the pad is, with a margin. */
+    function fit() {
+      var rect = canvas.getBoundingClientRect();
+      var pad_ = 10;
+      var k = Math.min((rect.width - pad_ * 2) / SIG_VIEW.w, (rect.height - pad_ * 2) / SIG_VIEW.h);
+      return {
+        k: k,
+        ox: (rect.width - SIG_VIEW.w * k) / 2,
+        oy: (rect.height - SIG_VIEW.h * k) / 2
+      };
+    }
+
+    /** The finished signature, all at once. Used on resize and when motion is reduced. */
+    function paintWhole() {
+      if (!ctx) return;
+      var all = strokes();
+      var f = fit();
+      for (var s = 0; s < all.length; s++) {
+        var pts = all[s];
+        ctx.beginPath();
+        ctx.moveTo(f.ox + pts[0][0] * f.k, f.oy + pts[0][1] * f.k);
+        for (var i = 1; i < pts.length; i++) ctx.lineTo(f.ox + pts[i][0] * f.k, f.oy + pts[i][1] * f.k);
+        ctx.stroke();
+      }
+    }
+
+    function play() {
+      reset();
+      if (!ctx) return;
+      var all = strokes();
+      var f = fit();
+      var si = 0, i = 0;
+      // About two seconds end to end, which is how long signing your own name
+      // takes. Slower than that and the demo feels like a loading bar.
+      var perFrame = reduced ? 1e6 : 4.6;
+      var carry = 0;
+      mode = "auto";
+
+      ink();
+      ctx.beginPath();
+      var first = all[0][0];
+      ctx.moveTo(f.ox + first[0] * f.k, f.oy + first[1] * f.k);
+
+      function step() {
+        carry += perFrame;
+        var n = Math.floor(carry);
+        carry -= n;
+        for (var c = 0; c < n; c++) {
+          if (si >= all.length) { timer = null; finish(); return; }
+          var pts = all[si];
+          i++;
+          if (i >= pts.length) {
+            si++; i = 0;
+            if (si >= all.length) { timer = null; finish(); return; }
+            ctx.beginPath();
+            var s = all[si][0];
+            ctx.moveTo(f.ox + s[0] * f.k, f.oy + s[1] * f.k);
+            continue;
+          }
+          var p = pts[i];
+          ctx.lineTo(f.ox + p[0] * f.k, f.oy + p[1] * f.k);
+          ctx.stroke();
+        }
+        timer = requestAnimationFrame(step);
+      }
+      timer = requestAnimationFrame(step);
+    }
+
+    function finish() {
+      stateEl.textContent = cfg.done;
+      stateEl.classList.add("done");
+      setTimeout(function(){
+        cta.textContent = cfg.sent;
+        cta.classList.remove("live");
+        cta.classList.add("sent");
+      }, 420);
+    }
+
+    // ---- drawing by hand, straight out of the product ----
+    function pointAt(event) {
+      var rect = canvas.getBoundingClientRect();
+      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    }
+    canvas.addEventListener("pointerdown", function(event){
+      if (timer) { cancelAnimationFrame(timer); timer = null; }
+      if (!ctx) setup();
+      if (!ctx) return;
+      canvas.setPointerCapture(event.pointerId);
+      drawing = true;
+      mode = "hand";
+      ink();
+      var p = pointAt(event);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+    });
+    canvas.addEventListener("pointermove", function(event){
+      if (!drawing || !ctx) return;
+      var p = pointAt(event);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    });
+    function end() {
+      if (!drawing) return;
+      drawing = false;
+      finish();
+    }
+    canvas.addEventListener("pointerup", end);
+    canvas.addEventListener("pointercancel", end);
+
+    root.querySelector("[data-replay]").addEventListener("click", play);
+    root.querySelector("[data-clear]").addEventListener("click", reset);
+
+    // Size once the phone has a width, and play when the block is on screen.
+    var started = false;
+    function kick() {
+      if (started) return;
+      started = true;
+      play();
+    }
+    if (window.IntersectionObserver) {
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if (e.isIntersecting && e.intersectionRatio > 0.35) { kick(); io.disconnect(); }
+        });
+      }, { threshold: [0, 0.35, 1] });
+      io.observe(root);
+    } else {
+      kick();
+    }
+
+    setup();
+
+    // A resize re-scales the canvas, which wipes it. Replaying the animation
+    // here would mean the signature vanishes and redraws every time a phone is
+    // rotated, so the finished stroke is simply repainted at the new size. A
+    // hand-drawn one cannot be recovered and is left cleared.
+    var resizeTimer = null;
+    window.addEventListener("resize", function(){
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function(){
+        var rect = canvas.getBoundingClientRect();
+        var next = Math.round(rect.width) + "x" + Math.round(rect.height);
+        if (!rect.width || next === cssSize) return;
+        var was = mode;
+        if (timer) { cancelAnimationFrame(timer); timer = null; }
+        setup();
+        if (!ctx) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (was === "auto") { mode = "auto"; paintWhole(); }
+        else { mode = "empty"; inked = false; pad.classList.remove("inked"); }
+      }, 180);
+    });
+  }
+
+  document.querySelectorAll("[data-sign]").forEach(build);
+})();
+</script>
+
+</body>
+</html>
