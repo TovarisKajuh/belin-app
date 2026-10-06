@@ -2,6 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { ChevronDown } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import {
   statusTransitions,
   transitionActionKey,
@@ -27,6 +30,7 @@ export function ProjectStatusControl({
   const key = token ?? projectId;
   const setProjectStatus = token ? setProjectStatusByToken : setProjectStatusBySession;
   const t = useTranslations("status");
+  const tToast = useTranslations("toast");
   const router = useRouter();
   const [current, setCurrent] = useState<ProjectStatus>(status);
   const [open, setOpen] = useState(false);
@@ -79,6 +83,7 @@ export function ProjectStatusControl({
       const res = await setProjectStatus(key, next);
       if (res.ok) {
         setCurrent(res.status);
+        toast.success(tToast("statusChanged", { status: t(res.status) }));
         router.refresh();
       }
       setOpen(false);
@@ -104,7 +109,11 @@ export function ProjectStatusControl({
       >
         <span className="b-status-dot" />
         {t(current)}
-        {options.length > 0 && <span className="b-status-caret">{open ? "▴" : "▾"}</span>}
+        {options.length > 0 && (
+          <span className={`b-status-caret${open ? " open" : ""}`}>
+            <Icon icon={ChevronDown} size={14} />
+          </span>
+        )}
       </button>
       {open && (
         <div className="b-status-menu">

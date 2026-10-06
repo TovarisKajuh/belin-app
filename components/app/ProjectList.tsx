@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { fmtKwp, fmtNumber } from "@/lib/format";
 import Link from "next/link";
 import { BelinMark } from "@/components/BelinMark";
 import { LocaleSwitch } from "@/components/LocaleSwitch";
@@ -29,11 +30,7 @@ export async function ProjectList({
   const tLanding = await getTranslations("landing");
   const isEpc = actor.orgType === "epc";
   // "245,7 kWp" and "58,3 %" in Slovenian, not the dot of a JavaScript number.
-  // Local because lib/format.ts (Task 1.11) was deferred past the 06.10 meeting.
-  const numberFormat = new Intl.NumberFormat(locale === "de" ? "de-DE" : locale === "en" ? "en-GB" : "sl-SI", {
-    maximumFractionDigits: 1,
-  });
-  const num = (n: number) => numberFormat.format(n);
+  const num = (n: number) => fmtNumber(n, locale, { maxDecimals: 1 });
 
   // Ahead, behind, or exactly on the promised day. Three sentences rather than a
   // signed number, because "-2" on a card is a puzzle and "2 delovna dneva
@@ -90,7 +87,7 @@ export async function ProjectList({
 
               <ul className="pl-list">
                 {portfolio.projects.map((p) => {
-                  const facts = [p.city, p.kwp !== null ? `${num(p.kwp)} kWp` : null, p.subName]
+                  const facts = [p.city, p.kwp !== null ? fmtKwp(p.kwp, locale) : null, p.subName]
                     .filter(Boolean)
                     .join(" · ");
 

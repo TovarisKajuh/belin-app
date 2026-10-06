@@ -66,13 +66,6 @@ describe("fmtDate", () => {
     expect(fmtDate("2026-10-06", "en", { style: "long" })).toBe("6 October 2026");
   });
 
-  it("day and month without the year, for dashboards and day lists", () => {
-    expect(fmtDate("2026-10-05", "sl", { style: "dayMonth" })).toBe("5. 10.");
-    expect(fmtDate("2026-10-05", "de", { style: "dayMonth" })).toBe("05.10.");
-    expect(fmtDate("2026-10-05", "en", { style: "dayMonth" })).toBe("05/10");
-    expect(fmtDate("2026-10-05T22:30:00Z", "sl", { style: "dayMonth", timeZone: "Europe/Ljubljana" })).toBe("6. 10.");
-  });
-
   it("a timestamp at 00:30 site time is that day, not the UTC day before", () => {
     expect(fmtDate("2026-10-05T22:30:00Z", "sl")).toBe("6. 10. 2026");
     expect(fmtDate("2026-10-05T22:30:00Z", "de")).toBe("06.10.2026");
@@ -88,6 +81,13 @@ describe("fmtDate", () => {
     expect(fmtDate("not a date", "sl")).toBe("");
     expect(asAppLocale("de")).toBe("de");
     expect(asAppLocale(null)).toBe("sl");
+  });
+
+  it("day and month without the year, for dashboards and day lists", () => {
+    expect(fmtDate("2026-10-05", "sl", { style: "dayMonth" })).toBe("5. 10.");
+    expect(fmtDate("2026-10-05", "de", { style: "dayMonth" })).toBe("05.10.");
+    expect(fmtDate("2026-10-05", "en", { style: "dayMonth" })).toBe("05/10");
+    expect(fmtDate("2026-10-05T22:30:00Z", "sl", { style: "dayMonth", timeZone: "Europe/Ljubljana" })).toBe("6. 10.");
   });
 });
 

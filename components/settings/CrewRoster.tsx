@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   addCrewMemberAction,
   setCrewDisabledAction,
@@ -26,10 +27,26 @@ export function CrewRoster({
   });
   const [name, setName] = useState("");
   const [pending, start] = useTransition();
+  const tToast = useTranslations("toast");
+
+  // useActionState hands back a new state object after every submit; the
+  // first one is the initial state, which is not a result.
+  const firstState = useRef(state);
+  useEffect(() => {
+    if (state === firstState.current) return;
+    // A refused name already shows its own line under the form.
+    if (!state.error) toast.success(tToast("crewAdded"));
+  }, [state, tToast]);
 
   const toggle = (personId: string, disabled: boolean) =>
     start(async () => {
-      await setCrewDisabledAction(personId, disabled);
+      try {
+        const res = await setCrewDisabledAction(personId, disabled);
+        if (res.error) toast.error(tToast("crewFailed"));
+        else toast.success(tToast(disabled ? "crewDisabled" : "crewEnabled"));
+      } catch {
+        toast.error(tToast("crewFailed"));
+      }
     });
 
   return (

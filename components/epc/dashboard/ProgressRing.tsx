@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { fmtPct } from "@/lib/format";
 import type { CSSProperties } from "react";
 
 const CIRCUMFERENCE = 596.9; // 2 * pi * r, r = 95
@@ -17,6 +18,7 @@ export function ProgressRing({
   photoCount: number;
 }) {
   const t = useTranslations("dashboard");
+  const locale = useLocale();
   const [display, setDisplay] = useState(0);
   const started = useRef(false);
 
@@ -79,7 +81,7 @@ export function ProgressRing({
           />
         </svg>
         <div className="e-ringc">
-          <div className="pct">{display}%</div>
+          <div className="pct">{fmtPct(display, locale, 0)}</div>
           <div className="lab">{t("totalProgress")}</div>
           <div className="pf">{t("computedFrom", { reports: reportCount, photos: photoCount })}</div>
         </div>

@@ -2,9 +2,13 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { Plus, X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { formatMoney, lineTotal, poTotals } from "@/lib/po-shared";
 import { savePoDraftAction, sendPoAction } from "@/app/[locale]/app/[projectId]/po/actions";
 import type { PoView } from "@/lib/data/purchase-orders";
+import { unwrap } from "@/lib/action-result";
 
 // The EPC's side of the naročilnica: build the lines, price them, send it.
 //
@@ -46,6 +50,7 @@ export function PoBuilder({
   suggestedFirstLine: string;
 }) {
   const t = useTranslations("po");
+  const tToast = useTranslations("toast");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -101,20 +106,26 @@ export function PoBuilder({
         await work();
         router.refresh();
       } catch (err) {
-        // Server errors arrive as message keys ("po.conflict"), so the screen
-        // speaks the user's language without the server knowing about i18n.
+        // Failures arrive as codes ("po.conflict") through unwrap(), so the
+        // screen speaks the user's language without the server knowing about
+        // i18n, in production too.
         const key = err instanceof Error ? err.message : "";
         setError(key.startsWith("po.") ? t(key.slice(3)) : t("conflict"));
       }
     });
   };
 
-  const save = () => run(() => savePoDraftAction(projectId, payload()));
+  const save = () =>
+    run(async () => {
+      unwrap(await savePoDraftAction(projectId, payload()));
+      toast.success(tToast("poSaved"));
+    });
 
   const send = () =>
     run(async () => {
-      const saved = await savePoDraftAction(projectId, payload());
-      await sendPoAction(projectId, saved.poId);
+      const saved = unwrap(await savePoDraftAction(projectId, payload()));
+      unwrap(await sendPoAction(projectId, saved.poId));
+      toast.success(tToast("poSent"));
       setConfirmSend(false);
     });
 
@@ -171,7 +182,7 @@ export function PoBuilder({
                 aria-label={t("removeLine")}
                 disabled={lines.length === 1}
               >
-                &times;
+                <Icon icon={X} size={18} />
               </button>
             </div>
           ))}
@@ -182,7 +193,8 @@ export function PoBuilder({
           className="po-add"
           onClick={() => setLines((current) => [...current, { ...EMPTY_LINE }])}
         >
-          + {t("addLine")}
+          <Icon icon={Plus} />
+          {t("addLine")}
         </button>
 
         <div className="po-total">

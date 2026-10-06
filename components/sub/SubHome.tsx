@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { fmtDate, fmtNumber } from "@/lib/format";
 import Link from "next/link";
 import { CommandBar } from "@/components/project/CommandBar";
 import { TodayPosts } from "@/components/project/TodayPosts";
@@ -22,7 +23,6 @@ import { IncidentButton } from "@/components/crew/IncidentButton";
 // Numbers and dates are formatted locally here because the shared formatter
 // (lib/format.ts, Task 1.11) was deferred past the 06.10 meeting; swap these
 // two helpers for it when it lands.
-const INTL_LOCALE: Record<string, string> = { sl: "sl-SI", de: "de-DE", en: "en-GB" };
 
 export async function SubHome({
   locale,
@@ -49,14 +49,8 @@ export async function SubHome({
   const tw = await getTranslations("sub.waitingCards");
   const tCrew = await getTranslations("crew");
   const uiLocale = locale === "de" || locale === "en" ? locale : "sl";
-  const intl = INTL_LOCALE[uiLocale];
-  const num = (n: number, maxDecimals = 1) => new Intl.NumberFormat(intl, { maximumFractionDigits: maxDecimals }).format(n);
-  const date = (iso: string | null) =>
-    iso
-      ? new Intl.DateTimeFormat(intl, { day: "numeric", month: "numeric", year: "numeric", timeZone: "Europe/Ljubljana" }).format(
-          new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso),
-        )
-      : "";
+  const num = (n: number, maxDecimals = 1) => fmtNumber(n, uiLocale, { maxDecimals });
+  const date = (iso: string | null) => (iso ? fmtDate(iso, uiLocale) : "");
 
   const address = [
     data.addressStreet,

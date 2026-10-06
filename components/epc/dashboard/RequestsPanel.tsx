@@ -2,6 +2,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import type { RequestRow } from "@/lib/requests-shared";
 import { DashEmpty, IconInbox } from "./DashEmpty";
 import { resolveRequestAction } from "@/app/[locale]/app/[projectId]/actions";
@@ -23,6 +24,7 @@ export function RequestsPanel({
 }) {
   const t = useTranslations("dashboard");
   const tReq = useTranslations("request");
+  const tToast = useTranslations("toast");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [answering, setAnswering] = useState<string | null>(null);
@@ -36,6 +38,7 @@ export function RequestsPanel({
     startTransition(async () => {
       try {
         await resolveRequestAction(projectId, requestId, note);
+        toast.success(tToast("requestAnswered"));
         setAnswering(null);
         setNote("");
         router.refresh();

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { PhotoCapture } from "./PhotoCapture";
 import { Sheet } from "@/components/ui/Sheet";
 import { createBrowserClient } from "@/lib/supabase/client";
+import { unwrap } from "@/lib/action-result";
 import { REQUEST_TYPES, type RequestRow, type RequestType } from "@/lib/requests-shared";
 import {
   requestRequestPhotoTarget as targetByToken,
@@ -90,12 +91,12 @@ export function RequestButton({
         if (!result.error) photoPath = target.path;
       }
 
-      await createRequest(key, {
+      unwrap(await createRequest(key, {
         clientGeneratedId: draftId.current,
         type,
         text,
         photoPath,
-      });
+      }));
 
       draftId.current = crypto.randomUUID();
       setDone(true);

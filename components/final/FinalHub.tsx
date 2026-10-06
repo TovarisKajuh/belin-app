@@ -1,7 +1,12 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { FileDown } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
+import { fmtDate } from "@/lib/format";
+import { unwrap } from "@/lib/action-result";
 import {
   generateCompletionReportAction,
   requestFinalizationAction,
@@ -48,7 +53,8 @@ export function FinalHub({
   locale: "sl" | "de" | "en";
 }) {
   const t = useTranslations("final");
-  const format = useFormatter();
+  const tToast = useTranslations("toast");
+  const uiLocale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
@@ -76,7 +82,8 @@ export function FinalHub({
     setError(null);
     startTransition(async () => {
       try {
-        await requestFinalizationAction(projectId);
+        unwrap(await requestFinalizationAction(projectId));
+        toast.success(tToast("handoverRequested"));
         setConfirming(false);
         router.refresh();
       } catch (err) {
@@ -117,11 +124,7 @@ export function FinalHub({
             <p className="fn-state ok">
               {requestedAt
                 ? t("requested", {
-                    date: format.dateTime(new Date(requestedAt), {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    }),
+                    date: fmtDate(requestedAt, uiLocale),
                   })
                 : t("requestedPlain")}
             </p>
@@ -165,11 +168,7 @@ export function FinalHub({
             <>
               <p className="fn-state ok">
                 {t("generatedAt", {
-                  date: format.dateTime(new Date(report.createdAt), {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  }),
+                  date: fmtDate(report.createdAt, uiLocale),
                 })}
               </p>
               <a
@@ -178,6 +177,7 @@ export function FinalHub({
                 target="_blank"
                 rel="noreferrer"
               >
+                <Icon icon={FileDown} />
                 {t("download")}
               </a>
             </>
@@ -193,7 +193,8 @@ export function FinalHub({
                 setGenerating(true);
                 startTransition(async () => {
                   try {
-                    await generateCompletionReportAction(projectId);
+                    unwrap(await generateCompletionReportAction(projectId));
+                    toast.success(tToast("reportGenerated"));
                     router.refresh();
                   } catch {
                     setError(t("conflict"));
@@ -229,6 +230,7 @@ export function FinalHub({
                   target="_blank"
                   rel="noreferrer"
                 >
+                  <Icon icon={FileDown} />
                   {t("downloadProtocol")}
                 </a>
               ) : null}

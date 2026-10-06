@@ -64,6 +64,7 @@ const SHORT: Record<AppLocale, Intl.DateTimeFormatOptions> = {
   en: { day: "2-digit", month: "2-digit", year: "numeric" },
 };
 const LONG: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" };
+// Day and month without the year, for dashboards and day lists ("5. 10.").
 const DAY_MONTH: Record<AppLocale, Intl.DateTimeFormatOptions> = {
   sl: { day: "numeric", month: "numeric" },
   de: { day: "2-digit", month: "2-digit" },

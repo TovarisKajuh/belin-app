@@ -7,6 +7,8 @@ import type { DraftItem, DraftRoof, ProjectDraft } from "@/lib/k2/k2-project";
 import type { SubOption } from "@/lib/data/plan-imports";
 import { createSubInviteLink } from "@/app/[locale]/app/[projectId]/actions";
 import { ShareLink } from "@/components/share/ShareLink";
+import { X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { LocaleSwitch } from "@/components/LocaleSwitch";
 import type { K2WarningCode } from "@/lib/k2/k2-shared";
 
@@ -492,7 +494,7 @@ export function Wizard({
                       aria-label={t("removeRow")}
                       onClick={() => setItems((rows) => rows.filter((_, j) => j !== i))}
                     >
-                      &times;
+                      <Icon icon={X} size={18} />
                     </button>
                   </div>
                 ))}

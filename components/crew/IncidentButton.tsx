@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { PhotoCapture } from "./PhotoCapture";
 import { Sheet } from "@/components/ui/Sheet";
 import { createBrowserClient } from "@/lib/supabase/client";
+import { unwrap } from "@/lib/action-result";
 import { INCIDENT_KINDS, MAX_INCIDENT_PHOTOS, type IncidentKind } from "@/lib/incidents-shared";
 import {
   requestIncidentPhotoTargets as targetsByToken,
@@ -80,12 +81,12 @@ export function IncidentButton({
         photoPaths = targets.filter((_, i) => !results[i].error).map((tg) => tg.path);
       }
 
-      await createIncident(key, {
+      unwrap(await createIncident(key, {
         clientGeneratedId: draftId.current,
         kind,
         note,
         photoPaths,
-      });
+      }));
 
       setDone(true);
       draftId.current = crypto.randomUUID();

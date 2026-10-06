@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { createSubInviteLink } from "@/app/[locale]/app/[projectId]/actions";
 import { ShareLink } from "@/components/share/ShareLink";
 
@@ -22,6 +23,7 @@ export function AddSubPanel({
   const t = useTranslations("project");
   const tInvite = useTranslations("invite");
   const tShare = useTranslations("share");
+  const tToast = useTranslations("toast");
 
   const [email, setEmail] = useState("");
   const [url, setUrl] = useState<string | null>(null);
@@ -39,6 +41,7 @@ export function AddSubPanel({
         return;
       }
       setUrl(res.url);
+      toast.success(tToast("subLinkReady"));
     } catch {
       setError(t("subFailed"));
     } finally {

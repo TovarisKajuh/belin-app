@@ -7,9 +7,9 @@ import {
   requiredRate,
   trailingMean,
   monotonePath,
-  ddmm,
   type TempoBar,
 } from "@/lib/dashboard-shared";
+import { fmtDate, fmtNumber } from "@/lib/format";
 
 const useMeasureEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
@@ -30,11 +30,14 @@ const TREND_WINDOW = 5;
 // original plan demands (takt time). Non-working days never appear on the axis.
 export function TempoChart({
   history,
+  rate,
   today,
   plannedStart,
   plannedEnd,
 }: {
   history: DailyProgressPoint[];
+  /** The projection's tempo (last up to six reports), the one number the hero and the stat tile show too. */
+  rate: number | null;
   today: string;
   plannedStart: string | null;
   plannedEnd: string | null;
@@ -63,10 +66,8 @@ export function TempoChart({
     };
   }, []);
 
-  const nf = useMemo(
-    () => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
-    [locale]
-  );
+  const nf = useMemo(() => ({ format: (v: number) => fmtNumber(v, locale, { decimals: 1 }) }), [locale]);
+  const dm = (iso: string) => fmtDate(iso, locale, { style: "dayMonth" });
 
   const allDays = useMemo(
     () => buildTempoSeries({ history, start: plannedStart ?? history[0]?.date ?? today, today }),
@@ -97,7 +98,6 @@ export function TempoChart({
       ? `${line} L ${points[points.length - 1].x},${yBottom} L ${points[0].x},${yBottom} Z`
       : "";
 
-  const avg = gains.length > 0 ? gains.reduce((a, b) => a + b, 0) / gains.length : null;
   const recent = allDays.length > 0 ? trailingMean(allDays, allDays.length - 1, TREND_WINDOW) : null;
   const earlier =
     allDays.length > TREND_WINDOW
@@ -112,8 +112,11 @@ export function TempoChart({
           : t("paceSteady")
       : null;
 
-  const defaultVal = avg != null ? `${nf.format(avg)} %${t("perDay")}` : "-";
+  // One tempo on the whole page: the projection's rate, the number the finish
+  // date is computed from. The curve still draws each day's own gain.
+  const defaultVal = rate != null ? `${nf.format(rate)} %${t("perDay")}` : t("gathering");
   const defaultSub = [
+    t("tempoSub"),
     required != null ? `${t("requiredPace")} ${nf.format(required)}` : null,
     trendWord,
   ]
@@ -135,8 +138,8 @@ export function TempoChart({
     const d = days[active];
     if (!d) return;
     if (valRef.current) valRef.current.textContent = `${nf.format(d.gain as number)} %${t("perDay")}`;
-    if (subRef.current) subRef.current.textContent = `${ddmm(d.date)} · ${describe(d)}`;
-    if (liveRef.current) liveRef.current.textContent = `${ddmm(d.date)} ${nf.format(d.gain as number)}%`;
+    if (subRef.current) subRef.current.textContent = `${dm(d.date)} · ${describe(d)}`;
+    if (liveRef.current) liveRef.current.textContent = `${dm(d.date)} ${nf.format(d.gain as number)} %`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, defaultVal, defaultSub]);
 
@@ -172,8 +175,8 @@ export function TempoChart({
   }
 
   const marker = active != null ? points[active] : points[points.length - 1];
-  const firstLabel = ddmm(days[0].date);
-  const lastLabel = ddmm(days[days.length - 1].date);
+  const firstLabel = dm(days[0].date);
+  const lastLabel = dm(days[days.length - 1].date);
 
   return (
     <div className="e-tempo" ref={box} onPointerLeave={() => setActive(null)}>

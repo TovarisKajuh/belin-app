@@ -1,7 +1,12 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { Check, FileDown, X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
+import { fmtDate, fmtNumber } from "@/lib/format";
+import { unwrap } from "@/lib/action-result";
 import { formatMoney } from "@/lib/po-shared";
 import { acceptPoAction, rejectPoAction } from "@/app/[locale]/app/[projectId]/po/actions";
 import type { PoView as PoData } from "@/lib/data/purchase-orders";
@@ -31,7 +36,8 @@ export function PoView({
 }) {
   const t = useTranslations("po");
   const tDoc = useTranslations("doc.ui");
-  const format = useFormatter();
+  const tToast = useTranslations("toast");
+  const uiLocale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +46,7 @@ export function PoView({
   const [note, setNote] = useState("");
 
   const day = (value: string | null) =>
-    value ? format.dateTime(new Date(value), { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+    value ? fmtDate(value, uiLocale) : "";
 
   const run = (work: () => Promise<unknown>) => {
     setError(null);
@@ -73,6 +79,7 @@ export function PoView({
           <span className={`e-proj-badge${po.status === "rejected" ? " late" : ""}`}>{statusLine}</span>
           {po.pdfUrl ? (
             <a className="po-ghost" href={`/api/pdf/po/${po.id}`} target="_blank" rel="noreferrer">
+              <Icon icon={FileDown} />
               {t("download")}
             </a>
           ) : null}
@@ -83,7 +90,7 @@ export function PoView({
             <div className="po-view-row" key={index}>
               <span className="po-view-desc">{line.description}</span>
               <span className="po-view-qty">
-                {line.qty === null ? "" : `${line.qty}${line.unit ? ` ${line.unit}` : ""}`}
+                {line.qty === null ? "" : `${fmtNumber(line.qty, locale)}${line.unit ? ` ${line.unit}` : ""}`}
               </span>
               <span className="po-num">{formatMoney(line.total, locale)}</span>
             </div>
@@ -130,11 +137,16 @@ export function PoView({
               type="button"
               className="b-btn"
               disabled={!confirmed || pending}
-              onClick={() => run(() => acceptPoAction(projectId, po.id))}
+              onClick={() => run(async () => {
+                unwrap(await acceptPoAction(projectId, po.id));
+                toast.success(tToast("poAccepted"));
+              })}
             >
+              <Icon icon={Check} />
               {t("accept")}
             </button>
             <button type="button" className="po-ghost" onClick={() => setRejecting(true)}>
+              <Icon icon={X} />
               {t("reject")}
             </button>
           </div>
@@ -152,7 +164,10 @@ export function PoView({
               type="button"
               className="b-btn"
               disabled={pending || note.trim().length === 0}
-              onClick={() => run(() => rejectPoAction(projectId, po.id, note))}
+              onClick={() => run(async () => {
+                unwrap(await rejectPoAction(projectId, po.id, note));
+                toast.success(tToast("poRejected"));
+              })}
             >
               {t("reject")}
             </button>

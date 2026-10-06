@@ -1,4 +1,6 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { ArrowLeft } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { resolveActorFromToken, requireProjectActor } from "@/lib/actor";
@@ -73,7 +75,9 @@ export default async function TokenHoursPage({
           />
 
         <p className="hr-back">
-          <Link href={`/${locale}/p/${token}`}>&larr;</Link>
+          <Link href={`/${locale}/p/${token}`} aria-label={(await getTranslations("nav"))("overview")}>
+            <Icon icon={ArrowLeft} size={22} />
+          </Link>
         </p>
       </main>
     </div>

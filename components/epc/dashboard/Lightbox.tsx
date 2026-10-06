@@ -1,6 +1,9 @@
 "use client";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 
 export interface LightboxItem {
   url: string;
@@ -43,38 +46,44 @@ export function Lightbox({
   const current = items[open];
   if (!current) return null;
 
-  return (
-    <div className="e-lightbox" onClick={onClose} role="dialog" aria-modal="true" aria-label={current.label}>
-      <img src={current.url} alt={current.label} onClick={(e) => e.stopPropagation()} />
-      <button className="e-lb-btn e-lb-close" type="button" aria-label={t("closePhoto")} onClick={onClose}>
-        ×
-      </button>
-      {items.length > 1 && (
-        <>
-          <button
-            className="e-lb-btn e-lb-prev"
-            type="button"
-            aria-label={t("previousPhoto")}
-            onClick={(e) => {
-              e.stopPropagation();
-              onStep(-1);
-            }}
-          >
-            ‹
-          </button>
-          <button
-            className="e-lb-btn e-lb-next"
-            type="button"
-            aria-label={t("nextPhoto")}
-            onClick={(e) => {
-              e.stopPropagation();
-              onStep(1);
-            }}
-          >
-            ›
-          </button>
-        </>
-      )}
-    </div>
+  // Portalled into <body>: inside the dashboard's .e-wrap (its own stacking
+  // context, z 1) the close button sat under the sticky header. Returns null
+  // until a photo is opened, so document is only read in the browser.
+  return createPortal(
+    <div className="belin-dark ui-portal">
+      <div className="e-lightbox" onClick={onClose} role="dialog" aria-modal="true" aria-label={current.label}>
+        <img src={current.url} alt={current.label} onClick={(e) => e.stopPropagation()} />
+        <button className="e-lb-btn e-lb-close" type="button" aria-label={t("closePhoto")} onClick={onClose}>
+          <Icon icon={X} size={22} />
+        </button>
+        {items.length > 1 && (
+          <>
+            <button
+              className="e-lb-btn e-lb-prev"
+              type="button"
+              aria-label={t("previousPhoto")}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStep(-1);
+              }}
+            >
+              <Icon icon={ChevronLeft} size={28} />
+            </button>
+            <button
+              className="e-lb-btn e-lb-next"
+              type="button"
+              aria-label={t("nextPhoto")}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStep(1);
+              }}
+            >
+              <Icon icon={ChevronRight} size={28} />
+            </button>
+          </>
+        )}
+      </div>
+    </div>,
+    document.body,
   );
 }

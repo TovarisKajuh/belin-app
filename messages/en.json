@@ -142,7 +142,7 @@
     "noEntries": "No daily entries yet.",
     "noPhotos": "No site photos yet.",
     "workingDaysSub": "Mon to Fri on site",
-    "tempoSub": "last 6 working days",
+    "tempoSub": "average of the last 6 reports",
     "photosSub": "site documentation",
     "endOfOverview": "end of overview",
     "dailyTempo": "Daily pace",
@@ -600,7 +600,8 @@
       "document_expiring": "The document {title} expires on {date}."
     },
     "title": "Notifications",
-    "empty": "No new notifications."
+    "empty": "No new notifications.",
+    "loading": "Loading notifications"
   },
   "share": {
     "copy": "Copy link",
@@ -1091,5 +1092,41 @@
     "ui": {
       "poTermsHint": "The order terms, including the deadline for day-work sheets, are printed at the end of the purchase order."
     }
+  },
+  "toast": {
+    "undo": "Undo",
+    "approveUndone": "Approval cancelled.",
+    "requestAnswered": "Answer sent to the crew.",
+    "materialItemAdded": "Item added.",
+    "sheetSubmitted": "Hour sheet no. {number} submitted for approval.",
+    "sheetApproved": "Hour sheet no. {number} approved.",
+    "sheetRejected": "Hour sheet no. {number} rejected.",
+    "lineAdded": "Line added.",
+    "lineRemoved": "Line removed.",
+    "coSubmitted": "Extra work reported.",
+    "coApproved": "Extra work no. {number} approved.",
+    "coRejected": "Extra work no. {number} rejected.",
+    "poSaved": "Purchase order draft saved.",
+    "poSent": "Purchase order sent to the subcontractor.",
+    "poAccepted": "Purchase order accepted.",
+    "poRejected": "Purchase order rejected.",
+    "handoverRequested": "Handover request sent to the client.",
+    "reportGenerated": "Completion report ready.",
+    "acceptanceStarted": "Acceptance record opened.",
+    "defectAdded": "Defect added to the record.",
+    "defectRemoved": "Defect removed.",
+    "acceptanceSigned": "Acceptance record signed.",
+    "invoiceCreated": "Invoice created.",
+    "statusChanged": "Project status: {status}.",
+    "orgSaved": "Company details saved.",
+    "vaultUploaded": "Document uploaded.",
+    "prefSaved": "Notification setting saved.",
+    "prefFailed": "The setting could not be saved.",
+    "crewAdded": "Crew member added.",
+    "crewDisabled": "Crew member disabled.",
+    "crewEnabled": "Crew member enabled again.",
+    "crewFailed": "The change could not be saved.",
+    "subLinkReady": "The subcontractor link is ready.",
+    "copied": "Link copied."
   }
 }

@@ -2,6 +2,10 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { FileDown, X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
+import { unwrap } from "@/lib/action-result";
 import { SignaturePad } from "@/components/SignaturePad";
 import { DECLARATIONS, type AcceptanceView, type Declaration } from "@/lib/acceptance-view";
 import { fmtDate } from "@/lib/format";
@@ -45,6 +49,7 @@ export function AcceptanceFlow({
   defaultSubSignerName: string | null;
 }) {
   const t = useTranslations("final");
+  const tToast = useTranslations("toast");
   const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -74,7 +79,7 @@ export function AcceptanceFlow({
 
   const save = (payload: Parameters<typeof saveAcceptanceStepAction>[2]) => {
     if (!acceptance) return;
-    run(() => saveAcceptanceStepAction(projectId, acceptance.id, payload));
+    run(async () => unwrap(await saveAcceptanceStepAction(projectId, acceptance.id, payload)));
   };
 
   // One upload per signature, when the signer confirms. Returns whether it was
@@ -83,11 +88,9 @@ export function AcceptanceFlow({
     if (!acceptance) return false;
     setError(null);
     try {
-      // Task 1.5 (ActionResult and unwrap) is not merged today: the action
-      // still THROWS on failure, so a bare await rejects and the pad stays
-      // open. When 1.5 lands, this line becomes unwrap(await ...), or the pad
-      // would lock on "Podpis je shranjen." while the server holds nothing.
-      await saveSignatureAction(projectId, acceptance.id, side, await blobToBase64(png));
+      // unwrap() throws on a returned failure, so the pad stays open and never
+      // locks on "Podpis je shranjen." while the server holds nothing.
+      unwrap(await saveSignatureAction(projectId, acceptance.id, side, await blobToBase64(png)));
       router.refresh();
       return true;
     } catch (err) {
@@ -106,9 +109,16 @@ export function AcceptanceFlow({
     if (!acceptance || acceptance.status !== "draft") return;
     if (acceptance.subSignerName || !defaultSubSignerName || defaultPersisted) return;
     setDefaultPersisted(true);
+    // A failure is a resolved { ok: false }, not a rejection: both reset the
+    // flag so the suggestion is persisted on the next render.
     void saveAcceptanceStepAction(projectId, acceptance.id, {
       subSignerName: defaultSubSignerName,
-    }).catch(() => setDefaultPersisted(false));
+    }).then(
+      (result) => {
+        if (!result.ok) setDefaultPersisted(false);
+      },
+      () => setDefaultPersisted(false),
+    );
   }, [acceptance, defaultSubSignerName, defaultPersisted, projectId]);
 
   if (!acceptance) {
@@ -121,7 +131,10 @@ export function AcceptanceFlow({
             type="button"
             className="rp-open"
             disabled={pending}
-            onClick={() => run(() => startAcceptanceAction(projectId, "final"))}
+            onClick={() => run(async () => {
+              unwrap(await startAcceptanceAction(projectId, "final"));
+              toast.success(tToast("acceptanceStarted"));
+            })}
           >
             {t("startAcceptance")}
           </button>
@@ -129,7 +142,10 @@ export function AcceptanceFlow({
             type="button"
             className="ic-cancel"
             disabled={pending}
-            onClick={() => run(() => startAcceptanceAction(projectId, "partial"))}
+            onClick={() => run(async () => {
+              unwrap(await startAcceptanceAction(projectId, "partial"));
+              toast.success(tToast("acceptanceStarted"));
+            })}
           >
             {t("kindPartial")}
           </button>
@@ -158,6 +174,7 @@ export function AcceptanceFlow({
           target="_blank"
           rel="noreferrer"
         >
+          <Icon icon={FileDown} />
           {t("downloadProtocol")}
         </a>
         {/* A partial acceptance is followed by the final one, and a refused one
@@ -168,7 +185,10 @@ export function AcceptanceFlow({
               type="button"
               className="rp-open"
               disabled={pending}
-              onClick={() => run(() => startAcceptanceAction(projectId, "final"))}
+              onClick={() => run(async () => {
+                unwrap(await startAcceptanceAction(projectId, "final"));
+                toast.success(tToast("acceptanceStarted"));
+              })}
             >
               {t("startFinal")}
             </button>
@@ -212,9 +232,12 @@ export function AcceptanceFlow({
                   type="button"
                   className="po-x"
                   disabled={pending}
-                  onClick={() => run(() => removeDefectAction(projectId, defect.id))}
+                  onClick={() => run(async () => {
+                    unwrap(await removeDefectAction(projectId, defect.id));
+                    toast.success(tToast("defectRemoved"));
+                  })}
                 >
-                  &times;
+                  <Icon icon={X} size={18} />
                 </button>
               </li>
             ))}
@@ -248,11 +271,12 @@ export function AcceptanceFlow({
             disabled={pending || defectText.trim().length === 0}
             onClick={() =>
               run(async () => {
-                await addDefectAction(projectId, acceptance.id, {
+                unwrap(await addDefectAction(projectId, acceptance.id, {
                   description: defectText,
                   dueDate: defectDue || null,
                   agreement: defectAgreement,
-                });
+                }));
+                toast.success(tToast("defectAdded"));
                 setDefectText("");
                 setDefectDue("");
               })
@@ -363,7 +387,10 @@ export function AcceptanceFlow({
           type="button"
           className="b-btn"
           disabled={pending || !acceptance.hasEpcSignature || !acceptance.hasSubSignature}
-          onClick={() => run(() => signAcceptanceAction(projectId, acceptance.id))}
+          onClick={() => run(async () => {
+            unwrap(await signAcceptanceAction(projectId, acceptance.id));
+            toast.success(tToast("acceptanceSigned"));
+          })}
         >
           {t("signAndClose")}
         </button>

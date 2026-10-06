@@ -142,7 +142,7 @@
     "noEntries": "Še ni dnevnih vnosov.",
     "noPhotos": "Še ni fotografij s terena.",
     "workingDaysSub": "pon do pet na terenu",
-    "tempoSub": "zadnjih 6 delovnih dni",
+    "tempoSub": "povprečje zadnjih 6 poročil",
     "photosSub": "dokumentacija terena",
     "endOfOverview": "konec pregleda",
     "dailyTempo": "Dnevni tempo",
@@ -600,7 +600,8 @@
       "document_expiring": "Dokument {title} poteče {date}."
     },
     "title": "Obvestila",
-    "empty": "Ni novih obvestil."
+    "empty": "Ni novih obvestil.",
+    "loading": "Nalaganje obvestil"
   },
   "share": {
     "copy": "Kopiraj povezavo",
@@ -1091,5 +1092,41 @@
     "ui": {
       "poTermsHint": "Pogoji naročila, tudi rok za potrjevanje režijskih ur, so zapisani na koncu naročilnice."
     }
+  },
+  "toast": {
+    "undo": "Razveljavi",
+    "approveUndone": "Potrditev preklicana.",
+    "requestAnswered": "Odgovor poslan ekipi.",
+    "materialItemAdded": "Postavka dodana.",
+    "sheetSubmitted": "List ur št. {number} oddan v potrditev.",
+    "sheetApproved": "List ur št. {number} potrjen.",
+    "sheetRejected": "List ur št. {number} zavrnjen.",
+    "lineAdded": "Vrstica dodana.",
+    "lineRemoved": "Vrstica odstranjena.",
+    "coSubmitted": "Dodatno delo prijavljeno.",
+    "coApproved": "Dodatno delo št. {number} potrjeno.",
+    "coRejected": "Dodatno delo št. {number} zavrnjeno.",
+    "poSaved": "Osnutek naročilnice shranjen.",
+    "poSent": "Naročilnica poslana podizvajalcu.",
+    "poAccepted": "Naročilnica sprejeta.",
+    "poRejected": "Naročilnica zavrnjena.",
+    "handoverRequested": "Zahteva za prevzem poslana naročniku.",
+    "reportGenerated": "Zaključno poročilo pripravljeno.",
+    "acceptanceStarted": "Zapisnik o prevzemu odprt.",
+    "defectAdded": "Pomanjkljivost dodana v zapisnik.",
+    "defectRemoved": "Pomanjkljivost odstranjena.",
+    "acceptanceSigned": "Zapisnik o prevzemu podpisan.",
+    "invoiceCreated": "Račun ustvarjen.",
+    "statusChanged": "Status projekta: {status}.",
+    "orgSaved": "Podatki podjetja shranjeni.",
+    "vaultUploaded": "Dokument naložen.",
+    "prefSaved": "Nastavitev obvestil shranjena.",
+    "prefFailed": "Nastavitve ni bilo mogoče shraniti.",
+    "crewAdded": "Član ekipe dodan.",
+    "crewDisabled": "Član ekipe onemogočen.",
+    "crewEnabled": "Član ekipe znova omogočen.",
+    "crewFailed": "Spremembe ni bilo mogoče shraniti.",
+    "subLinkReady": "Povezava za podizvajalca je pripravljena.",
+    "copied": "Povezava kopirana."
   }
 }

@@ -1,7 +1,12 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
+import { fmtDate, fmtNumber } from "@/lib/format";
+import { unwrap } from "@/lib/action-result";
 import type { HourSheet } from "@/lib/hours-view";
 import {
   addLineAction,
@@ -36,6 +41,8 @@ export function SheetEditor({
   onSubmitSheet: () => void;
 }) {
   const t = useTranslations("hours");
+  const tToast = useTranslations("toast");
+  const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -65,18 +72,21 @@ export function SheetEditor({
         {sheet.lines.map((line) => (
           <li key={line.id}>
             <span className="hr-l-date">
-              {line.workDate.slice(8, 10)}.{line.workDate.slice(5, 7)}
+              {fmtDate(line.workDate, locale, { style: "dayMonth" })}
             </span>
             <span className="hr-l-desc">{line.description}</span>
-            <span className="hr-l-h">{line.hours} h</span>
+            <span className="hr-l-h">{fmtNumber(line.hours, locale)} h</span>
             <button
               type="button"
               className="po-x"
               aria-label={t("removeLine")}
               disabled={pending}
-              onClick={() => run(() => removeLineAction(actionKey, projectId, line.id))}
+              onClick={() => run(async () => {
+                unwrap(await removeLineAction(actionKey, projectId, line.id));
+                toast.success(tToast("lineRemoved"));
+              })}
             >
-              &times;
+              <Icon icon={X} size={18} />
             </button>
           </li>
         ))}
@@ -117,7 +127,7 @@ export function SheetEditor({
               >
                 −
               </button>
-              <span className="b-step-val">{hours}</span>
+              <span className="b-step-val">{fmtNumber(hours, locale)}</span>
               <button
                 type="button"
                 className="b-step-btn"
@@ -148,13 +158,14 @@ export function SheetEditor({
               disabled={pending || description.trim().length === 0}
               onClick={() =>
                 run(async () => {
-                  await addLineAction(actionKey, projectId, {
+                  unwrap(await addLineAction(actionKey, projectId, {
                     sheetId: sheet.id,
                     workDate,
                     hours,
                     description,
                     personId: null,
-                  });
+                  }));
+                  toast.success(tToast("lineAdded"));
                   setDescription("");
                 })
               }
