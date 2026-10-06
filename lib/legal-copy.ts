@@ -15,6 +15,20 @@
 //   - the compliance vault rests on a legal obligation the EPC already has,
 //     which is the strongest basis available and worth naming
 
+import { OPERATOR } from "./legal";
+
+// The operator named in full where the GDPR and the terms need a named party,
+// not only "the company in the Impressum" (final production check 06.10). The
+// pages are 404 until OPERATOR is complete, so the empty fallbacks never show.
+const OPERATOR_LINE = [
+  [OPERATOR.legalName, OPERATOR.legalForm].filter(Boolean).join(" "),
+  [OPERATOR.street, [OPERATOR.zip, OPERATOR.city].filter(Boolean).join(" ")].filter(Boolean).join(", "),
+  OPERATOR.registerNumber ? `matična številka ${OPERATOR.registerNumber}` : null,
+  OPERATOR.vatId ? `ID za DDV ${OPERATOR.vatId}` : null,
+]
+  .filter(Boolean)
+  .join(", ");
+
 export interface LegalSection {
   h: string;
   p: string[];
@@ -71,7 +85,7 @@ const TERMS_SL: LegalCopy["terms"] = {
     {
       h: "1. Ponudnik in uporabniki",
       p: [
-        "Storitev Belin ponuja podjetje, navedeno v impresumu (v nadaljevanju: ponudnik).",
+        `Storitev Belin ponuja ${OPERATOR_LINE} (v nadaljevanju: ponudnik).`,
         "Pogoji veljajo med ponudnikom in podjetjem, ki se v Belin registrira kot naročnik (v nadaljevanju: naročnik). Naročnik je praviloma izvajalec gradnje sončnih elektrarn, ki v Belin povabi svoje podizvajalce in sodelavce.",
         "Osebe, ki jih naročnik ali njegovi podizvajalci povabijo v Belin, storitev uporabljajo v imenu svojega podjetja. Za njihovo ravnanje v Belinu odgovarja podjetje, ki jim je omogočilo dostop.",
       ],
@@ -201,7 +215,7 @@ export const LEGAL_SL: LegalCopy = {
       {
         h: "Kdo obdeluje vaše podatke",
         p: [
-          "Upravljavec podatkov, ki jih zbiramo prek te spletne strani in aplikacije, je podjetje, navedeno v impresumu.",
+          `Upravljavec podatkov, ki jih zbiramo prek te spletne strani in aplikacije, je ${OPERATOR_LINE}, e-pošta ${OPERATOR.email ?? ""}.`,
           "Kadar aplikacijo uporabljate kot uporabnik naročnika (izvajalca ali podizvajalca), je upravljavec podatkov o projektu vaše podjetje oziroma podjetje, ki vas je povabilo. Belin v tem primeru nastopa kot obdelovalec in podatke obdeluje po njihovih navodilih, na podlagi pogodbe o obdelavi osebnih podatkov.",
         ],
       },
@@ -308,7 +322,7 @@ export const LEGAL_DE: LegalCopy = {
       {
         h: "Verantwortlicher",
         p: [
-          "Verantwortlich für die Verarbeitung der über diese Website und Anwendung erhobenen Daten ist das im Impressum genannte Unternehmen.",
+          `Verantwortlich für die Verarbeitung der über diese Website und Anwendung erhobenen Daten ist ${OPERATOR_LINE}, E-Mail ${OPERATOR.email ?? ""}.`,
           "Nutzen Sie die Anwendung als Mitarbeiter eines Kunden (Auftraggeber oder Nachunternehmer), ist für die Projektdaten Ihr Unternehmen beziehungsweise das einladende Unternehmen verantwortlich. Belin handelt insoweit als Auftragsverarbeiter und verarbeitet die Daten weisungsgebunden auf Grundlage eines Auftragsverarbeitungsvertrags.",
         ],
       },
