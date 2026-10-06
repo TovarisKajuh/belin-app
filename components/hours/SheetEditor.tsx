@@ -2,6 +2,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { fmtDate, fmtNumber } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
 import type { HourSheet } from "@/lib/hours-view";
@@ -38,6 +39,7 @@ export function SheetEditor({
   onSubmitSheet: () => void;
 }) {
   const t = useTranslations("hours");
+  const tToast = useTranslations("toast");
   const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -77,7 +79,10 @@ export function SheetEditor({
               className="po-x"
               aria-label={t("removeLine")}
               disabled={pending}
-              onClick={() => run(async () => unwrap(await removeLineAction(actionKey, projectId, line.id)))}
+              onClick={() => run(async () => {
+                unwrap(await removeLineAction(actionKey, projectId, line.id));
+                toast.success(tToast("lineRemoved"));
+              })}
             >
               &times;
             </button>
@@ -158,6 +163,7 @@ export function SheetEditor({
                     description,
                     personId: null,
                   }));
+                  toast.success(tToast("lineAdded"));
                   setDescription("");
                 })
               }

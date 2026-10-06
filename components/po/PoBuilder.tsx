@@ -2,6 +2,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { formatMoney, lineTotal, poTotals } from "@/lib/po-shared";
 import { savePoDraftAction, sendPoAction } from "@/app/[locale]/app/[projectId]/po/actions";
 import type { PoView } from "@/lib/data/purchase-orders";
@@ -47,6 +48,7 @@ export function PoBuilder({
   suggestedFirstLine: string;
 }) {
   const t = useTranslations("po");
+  const tToast = useTranslations("toast");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -111,12 +113,17 @@ export function PoBuilder({
     });
   };
 
-  const save = () => run(async () => unwrap(await savePoDraftAction(projectId, payload())));
+  const save = () =>
+    run(async () => {
+      unwrap(await savePoDraftAction(projectId, payload()));
+      toast.success(tToast("poSaved"));
+    });
 
   const send = () =>
     run(async () => {
       const saved = unwrap(await savePoDraftAction(projectId, payload()));
       unwrap(await sendPoAction(projectId, saved.poId));
+      toast.success(tToast("poSent"));
       setConfirmSend(false);
     });
 

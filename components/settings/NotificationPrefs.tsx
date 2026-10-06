@@ -3,6 +3,7 @@
 import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { setNotificationPrefAction } from "@/app/[locale]/app/settings/actions";
 import { recipientsFor, NOTIFY_KINDS, type NotifyKind } from "@/lib/notify-shared";
 
@@ -22,6 +23,7 @@ export function NotificationPrefs({
   side: "epc" | "sub";
 }) {
   const t = useTranslations("notify");
+  const tToast = useTranslations("toast");
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [local, setLocal] = useState<Record<string, boolean>>(() => {
@@ -41,7 +43,14 @@ export function NotificationPrefs({
     data.set("kind", kind);
     data.set("wanted", wanted ? "1" : "0");
     startTransition(async () => {
-      await setNotificationPrefAction(data);
+      try {
+        await setNotificationPrefAction(data);
+        toast.success(tToast("prefSaved"));
+      } catch {
+        // The switch moved before the round trip; put it back.
+        setLocal((prev) => ({ ...prev, [kind]: !wanted }));
+        toast.error(tToast("prefFailed"));
+      }
       router.refresh();
     });
   }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { updateOrgAction, type OrgFormState } from "@/app/[locale]/app/settings/actions";
 import { PendingButton } from "@/components/auth/PendingButton";
 import type { OrgSettings } from "@/lib/data/org-settings";
@@ -14,6 +15,10 @@ const INITIAL: OrgFormState = { saved: false, error: null };
 export function OrgForm({ locale, org }: { locale: string; org: OrgSettings }) {
   const t = useTranslations("settings");
   const [state, formAction] = useActionState(updateOrgAction, INITIAL);
+  const tToast = useTranslations("toast");
+  useEffect(() => {
+    if (state.saved && !state.error) toast.success(tToast("orgSaved"));
+  }, [state, tToast]);
 
   return (
     <form className="st-card st-card--form" action={formAction}>

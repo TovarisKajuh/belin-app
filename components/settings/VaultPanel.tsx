@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { fmtDate } from "@/lib/format";
 import {
   requestVaultUploadAction,
@@ -17,6 +18,7 @@ import type { VaultDoc } from "@/lib/data/org-settings";
 // expires first and says so in colour before anyone has to read a date.
 export function VaultPanel({ docs, today }: { docs: VaultDoc[]; today: string }) {
   const t = useTranslations("vault");
+  const tToast = useTranslations("toast");
   const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -62,6 +64,7 @@ export function VaultPanel({ docs, today }: { docs: VaultDoc[]; today: string })
       }
 
       form.reset();
+      toast.success(tToast("vaultUploaded"));
       startTransition(() => router.refresh());
     } catch {
       setError("failed");

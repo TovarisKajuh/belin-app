@@ -2,6 +2,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { fmtDate } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
 import { SignaturePad } from "@/components/SignaturePad";
@@ -46,6 +47,7 @@ export function AcceptanceFlow({
   defaultSubSignerName: string | null;
 }) {
   const t = useTranslations("final");
+  const tToast = useTranslations("toast");
   const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -127,7 +129,10 @@ export function AcceptanceFlow({
             type="button"
             className="rp-open"
             disabled={pending}
-            onClick={() => run(async () => unwrap(await startAcceptanceAction(projectId, "final")))}
+            onClick={() => run(async () => {
+              unwrap(await startAcceptanceAction(projectId, "final"));
+              toast.success(tToast("acceptanceStarted"));
+            })}
           >
             {t("startAcceptance")}
           </button>
@@ -135,7 +140,10 @@ export function AcceptanceFlow({
             type="button"
             className="ic-cancel"
             disabled={pending}
-            onClick={() => run(async () => unwrap(await startAcceptanceAction(projectId, "partial")))}
+            onClick={() => run(async () => {
+              unwrap(await startAcceptanceAction(projectId, "partial"));
+              toast.success(tToast("acceptanceStarted"));
+            })}
           >
             {t("kindPartial")}
           </button>
@@ -203,7 +211,10 @@ export function AcceptanceFlow({
                   type="button"
                   className="po-x"
                   disabled={pending}
-                  onClick={() => run(async () => unwrap(await removeDefectAction(projectId, defect.id)))}
+                  onClick={() => run(async () => {
+                    unwrap(await removeDefectAction(projectId, defect.id));
+                    toast.success(tToast("defectRemoved"));
+                  })}
                 >
                   &times;
                 </button>
@@ -244,6 +255,7 @@ export function AcceptanceFlow({
                   dueDate: defectDue || null,
                   agreement: defectAgreement,
                 }));
+                toast.success(tToast("defectAdded"));
                 setDefectText("");
                 setDefectDue("");
               })
@@ -339,7 +351,10 @@ export function AcceptanceFlow({
           type="button"
           className="b-btn"
           disabled={pending || !acceptance.hasEpcSignature || !acceptance.hasSubSignature}
-          onClick={() => run(async () => unwrap(await signAcceptanceAction(projectId, acceptance.id)))}
+          onClick={() => run(async () => {
+            unwrap(await signAcceptanceAction(projectId, acceptance.id));
+            toast.success(tToast("acceptanceSigned"));
+          })}
         >
           {t("signAndClose")}
         </button>

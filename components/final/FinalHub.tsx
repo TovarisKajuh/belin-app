@@ -2,6 +2,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { fmtDate } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
 import {
@@ -49,6 +50,7 @@ export function FinalHub({
   locale: "sl" | "de" | "en";
 }) {
   const t = useTranslations("final");
+  const tToast = useTranslations("toast");
   const uiLocale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -64,6 +66,7 @@ export function FinalHub({
     startTransition(async () => {
       try {
         unwrap(await requestFinalizationAction(projectId));
+        toast.success(tToast("handoverRequested"));
         setConfirming(false);
         router.refresh();
       } catch (err) {
@@ -158,6 +161,7 @@ export function FinalHub({
                 startTransition(async () => {
                   try {
                     unwrap(await generateCompletionReportAction(projectId));
+                    toast.success(tToast("reportGenerated"));
                     router.refresh();
                   } catch {
                     setError(t("conflict"));

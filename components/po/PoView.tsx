@@ -2,6 +2,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { fmtDate, fmtNumber } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
 import { formatMoney } from "@/lib/po-shared";
@@ -32,6 +33,7 @@ export function PoView({
   isSubSide: boolean;
 }) {
   const t = useTranslations("po");
+  const tToast = useTranslations("toast");
   const uiLocale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -130,7 +132,10 @@ export function PoView({
               type="button"
               className="b-btn"
               disabled={!confirmed || pending}
-              onClick={() => run(async () => unwrap(await acceptPoAction(projectId, po.id)))}
+              onClick={() => run(async () => {
+                unwrap(await acceptPoAction(projectId, po.id));
+                toast.success(tToast("poAccepted"));
+              })}
             >
               {t("accept")}
             </button>
@@ -152,7 +157,10 @@ export function PoView({
               type="button"
               className="b-btn"
               disabled={pending || note.trim().length === 0}
-              onClick={() => run(async () => unwrap(await rejectPoAction(projectId, po.id, note)))}
+              onClick={() => run(async () => {
+                unwrap(await rejectPoAction(projectId, po.id, note));
+                toast.success(tToast("poRejected"));
+              })}
             >
               {t("reject")}
             </button>

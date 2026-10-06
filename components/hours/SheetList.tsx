@@ -1,9 +1,12 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { fmtDate, fmtNumber } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
+import { toast } from "sonner";
+import { UNDO_MS } from "@/lib/undo-queue";
+import { useUndoQueue } from "@/components/ui/useUndoQueue";
 import {
   effectiveStatus,
   workingDaysLeft,
@@ -49,6 +52,16 @@ export function SheetList({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
+  const tToast = useTranslations("toast");
+  const undo = useUndoQueue();
+  // Sheets approved on this screen whose call is still waiting out the undo
+  // window: shown as approved at once, sent to the server after UNDO_MS.
+  const [approving, setApproving] = useState<string[]>([]);
+  const dropApproving = (id: string) => setApproving((list) => list.filter((x) => x !== id));
+  // A refreshed sheet that is no longer "submitted" no longer needs the optimistic flag.
+  useEffect(() => {
+    setApproving((list) => list.filter((id) => sheets.some((s) => s.id === id && s.status === "submitted")));
+  }, [sheets]);
 
   const now = new Date();
 
@@ -62,6 +75,35 @@ export function SheetList({
         const key = err instanceof Error ? err.message : "";
         setError(key.startsWith("hours.") ? t(key.slice(6)) : t("conflict"));
       }
+    });
+  };
+
+  // Approving a claim for money gets five seconds of "Razveljavi" before the
+  // server hears about it: the server tells the subcontractor the moment it
+  // decides, so the undo has to happen before the call (lib/undo-queue.ts).
+  const approve = (sheet: HourSheet) => {
+    setApproving((list) => [...list, sheet.id]);
+    undo.schedule(sheet.id, () =>
+      run(async () => {
+        try {
+          unwrap(await decideSheetAction(projectId, sheet.id, true));
+        } catch (err) {
+          dropApproving(sheet.id);
+          throw err;
+        }
+      }),
+    );
+    toast.success(tToast("sheetApproved", { number: sheet.number }), {
+      duration: UNDO_MS,
+      action: {
+        label: tToast("undo"),
+        onClick: () => {
+          if (undo.cancel(sheet.id)) {
+            dropApproving(sheet.id);
+            toast(tToast("approveUndone"));
+          }
+        },
+      },
     });
   };
 
@@ -99,10 +141,10 @@ export function SheetList({
       ) : (
         <ul className="ip-list">
           {sheets.map((sheet) => {
-            const status = effectiveStatus(
-              { status: sheet.status, deadline_at: sheet.deadlineAt },
-              now,
-            );
+            const optimistic = approving.includes(sheet.id);
+            const status = optimistic
+              ? "approved"
+              : effectiveStatus({ status: sheet.status, deadline_at: sheet.deadlineAt }, now);
             const daysLeft =
               status === "submitted" && sheet.deadlineAt
                 ? workingDaysLeft(sheet.deadlineAt.slice(0, 10), now, country)
@@ -145,6 +187,7 @@ export function SheetList({
                     onSubmitSheet={() =>
                       run(async () => {
                         unwrap(await submitSheetAction(actionKey, projectId, sheet.id));
+                        toast.success(tToast("sheetSubmitted", { number: sheet.number }));
                         setEditing(null);
                       })
                     }
@@ -180,7 +223,7 @@ export function SheetList({
                       type="button"
                       className="rp-send"
                       disabled={pending}
-                      onClick={() => run(async () => unwrap(await decideSheetAction(projectId, sheet.id, true)))}
+                      onClick={() => approve(sheet)}
                     >
                       {t("approve")}
                     </button>
@@ -188,7 +231,12 @@ export function SheetList({
                       type="button"
                       className="hr-reject"
                       disabled={pending}
-                      onClick={() => run(async () => unwrap(await decideSheetAction(projectId, sheet.id, false)))}
+                      onClick={() =>
+                        run(async () => {
+                          unwrap(await decideSheetAction(projectId, sheet.id, false));
+                          toast.success(tToast("sheetRejected", { number: sheet.number }));
+                        })
+                      }
                     >
                       {t("reject")}
                     </button>

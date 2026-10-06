@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 
 /**
  * A link plus every reasonable way to hand it to somebody.
@@ -29,6 +31,7 @@ export function ShareLink({
     email: string;
   };
 }) {
+  const tToast = useTranslations("toast");
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
 
@@ -48,6 +51,7 @@ export function ShareLink({
       return;
     }
     setCopied(true);
+    toast.success(tToast("copied"));
     setTimeout(() => setCopied(false), 2000);
   }
 

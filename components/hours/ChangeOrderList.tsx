@@ -1,9 +1,12 @@
 "use client";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { fmtDate } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
+import { toast } from "sonner";
+import { UNDO_MS } from "@/lib/undo-queue";
+import { useUndoQueue } from "@/components/ui/useUndoQueue";
 import { PhotoCapture } from "@/components/crew/PhotoCapture";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { formatMoney } from "@/lib/po-shared";
@@ -52,6 +55,14 @@ export function ChangeOrderList({
   const [blobs, setBlobs] = useState<Blob[]>([]);
 
   const draftId = useRef<string>(crypto.randomUUID());
+  const tToast = useTranslations("toast");
+  const undo = useUndoQueue();
+  // Approved on this screen, call still waiting out the undo window.
+  const [approving, setApproving] = useState<string[]>([]);
+  const dropApproving = (id: string) => setApproving((list) => list.filter((x) => x !== id));
+  useEffect(() => {
+    setApproving((list) => list.filter((id) => orders.some((o) => o.id === id && o.status === "submitted")));
+  }, [orders]);
 
   const day = (value: string | null) =>
     value ? fmtDate(value, uiLocale) : "";
@@ -66,6 +77,34 @@ export function ChangeOrderList({
         const key = err instanceof Error ? err.message : "";
         setError(key.startsWith("co.") ? t(key.slice(3)) : t("conflict"));
       }
+    });
+  };
+
+  // Same five second undo as hour sheets: the server notifies the moment it
+  // decides, so the undo happens before the call (lib/undo-queue.ts).
+  const approve = (order: ChangeOrderRow) => {
+    setApproving((list) => [...list, order.id]);
+    undo.schedule(order.id, () =>
+      run(async () => {
+        try {
+          unwrap(await decideChangeOrderAction(projectId, order.id, true));
+        } catch (err) {
+          dropApproving(order.id);
+          throw err;
+        }
+      }),
+    );
+    toast.success(tToast("coApproved", { number: order.number }), {
+      duration: UNDO_MS,
+      action: {
+        label: tToast("undo"),
+        onClick: () => {
+          if (undo.cancel(order.id)) {
+            dropApproving(order.id);
+            toast(tToast("approveUndone"));
+          }
+        },
+      },
     });
   };
 
@@ -98,6 +137,7 @@ export function ChangeOrderList({
         amount: amount.trim() && Number.isFinite(parsed) ? parsed : null,
         photoPaths,
       }));
+      toast.success(tToast("coSubmitted"));
 
       draftId.current = crypto.randomUUID();
       setTitle("");
@@ -174,13 +214,15 @@ export function ChangeOrderList({
         <p className="ip-empty">{t("empty")}</p>
       ) : (
         <ul className="ip-list">
-          {orders.map((order) => (
-            <li key={order.id} className={`hr-sheet s-${order.status}`}>
+          {orders.map((order) => {
+            const status = approving.includes(order.id) ? "approved" : order.status;
+            return (
+            <li key={order.id} className={`hr-sheet s-${status}`}>
               <div className="ip-head">
                 <span className="ip-kind">
                   {t("orderNo", { number: order.number })} · {order.title}
                 </span>
-                <span className={`hr-badge s-${order.status}`}>{t(`status.${order.status}`)}</span>
+                <span className={`hr-badge s-${status}`}>{t(`status.${status}`)}</span>
               </div>
 
               {order.description ? <p className="ip-note">{order.description}</p> : null}
@@ -213,13 +255,13 @@ export function ChangeOrderList({
                 <p className="ip-who">{order.authorName}</p>
               ) : null}
 
-              {canDecide && order.status === "submitted" ? (
+              {canDecide && status === "submitted" ? (
                 <div className="hr-decide">
                   <button
                     type="button"
                     className="rp-send"
                     disabled={pending}
-                    onClick={() => run(async () => unwrap(await decideChangeOrderAction(projectId, order.id, true)))}
+                    onClick={() => approve(order)}
                   >
                     {t("approve")}
                   </button>
@@ -227,14 +269,20 @@ export function ChangeOrderList({
                     type="button"
                     className="hr-reject"
                     disabled={pending}
-                    onClick={() => run(async () => unwrap(await decideChangeOrderAction(projectId, order.id, false)))}
+                    onClick={() =>
+                      run(async () => {
+                        unwrap(await decideChangeOrderAction(projectId, order.id, false));
+                        toast.success(tToast("coRejected", { number: order.number }));
+                      })
+                    }
                   >
                     {t("reject")}
                   </button>
                 </div>
               ) : null}
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </section>

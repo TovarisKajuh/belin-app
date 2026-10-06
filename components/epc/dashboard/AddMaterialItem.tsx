@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { addMaterialItemAction as addMaterialItemByToken } from "@/app/[locale]/p/[token]/actions";
 import { addMaterialItemAction as addMaterialItemBySession } from "@/app/[locale]/app/[projectId]/actions";
 import { parseQty } from "@/lib/materials-shared";
@@ -19,6 +20,7 @@ export function AddMaterialItem({
   const key = token ?? projectId;
   const addMaterialItemAction = token ? addMaterialItemByToken : addMaterialItemBySession;
   const t = useTranslations("dashboard.material");
+  const tToast = useTranslations("toast");
   const router = useRouter();
   const [name, setName] = useState("");
   const [qty, setQty] = useState("");
@@ -36,6 +38,7 @@ export function AddMaterialItem({
     setFailed(false);
     try {
       await addMaterialItemAction(key, { name: name.trim(), qty: parsed, unit: unit.trim() });
+      toast.success(tToast("materialItemAdded"));
       setName("");
       setQty("");
       setUnit("");

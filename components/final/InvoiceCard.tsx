@@ -2,6 +2,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { fmtDate } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
 import { formatMoney } from "@/lib/po-shared";
@@ -37,6 +38,7 @@ export function InvoiceCard({
   accountantEmail: string | null;
 }) {
   const t = useTranslations("invoice");
+  const tToast = useTranslations("toast");
   const uiLocale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -135,6 +137,7 @@ export function InvoiceCard({
                 onClick={() =>
                   run(async () => {
                     const result = unwrap(await generateInvoiceAction(projectId));
+                    toast.success(tToast("invoiceCreated"));
                     setWarnings(result.warnings);
                   })
                 }
