@@ -569,7 +569,8 @@
       "document_expiring": "The document {title} expires on {date}."
     },
     "title": "Notifications",
-    "empty": "No new notifications."
+    "empty": "No new notifications.",
+    "loading": "Loading notifications"
   },
   "share": {
     "copy": "Copy link",

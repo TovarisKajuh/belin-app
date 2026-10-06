@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { ChevronDown } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import {
   statusTransitions,
   transitionActionKey,
@@ -87,7 +89,11 @@ export function ProjectStatusControl({
       >
         <span className="b-status-dot" />
         {t(current)}
-        {options.length > 0 && <span className="b-status-caret">{open ? "▴" : "▾"}</span>}
+        {options.length > 0 && (
+          <span className={`b-status-caret${open ? " open" : ""}`}>
+            <Icon icon={ChevronDown} size={14} />
+          </span>
+        )}
       </button>
       {open && (
         <div className="b-status-menu">

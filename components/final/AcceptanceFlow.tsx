@@ -3,6 +3,8 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { FileDown, X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { fmtDate } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
 import { SignaturePad } from "@/components/SignaturePad";
@@ -172,6 +174,7 @@ export function AcceptanceFlow({
           target="_blank"
           rel="noreferrer"
         >
+          <Icon icon={FileDown} />
           {t("downloadProtocol")}
         </a>
       </div>
@@ -216,7 +219,7 @@ export function AcceptanceFlow({
                     toast.success(tToast("defectRemoved"));
                   })}
                 >
-                  &times;
+                  <Icon icon={X} size={18} />
                 </button>
               </li>
             ))}

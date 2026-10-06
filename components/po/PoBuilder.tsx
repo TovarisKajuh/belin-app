@@ -3,6 +3,8 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Plus, X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { formatMoney, lineTotal, poTotals } from "@/lib/po-shared";
 import { savePoDraftAction, sendPoAction } from "@/app/[locale]/app/[projectId]/po/actions";
 import type { PoView } from "@/lib/data/purchase-orders";
@@ -180,7 +182,7 @@ export function PoBuilder({
                 aria-label={t("removeLine")}
                 disabled={lines.length === 1}
               >
-                &times;
+                <Icon icon={X} size={18} />
               </button>
             </div>
           ))}
@@ -191,7 +193,8 @@ export function PoBuilder({
           className="po-add"
           onClick={() => setLines((current) => [...current, { ...EMPTY_LINE }])}
         >
-          + {t("addLine")}
+          <Icon icon={Plus} />
+          {t("addLine")}
         </button>
 
         <div className="po-total">

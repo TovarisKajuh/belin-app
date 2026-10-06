@@ -2,6 +2,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 import type { IncidentRow } from "@/lib/data/incidents";
 import { fmtDate } from "@/lib/format";
 import { IncidentPhotos } from "./IncidentPhotos";
+import { CloudRain, Construction, TriangleAlert } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 
 // What went wrong on site, in the EPC's field of view.
 //
@@ -26,7 +28,13 @@ export async function IncidentsPanel({ incidents }: { incidents: IncidentRow[] }
           {incidents.map((incident) => (
             <li key={incident.id} className={`ip-row k-${incident.kind}`}>
               <div className="ip-head">
-                <span className="ip-kind">{tKinds(incident.kind)}</span>
+                <span className="ip-kind">
+                  <Icon
+                    icon={incident.kind === "rain_stop" ? CloudRain : incident.kind === "obstruction" ? Construction : TriangleAlert}
+                    size={14}
+                  />
+                  {tKinds(incident.kind)}
+                </span>
                 <span className="ip-date">{fmtDate(incident.occurredOn, locale, { style: "dayMonth" })}</span>
               </div>
 

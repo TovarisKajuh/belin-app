@@ -3,6 +3,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Check, FileDown, X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { fmtDate, fmtNumber } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
 import { formatMoney } from "@/lib/po-shared";
@@ -76,6 +78,7 @@ export function PoView({
           <span className={`e-proj-badge${po.status === "rejected" ? " late" : ""}`}>{statusLine}</span>
           {po.pdfUrl ? (
             <a className="po-ghost" href={`/api/pdf/po/${po.id}`} target="_blank" rel="noreferrer">
+              <Icon icon={FileDown} />
               {t("download")}
             </a>
           ) : null}
@@ -137,9 +140,11 @@ export function PoView({
                 toast.success(tToast("poAccepted"));
               })}
             >
+              <Icon icon={Check} />
               {t("accept")}
             </button>
             <button type="button" className="po-ghost" onClick={() => setRejecting(true)}>
+              <Icon icon={X} />
               {t("reject")}
             </button>
           </div>

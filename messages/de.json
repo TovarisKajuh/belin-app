@@ -569,7 +569,8 @@
       "document_expiring": "Das Dokument {title} läuft am {date} ab."
     },
     "title": "Benachrichtigungen",
-    "empty": "Keine neuen Benachrichtigungen."
+    "empty": "Keine neuen Benachrichtigungen.",
+    "loading": "Benachrichtigungen werden geladen"
   },
   "share": {
     "copy": "Link kopieren",

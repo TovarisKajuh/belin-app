@@ -3,6 +3,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { FileDown } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { fmtDate } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
 import { formatMoney } from "@/lib/po-shared";
@@ -89,6 +91,7 @@ export function InvoiceCard({
             target="_blank"
             rel="noreferrer"
           >
+            <Icon icon={FileDown} />
             {t("download")}
           </a>
 

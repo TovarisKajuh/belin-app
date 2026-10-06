@@ -3,6 +3,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { fmtDate, fmtNumber } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
 import type { HourSheet } from "@/lib/hours-view";
@@ -84,7 +86,7 @@ export function SheetEditor({
                 toast.success(tToast("lineRemoved"));
               })}
             >
-              &times;
+              <Icon icon={X} size={18} />
             </button>
           </li>
         ))}

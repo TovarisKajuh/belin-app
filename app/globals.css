@@ -3094,3 +3094,18 @@ html [data-sonner-toast][data-styled="true"] [data-button].bt-action {
 
 /* === 5.5: One tempo, labelled === */
 .belin-dark .e-chip .s { margin-top: 4px; font-size: var(--fs-11); color: var(--e-muted); font-weight: 600; }
+
+/* === 5.2: Icons === */
+.ui-icon { flex: none; display: inline-block; vertical-align: -0.15em; }
+/* An icon before a label keeps a small gap without changing the control's display. */
+.belin-dark :is(.hr-pdf, .po-ghost, .rp-send, .hr-reject, .hr-new, .po-add, .sl-btn, .sl-primary) > .ui-icon:first-child { margin-right: 6px; }
+.belin-dark .po-x .ui-icon, .belin-dark .wz-del .ui-icon { vertical-align: middle; }
+.belin-dark .b-status-caret { display: inline-flex; transition: transform .16s; }
+.belin-dark .b-status-caret.open { transform: rotate(180deg); }
+.belin-dark .e-alert-ic .ui-icon { width: 16px; height: 16px; }
+.belin-dark .ip-kind { display: inline-flex; align-items: center; gap: 6px; }
+.belin-dark .ip-row.k-rain_stop .ip-kind .ui-icon { color: var(--e-info); }
+.belin-dark .ip-row.k-obstruction .ip-kind .ui-icon { color: var(--e-warn); }
+.belin-dark .ip-row.k-incident .ip-kind .ui-icon { color: var(--e-danger); }
+.belin-dark .e-lb-btn .ui-icon { stroke-width: 1.75; }
+.belin-dark .hr-back a { display: inline-flex; align-items: center; min-width: 44px; min-height: 44px; }

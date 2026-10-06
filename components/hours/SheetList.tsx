@@ -5,6 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { fmtDate, fmtNumber } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
 import { toast } from "sonner";
+import { Check, FileDown, Plus, X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { UNDO_MS } from "@/lib/undo-queue";
 import { useUndoQueue } from "@/components/ui/useUndoQueue";
 import {
@@ -129,6 +131,7 @@ export function SheetList({
               })
             }
           >
+            <Icon icon={Plus} />
             {t("new")}
           </button>
         ) : null}
@@ -213,6 +216,7 @@ export function SheetList({
                     target="_blank"
                     rel="noreferrer"
                   >
+                    <Icon icon={FileDown} />
                     {t("pdf")}
                   </a>
                 ) : null}
@@ -225,6 +229,7 @@ export function SheetList({
                       disabled={pending}
                       onClick={() => approve(sheet)}
                     >
+                      <Icon icon={Check} />
                       {t("approve")}
                     </button>
                     <button
@@ -238,6 +243,7 @@ export function SheetList({
                         })
                       }
                     >
+                      <Icon icon={X} />
                       {t("reject")}
                     </button>
                   </div>

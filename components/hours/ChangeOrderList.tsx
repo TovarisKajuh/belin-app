@@ -5,6 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { fmtDate } from "@/lib/format";
 import { unwrap } from "@/lib/action-result";
 import { toast } from "sonner";
+import { Check, Plus, X } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 import { UNDO_MS } from "@/lib/undo-queue";
 import { useUndoQueue } from "@/components/ui/useUndoQueue";
 import { PhotoCapture } from "@/components/crew/PhotoCapture";
@@ -153,6 +155,7 @@ export function ChangeOrderList({
         <div className="e-sec-h">{t("title")}</div>
         {role === "sub" && !adding ? (
           <button type="button" className="hr-new" onClick={() => setAdding(true)}>
+            <Icon icon={Plus} />
             {t("new")}
           </button>
         ) : null}
@@ -263,6 +266,7 @@ export function ChangeOrderList({
                     disabled={pending}
                     onClick={() => approve(order)}
                   >
+                    <Icon icon={Check} />
                     {t("approve")}
                   </button>
                   <button
@@ -276,6 +280,7 @@ export function ChangeOrderList({
                       })
                     }
                   >
+                    <Icon icon={X} />
                     {t("reject")}
                   </button>
                 </div>

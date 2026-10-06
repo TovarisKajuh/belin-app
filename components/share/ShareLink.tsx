@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Copy, Mail, MessageCircle, Share2 } from "lucide-react";
+import { Icon } from "@/components/ui/Icon";
 
 /**
  * A link plus every reasonable way to hand it to somebody.
@@ -69,11 +71,13 @@ export function ShareLink({
 
       <div className="sl-actions">
         <button type="button" className="lp-submit sl-primary" onClick={copy}>
+          <Icon icon={Copy} />
           {copied ? labels.copied : labels.copy}
         </button>
 
         {canShare && (
           <button type="button" className="sl-btn" onClick={share}>
+            <Icon icon={Share2} />
             {labels.share}
           </button>
         )}
@@ -84,6 +88,7 @@ export function ShareLink({
           target="_blank"
           rel="noreferrer"
         >
+          <Icon icon={MessageCircle} />
           {labels.whatsapp}
         </a>
 
@@ -91,6 +96,7 @@ export function ShareLink({
           className="sl-btn"
           href={`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(full)}`}
         >
+          <Icon icon={Mail} />
           {labels.email}
         </a>
       </div>

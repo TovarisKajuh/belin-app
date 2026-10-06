@@ -569,7 +569,8 @@
       "document_expiring": "Dokument {title} poteče {date}."
     },
     "title": "Obvestila",
-    "empty": "Ni novih obvestil."
+    "empty": "Ni novih obvestil.",
+    "loading": "Nalaganje obvestil"
   },
   "share": {
     "copy": "Kopiraj povezavo",

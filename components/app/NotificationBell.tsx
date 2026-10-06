@@ -6,6 +6,8 @@ import {
   markAllReadAction,
 } from "@/app/[locale]/app/actions";
 import type { NotificationRow } from "@/lib/data/notifications";
+import { Icon } from "@/components/ui/Icon";
+import { Bell, LoaderCircle } from "lucide-react";
 
 // The bell. Deliberately modest: a count, a panel, and reading it empties it.
 //
@@ -87,15 +89,7 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
         aria-label={t("title")}
         aria-expanded={open}
       >
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M12 3a6 6 0 0 0-6 6v3.6l-1.4 2.8A1 1 0 0 0 5.5 17h13a1 1 0 0 0 .9-1.6L18 12.6V9a6 6 0 0 0-6-6Z"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinejoin="round"
-          />
-          <path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-        </svg>
+        <Icon icon={Bell} size={17} />
         {unread > 0 ? <span className="nb-dot">{unread > 9 ? "9+" : unread}</span> : null}
       </button>
 
@@ -103,7 +97,10 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
         <div className="nb-panel" role="dialog" aria-label={t("title")}>
           <div className="nb-h">{t("title")}</div>
           {rows === null ? (
-            <div className="nb-empty">...</div>
+            // A bare "..." reads as unfinished on the projector.
+            <div className="nb-empty" role="status">
+              <Icon icon={LoaderCircle} size={16} className="bt-spin" label={t("loading")} />
+            </div>
           ) : rows.length === 0 ? (
             <div className="nb-empty">{t("empty")}</div>
           ) : (
