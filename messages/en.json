@@ -884,6 +884,8 @@
     "errEmpty": "No items for the invoice. An accepted purchase order, approved hours or approved change orders are required.",
     "errNoSub": "The project has no subcontractor.",
     "errSubOnly": "The invoice is issued by the subcontractor.",
+    "errNoAddress": "One of the companies has no address. Add it in the settings.",
+    "errNoAcceptance": "The invoice can be issued once the final acceptance is signed.",
     "conflict": "The invoice could not be created. Please reload the page.",
     "warnNoRate": "No hourly rate is set in the purchase order, so the hourly work is not billed.",
     "warnCoNoAmount": "Some approved change orders have no amount and are not billed.",
@@ -910,7 +912,9 @@
       "reverseChargeTitle": "Tax clause",
       "workLabel": "Execution of works on the project",
       "regieLine": "Hourly work, sheet no.",
-      "generated": "Generated in Belin"
+      "generated": "Generated in Belin",
+      "poRef": "per purchase order no. {number} of {date}",
+      "coLine": "Change order no. {number}: {title}"
     },
     "cancel": "Cancel",
     "byContractor": "The invoice is issued by the subcontractor."

@@ -18,8 +18,8 @@ function invoice(mode: "reverse_charge" | "standard") {
   return InvoiceDocument({
     number: "2026-001",
     issueDate: "12. 08. 2026",
-    dueDate: null,
-    servicePeriod: null,
+    dueDate: "5. 11. 2026",
+    servicePeriod: "21. 9. 2026 - 6. 10. 2026",
     siteAddress: "Cesta Staneta Žagarja 69, 4000 Kranj",
     supplier: { name: "AVESOL d.o.o.", address: "Tolmin", vatId: "SI10000002" },
     customer: { name: "Sonce Energija d.o.o.", address: "Kranj", vatId: "SI10000001" },
@@ -31,6 +31,7 @@ function invoice(mode: "reverse_charge" | "standard") {
         unitPrice: null,
         total: "118.500,00 EUR",
       },
+      { description: "Režijske ure, list št. 1", qty: "14 h", unitPrice: "40,00 EUR", total: "560,00 EUR" },
     ],
     totalNet: "118.500,00 EUR",
     vatMode: mode,
@@ -51,6 +52,14 @@ async function textOf(mode: "reverse_charge" | "standard"): Promise<string> {
 }
 
 describe("invoice document", () => {
+  it("prints the due date, the service period, the hour unit and the net under reverse charge", async () => {
+    const text = await textOf("reverse_charge");
+    expect(text).toContain("Rok plačila 5. 11. 2026");
+    expect(text).toContain("Obdobje izvedbe 21. 9. 2026 - 6. 10. 2026");
+    expect(text).toContain("14 h");
+    expect(text).toContain("Skupaj neto 118.500,00 EUR");
+  }, 60000);
+
   it("prints the statutory note and NO tax at all under reverse charge", async () => {
     const text = await textOf("reverse_charge");
 

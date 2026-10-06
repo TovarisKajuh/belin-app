@@ -71,7 +71,7 @@ export function standardVatRate(siteCountry: Country): number {
 export interface ComposeInput {
   po: { totalNet: number; regieHourlyRate: number | null; label: string } | null;
   approvedRegieHours: { sheetNumber: number; hours: number }[];
-  approvedChangeOrders: { number: number; title: string; amount: number | null }[];
+  approvedChangeOrders: { number: number; title: string; amount: number | null; label?: string }[];
 }
 
 export interface ComposeResult {
@@ -124,7 +124,7 @@ export function composeInvoiceLines(input: ComposeInput): ComposeResult {
     }
     lines.push({
       kind: "change_order",
-      description: `${order.number}: ${order.title}`,
+      description: order.label ?? `${order.number}: ${order.title}`,
       qty: null,
       unit: null,
       unitPrice: null,
@@ -173,4 +173,37 @@ export function nextInvoiceNumber(year: number, existing: string[]): string {
   }
 
   return `${prefix}${String(highest + 1).padStart(3, "0")}`;
+}
+
+/**
+ * Days to pay, read from the naročilnica's payment terms ("30 dni od izdaje
+ * računa"). The terms are free text the EPC typed, so anything without a
+ * plausible number falls back to 30 days.
+ */
+export function paymentDays(terms: string | null): number {
+  const match = terms?.match(/\d{1,3}/);
+  const days = match ? Number(match[0]) : Number.NaN;
+  return Number.isInteger(days) && days >= 0 && days <= 180 ? days : 30;
+}
+
+/** yyyy-mm-dd plus whole days, in calendar arithmetic (no zone can shift it). */
+export function addDaysIso(iso: string, days: number): string {
+  const date = new Date(`${iso.slice(0, 10)}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * The period of supply the invoice must state (§ 14 Abs. 4 Nr. 6 UStG,
+ * 82. člen ZDDV-1): from the first day a crew reported on site to the day
+ * the client accepted the work. Work after the acceptance is defect
+ * remedy, not supply, so the acceptance day ends the period.
+ */
+export function servicePeriod(input: {
+  firstEntry: string | null;
+  acceptanceDay: string;
+}): { start: string; end: string } {
+  const end = input.acceptanceDay;
+  const start = input.firstEntry && input.firstEntry <= end ? input.firstEntry : end;
+  return { start, end };
 }

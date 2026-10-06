@@ -127,6 +127,10 @@ export function InvoiceDocument(input: InvoiceInput) {
           /* REVERSE CHARGE. There is no VAT row here, by construction. */
           <View style={{ marginTop: 12, alignItems: "flex-end" }} wrap={false}>
             <View style={{ width: "58%" }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
+                <Text>{s.totalNet}</Text>
+                <Text>{input.totalNet}</Text>
+              </View>
               <View
                 style={{
                   flexDirection: "row",

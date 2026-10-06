@@ -2,6 +2,8 @@
 
 One line per significant decision: what, why, when.
 
+- 2026-10-06: No invoice before a signed final acceptance; the service period runs from the first report day to the acceptance day; the due date follows the naročilnica's payment terms, default 30 days. Reason: the invoice must state the time of supply (§ 14 UStG, 82. člen ZDDV-1) and nobody bills unaccepted work.
+
 - 2026-10-06: Every number and date the product prints goes through lib/format.ts: Slovenian dates as 6. 10. 2026, German and English with two digits, grouping always on, calendar days formatted in UTC and instants in the project's zone. Reason: the screens mixed English and Slovenian decimals and the documents printed yesterday's date after midnight.
 
 - 2026-10-06: Documents name their issuing company top right (name and address; logo once one is set) and carry 'Stran n od m'; Belin moves to the footer line. Issuer per document: the EPC for the naročilnica and the Zapisnik o prevzemu, the subcontractor for the invoice, the Poročilo o režijskih urah, the day report and the completion report (D16). The address follows ZGD-1 32. člen (firma and sedež on business letters) as two secondary sources report it; not yet read on PISRS.
