@@ -96,31 +96,6 @@ export function AbnahmeDocument(input: AbnahmeInput) {
           emptyLabel={s.noDefects}
         />
 
-        <View style={{ marginTop: 16 }}>
-          <LabelValue label={s.declaration} value={input.declarationLabel} />
-          {input.warrantyStart ? (
-            <LabelValue label={s.warranty} value={input.warrantyStart} />
-          ) : null}
-        </View>
-
-        {/* Printed ONLY when reserved. Silence here is meaningful: a document
-            that mentioned penalties in every case would make a reservation
-            that was never made look like one that was. */}
-        {input.penaltyReserved ? (
-          <View
-            style={{
-              marginTop: 14,
-              padding: 10,
-              borderWidth: 1,
-              borderColor: C.ink,
-            }}
-            wrap={false}
-          >
-            <Text style={{ fontWeight: 700, marginBottom: 4 }}>{s.penaltyTitle}</Text>
-            <Text style={styles.body}>{s.penaltySentence}</Text>
-          </View>
-        ) : null}
-
         {input.note ? (
           <View style={{ marginTop: 14 }}>
             <Text style={styles.sectionTitle}>{s.note}</Text>
@@ -128,9 +103,27 @@ export function AbnahmeDocument(input: AbnahmeInput) {
           </View>
         ) : null}
 
-        <View style={{ marginTop: 30, flexDirection: "row", justifyContent: "space-between" }} wrap={false}>
-          <SignatureBox name={input.epcSigner.name} image={input.epcSigner.image} caption={s.signEpc} />
-          <SignatureBox name={input.subSigner.name} image={input.subSigner.image} caption={s.signSub} />
+        {/* ONE UNBREAKABLE BLOCK: declaration, warranty start, penalty box and
+            both signatures. A signature page without the declaration on it is a
+            page anybody could staple to anything (documents H7). */}
+        <View wrap={false} style={{ marginTop: 16 }}>
+          <LabelValue label={s.declaration} value={input.declarationLabel} />
+          {input.warrantyStart ? <LabelValue label={s.warranty} value={input.warrantyStart} /> : null}
+
+          {/* Printed ONLY when reserved. Silence here is meaningful: a document
+              that mentioned penalties in every case would make a reservation
+              that was never made look like one that was. */}
+          {input.penaltyReserved ? (
+            <View style={{ marginTop: 12, padding: 10, borderWidth: 1, borderColor: C.ink }}>
+              <Text style={{ fontWeight: 700, marginBottom: 4 }}>{s.penaltyTitle}</Text>
+              <Text style={styles.body}>{s.penaltySentence}</Text>
+            </View>
+          ) : null}
+
+          <View style={{ marginTop: 26, flexDirection: "row", justifyContent: "space-between" }}>
+            <SignatureBox name={input.epcSigner.name} image={input.epcSigner.image} caption={s.signEpc} />
+            <SignatureBox name={input.subSigner.name} image={input.subSigner.image} caption={s.signSub} />
+          </View>
         </View>
 
         <Footer generatedLabel={s.generated} pageLabel={s.page} />

@@ -146,7 +146,7 @@ export function CompletionDocument(input: CompletionInput) {
       {/* Every day that carried work or an incident, in order. The numbering
           comes from buildDayReports, so it can never skip. */}
       {input.days.map((day) => (
-        <DayReportPage key={day.reportNo} day={day} s={s.day} issuer={input.issuer} />
+        <DayReportPage key={day.reportNo} day={day} s={s.day} issuer={input.issuer} projectName={input.projectName} />
       ))}
 
       <Page size="A4" style={styles.page}>
