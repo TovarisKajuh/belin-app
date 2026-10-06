@@ -69,7 +69,17 @@ export function standardVatRate(siteCountry: Country): number {
 }
 
 export interface ComposeInput {
-  po: { totalNet: number; regieHourlyRate: number | null; label: string } | null;
+  po: {
+    totalNet: number;
+    regieHourlyRate: number | null;
+    label: string;
+    /**
+     * The order's own quantity and unit price, when it is a single priced line
+     * that multiplies to its total. Otherwise the order is billed as one lump
+     * sum: quantity 1 at the full amount.
+     */
+    single?: { qty: number; unit: string | null; unitPrice: number } | null;
+  } | null;
   approvedRegieHours: { sheetNumber: number; hours: number }[];
   approvedChangeOrders: { number: number; title: string; amount: number | null; label?: string }[];
 }
@@ -86,13 +96,20 @@ export function composeInvoiceLines(input: ComposeInput): ComposeResult {
   const warnings: string[] = [];
 
   if (input.po) {
+    // An invoice row with empty Količina and Cena na enoto reads as a form
+    // somebody forgot to fill in. The order is billed either at its own single
+    // line's quantity and price, or as one lump sum at the full amount.
+    const total = round2(input.po.totalNet);
+    const single = input.po.single;
+    const usesSingle =
+      single != null && round2(Number((single.qty * single.unitPrice).toFixed(10))) === total;
     lines.push({
       kind: "po",
       description: input.po.label,
-      qty: null,
-      unit: null,
-      unitPrice: null,
-      total: round2(input.po.totalNet),
+      qty: usesSingle ? single.qty : 1,
+      unit: usesSingle ? single.unit : null,
+      unitPrice: usesSingle ? single.unitPrice : total,
+      total,
     });
   }
 
@@ -122,12 +139,13 @@ export function composeInvoiceLines(input: ComposeInput): ComposeResult {
       missingAmount = true;
       continue;
     }
+    // An approved extra is a lump sum too: one at its full amount.
     lines.push({
       kind: "change_order",
       description: order.label ?? `${order.number}: ${order.title}`,
-      qty: null,
+      qty: 1,
       unit: null,
-      unitPrice: null,
+      unitPrice: round2(order.amount),
       total: round2(order.amount),
     });
   }

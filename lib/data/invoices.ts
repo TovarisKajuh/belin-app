@@ -170,10 +170,24 @@ export async function generateInvoice(actor: Actor, projectId: string): Promise<
 
   const { data: po } = await db
     .from("purchase_orders")
-    .select("number, sent_at, total_net, regie_hourly_rate, payment_terms")
+    .select("id, number, sent_at, total_net, regie_hourly_rate, payment_terms")
     .eq("project_id", projectId)
     .eq("status", "accepted")
     .maybeSingle();
+
+  // A one-line order with a real quantity and unit price is billed at them;
+  // anything else becomes one lump sum line (composeInvoiceLines).
+  const { data: poLines } = po
+    ? await db
+        .from("purchase_order_lines")
+        .select("qty, unit, unit_price")
+        .eq("purchase_order_id", po.id)
+    : { data: null };
+  const onlyLine = poLines && poLines.length === 1 ? poLines[0] : null;
+  const single =
+    onlyLine && onlyLine.qty !== null && onlyLine.unit_price !== null
+      ? { qty: Number(onlyLine.qty), unit: onlyLine.unit, unitPrice: Number(onlyLine.unit_price) }
+      : null;
 
   const { data: firstEntry } = await db
     .from("daily_entries")
@@ -205,6 +219,7 @@ export async function generateInvoice(actor: Actor, projectId: string): Promise<
           totalNet: Number(po.total_net),
           regieHourlyRate: po.regie_hourly_rate === null ? null : Number(po.regie_hourly_rate),
           label: poLabel,
+          single,
         }
       : null,
     // persistDeemed runs inside approvedHours, so hours the clock approved

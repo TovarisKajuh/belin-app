@@ -37,6 +37,40 @@ describe("composeInvoiceLines", () => {
     expect(result.warnings).toEqual([]);
   });
 
+  // An invoice row with empty Količina and Cena na enoto read as unfinished on
+  // the demo invoice (production verification, 2026-10-06).
+  it("bills a lump sum order as quantity 1 at the full amount", () => {
+    const result = composeInvoiceLines({ po, approvedRegieHours: [], approvedChangeOrders: [] });
+    expect(result.lines[0]).toMatchObject({ kind: "po", qty: 1, unit: null, unitPrice: 118500, total: 118500 });
+  });
+
+  it("bills an approved extra as quantity 1 at its amount", () => {
+    const result = composeInvoiceLines({
+      po: null,
+      approvedRegieHours: [],
+      approvedChangeOrders: [{ number: 1, title: "Popravilo membrane", amount: 1200 }],
+    });
+    expect(result.lines[0]).toMatchObject({ kind: "change_order", qty: 1, unitPrice: 1200, total: 1200 });
+  });
+
+  it("bills a single priced order line at its own quantity and unit price", () => {
+    const result = composeInvoiceLines({
+      po: { ...po, totalNet: 1250, single: { qty: 2.5, unit: "kWp", unitPrice: 500 } },
+      approvedRegieHours: [],
+      approvedChangeOrders: [],
+    });
+    expect(result.lines[0]).toMatchObject({ kind: "po", qty: 2.5, unit: "kWp", unitPrice: 500, total: 1250 });
+  });
+
+  it("falls back to the lump sum when the single line does not multiply to the total", () => {
+    const result = composeInvoiceLines({
+      po: { ...po, single: { qty: 3, unit: "kos", unitPrice: 100 } },
+      approvedRegieHours: [],
+      approvedChangeOrders: [],
+    });
+    expect(result.lines[0]).toMatchObject({ kind: "po", qty: 1, unit: null, unitPrice: 118500 });
+  });
+
   // The rule that protects the subcontractor from being paid nothing for real
   // work: hours with no agreed rate are NOT billed at zero, they are left out
   // and the omission is announced.
