@@ -6,6 +6,8 @@ One line per significant decision: what, why, when.
 
 - 2026-10-06: AVESOL keeps its public register address and VAT id in the demo, with an invented IBAN that passes the checksum (SI56 0201 0001 2345 641), never its real account; every invented IBAN in the seed must pass mod-97. Reason: founder default to question 0.6 r; an account failing the check is the first thing an accountant's software rejects.
 
+- 2026-10-06: The Demo Door: a 43 character key in the URL, closed after DEMO_DOOR_UNTIL; presenter sessions 12 h, guest sessions 2 h from a 15 minute QR; a signed httpOnly belin-demo cookie gates the persona switch; only standard 30 day sessions roll forward. Reason: one tap into every role on production without email, and nothing that outlives the meeting week (D17, D18).
+
 - 2026-10-06: organizations.is_demo marks the four demo companies; the seed and the Demo Door trust only flagged organizations. Reason: one database serves local, demo and production, and a list of ids in a script was the only guard (D6).
 
 - 2026-10-06: The meeting is built from a Morning cut, not the plan's Minimum winning cut, and self-serve signup moves to after the meeting. Reason: execution started at 09:00 instead of 23:00, leaving about four hours before a 13:00 freeze; the cut keeps what the buyer sees in the run of show (truthful demo data, the presenter door, the visible screen bugs on the demo path, signatures, invoice fields, document spacing, the landing privacy fix, the splash), and signup cannot open today in any case without the operator's legal details.

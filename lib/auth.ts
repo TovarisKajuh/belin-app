@@ -9,7 +9,7 @@ import {
   type SessionActor,
 } from "@/lib/actor";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { hashToken, newRawToken, SESSION_TTL_DAYS } from "@/lib/auth-core";
+import { hashToken, newRawToken, SESSION_TTL_DAYS, shouldRenewSession } from "@/lib/auth-core";
 import { tokenForCredentials, describeDemoToken, otherScenarioToken } from "@/lib/auth-shared";
 import type { Scenario } from "@/lib/auth-shared";
 
@@ -76,10 +76,16 @@ export async function sessionToken(): Promise<string | null> {
   return value;
 }
 
-/** Issue a person session: a fresh token, hashed at rest, cookie holds the raw. */
-export async function startPersonSession(personId: string): Promise<void> {
+/**
+ * Issue a person session: a fresh token, hashed at rest, cookie holds the raw.
+ * `ttlMs` SHORTENS it (the Demo Door's presenter and guest sessions); it can
+ * never lengthen one past the standard lifetime.
+ */
+export async function startPersonSession(personId: string, opts: { ttlMs?: number } = {}): Promise<void> {
+  const standardMs = SESSION_TTL_DAYS * 86400000;
+  const ttlMs = opts.ttlMs !== undefined && opts.ttlMs > 0 ? Math.min(opts.ttlMs, standardMs) : standardMs;
   const raw = newRawToken();
-  const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 86400000);
+  const expiresAt = new Date(Date.now() + ttlMs);
 
   const db = createAdminClient();
   const { error } = await db.from("sessions").insert({
@@ -95,7 +101,7 @@ export async function startPersonSession(personId: string): Promise<void> {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_TTL_DAYS * 86400,
+    maxAge: Math.floor(ttlMs / 1000),
   });
 }
 
@@ -147,7 +153,7 @@ export const resolveActorFromSession = cache(async (): Promise<SessionActor | nu
     // window where a stale row is read and then judged.
     const { data, error } = await db
       .from("sessions")
-      .select("id, person_id, expires_at")
+      .select("id, person_id, expires_at, created_at")
       .eq("token_hash", hashToken(raw))
       .eq("revoked", false)
       .gt("expires_at", new Date().toISOString())
@@ -162,8 +168,8 @@ export const resolveActorFromSession = cache(async (): Promise<SessionActor | nu
     // him. Refreshed only in the second half of the window, so a phone in daily
     // use writes this row once a fortnight rather than on every page load, and
     // fire and forget, because a failed refresh must not fail the request.
-    const msLeft = new Date(data.expires_at).getTime() - Date.now();
-    if (msLeft < (SESSION_TTL_DAYS / 2) * 86400000) {
+    // Only standard-lifetime sessions roll (shouldRenewSession): a short Demo Door session ends on time.
+    if (shouldRenewSession({ createdAt: data.created_at, expiresAt: data.expires_at }, new Date())) {
       const renewed = new Date(Date.now() + SESSION_TTL_DAYS * 86400000).toISOString();
       const sessionId = data.id;
       // Deferred through after(), not a bare void: a Supabase query builder is
