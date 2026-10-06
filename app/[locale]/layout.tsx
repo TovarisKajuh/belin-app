@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { appBaseUrl } from "@/lib/app-url";
 import { SplashGate } from "@/components/SplashGate";
+import { Toaster } from "@/components/ui/Toaster";
 import "@fontsource-variable/inter";
 import "@fontsource/jetbrains-mono";
 import "../globals.css";
@@ -134,7 +135,10 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <body>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          {children}
+          <Toaster />
+        </NextIntlClientProvider>
         <SplashGate />
       </body>
     </html>

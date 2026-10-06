@@ -3044,3 +3044,50 @@ body:has(.b-tabbed) .dm-switch { bottom: calc(68px + 96px + env(safe-area-inset-
   height: 150px; border-radius: 12px; border: 1px dashed var(--e-line);
   color: var(--e-ok); font-weight: 700; font-size: 14px;
 }
+
+/* === 5.1a: tokens === */
+/* New custom properties only, with Task 5.1b's values, so every Wave 5 task
+   can use them before the in-place design pass. No existing rule changes.
+   (.belin-dark.ui-portal, which 5.1a also lists, is already in the 5.10 block.) */
+:root {
+  --fs-11: 11px; --fs-12: 12px; --fs-13: 13px; --fs-14: 14px; --fs-15: 15px; --fs-16: 16px;
+  --fs-18: 18px; --fs-20: 20px; --fs-24: 24px; --fs-28: 28px; --fs-30: 30px; --fs-display: 46px;
+  --r-btn: 12px;
+}
+.belin-dark {
+  --e-warn: #ffb45c; --e-warn-rgb: 255,180,92;
+  --e-danger: #ff7a6b; --e-danger-rgb: 255,122,107; --e-danger-ink: #ffb9b9;
+  --e-info: #6bb8ff; --e-placeholder: #8a8478; --e-on-gold: #14100a;
+  --e-card-inset: inset 0 1px 0 rgba(255,255,255,.04);
+  --e-line-strong: rgba(255,255,255,.22); --e-field-line: rgba(255,255,255,.34);
+  --e-glow-2: rgba(255,210,26,.18);
+}
+/* Empty states: what will appear here, and the action that makes it appear. */
+.belin-dark .es { display: grid; justify-items: start; gap: 6px; padding: 22px; border-radius: 16px; background: var(--e-surface); border: 1px dashed var(--e-line-strong); }
+.belin-dark .es--compact { grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; padding: 16px 18px; }
+.belin-dark .es-ic { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: rgba(255,210,26,.10); color: var(--e-gold-2); }
+.belin-dark .es--compact .es-ic { grid-row: span 2; }
+.belin-dark .es-t { font-size: var(--fs-16); font-weight: 700; color: var(--e-ink); }
+.belin-dark .es--compact .es-t { font-size: var(--fs-15); }
+.belin-dark .es-b { margin: 0; max-width: 60ch; font-size: var(--fs-14); line-height: 1.55; color: var(--e-ink2); }
+.belin-dark .es-a { width: 100%; margin-top: 8px; }
+.belin-dark .es--compact .es-a { grid-column: 1 / -1; }
+/* The toaster renders outside .belin-dark, so these are literal copies of the
+   tokens; sonner injects its own base styles. */
+html [data-sonner-toaster] { font-family: "Inter Variable", -apple-system, BlinkMacSystemFont, sans-serif; }
+html [data-sonner-toaster][data-sonner-theme="dark"] {
+  --normal-bg: #101a28; --normal-border: rgba(255,255,255,.16); --normal-text: #f4f1ea; --border-radius: 14px;
+}
+html [data-sonner-toast].bt-toast { padding: 14px 16px; font-size: 14px; box-shadow: 0 18px 44px -18px rgba(0,0,0,.85); }
+html [data-sonner-toast].bt-toast .bt-title { font-weight: 600; line-height: 1.4; }
+html [data-sonner-toast].bt-success [data-icon] { color: #4ad07a; }
+html [data-sonner-toast].bt-error [data-icon] { color: #ff7a6b; }
+html [data-sonner-toast][data-styled="true"] [data-button].bt-action {
+  height: auto; min-height: 36px; padding: 0 14px; border-radius: 10px;
+  background: linear-gradient(180deg, #ffe488, #ffd21a); color: #14100a; font-size: 13px; font-weight: 700;
+}
+@media (pointer: coarse) {
+  html [data-sonner-toast][data-styled="true"] [data-button].bt-action { min-height: 44px; }
+}
+.bt-spin { animation: bt-spin 1s linear infinite; }
+@keyframes bt-spin { to { transform: rotate(360deg); } }

@@ -43,6 +43,7 @@
     "@fontsource/jetbrains-mono": "^5.2.5",
     "@react-pdf/renderer": "^4.5.1",
     "@supabase/supabase-js": "^2.45.0",
+    "lucide-react": "^1.52.0",
     "next": "^15.1.6",
     "next-intl": "^4.1.0",
     "qrcode": "^1.5.4",
@@ -50,6 +51,7 @@
     "react-dom": "^19.0.0",
     "resend": "^6.17.2",
     "server-only": "^0.0.1",
+    "sonner": "^2.0.8",
     "unpdf": "^1.6.2"
   },
   "devDependencies": {

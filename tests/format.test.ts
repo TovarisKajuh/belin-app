@@ -82,6 +82,13 @@ describe("fmtDate", () => {
     expect(asAppLocale("de")).toBe("de");
     expect(asAppLocale(null)).toBe("sl");
   });
+
+  it("day and month without the year, for dashboards and day lists", () => {
+    expect(fmtDate("2026-10-05", "sl", { style: "dayMonth" })).toBe("5. 10.");
+    expect(fmtDate("2026-10-05", "de", { style: "dayMonth" })).toBe("05.10.");
+    expect(fmtDate("2026-10-05", "en", { style: "dayMonth" })).toBe("05/10");
+    expect(fmtDate("2026-10-05T22:30:00Z", "sl", { style: "dayMonth", timeZone: "Europe/Ljubljana" })).toBe("6. 10.");
+  });
 });
 
 describe("fmtDateTime", () => {
