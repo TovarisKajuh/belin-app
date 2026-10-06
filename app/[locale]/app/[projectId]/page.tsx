@@ -114,14 +114,17 @@ export default async function ProjectPage({
 
   return (
     <>
-      {needsSub && (
-        <div className="belin-dark">
-          <div className="e-wrap">
-            <AddSubPanel projectId={projectId} projectName={needsSub.name} locale={locale} />
-          </div>
-        </div>
-      )}
-      <EpcDashboard token={null} projectId={projectId} data={data} locale={locale} />
+      {/* Inside the dashboard, under its sticky bar: as a separate dark block
+          above it, the panel sat on top of the bar. */}
+      <EpcDashboard
+        token={null}
+        projectId={projectId}
+        data={data}
+        locale={locale}
+        beforeHero={
+          needsSub ? <AddSubPanel projectId={projectId} projectName={needsSub.name} locale={locale} /> : null
+        }
+      />
       <LogoutPill locale={locale} />
     </>
   );

@@ -23,7 +23,7 @@ export function IncidentPhotos({ urls, label }: { urls: string[]; label: string 
       <div className="ip-thumbs">
         {urls.map((url, i) => (
           <button key={url} type="button" className="ip-thumb" onClick={() => setOpen(i)} aria-label={label}>
-            <img src={url} alt="" />
+            <img src={url} alt="" loading="lazy" decoding="async" width={58} height={58} />
           </button>
         ))}
       </div>

@@ -3,6 +3,9 @@
 One line per significant decision: what, why, when.
 
 - 2026-10-06: The naročilnica prints the režijske ure clause (six days after submission, Monday to Saturday except the site country's non-working days, deemed approved) and a contract-basis line by site country (SI: OZ and PGU 2020; DE: VOB/B; AT: ÖNORM B 2110). Reason: D9 makes the deemed approval a term the subcontractor accepts; PGU uzanca 10 counts calendar days unless agreed, so the count is spelled out, and it names the dela prosti dnevi because that is the list the clock skips (tests/hours-clause.test.ts).
+- 2026-10-06: The EPC's empty log shares the project link with the subcontractor, never the crew link, because the crew link stays the subcontractor office's to hand out.
+
+- 2026-10-06: Project coordinates come from OpenStreetMap Nominatim, queried with postcode, town and country only, once per project and stored. Reason: Nominatim allows low-volume commercial use where Open-Meteo's free geocoder does not, and leaving the street out keeps a homeowner's address out of a third-party request.
 
 - 2026-10-06: The demo client is the invented "Svetlogradnja d.o.o." (Dunajska cesta 151, 1000 Ljubljana, SI53814266), not "Lumora Energija d.o.o.". Reason: the Task 2.2a re-check on bizi.si found a real active LUMORA d.o.o. in Ljubljana; Svetlogradnja has no bizi.si result and the VAT id is not in VIES.
 

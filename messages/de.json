@@ -84,7 +84,20 @@
       "hours": "Stunden"
     },
     "diaryEmpty": "Auf dieser Baustelle wurden noch keine Berichte abgegeben.",
-    "diaryToday": "Heute"
+    "diaryToday": "Heute",
+    "report": {
+      "likeYesterday": "Wie gestern",
+      "likeLast": "Wie zuletzt, {date}",
+      "likeHint": "Personenzahl und Mengen aus dem letzten Bericht",
+      "left": "noch {left} {unit}",
+      "done": "Fertig",
+      "typeQty": "Menge eingeben: {name}",
+      "removePhoto": "Foto entfernen",
+      "photoRemoved": "Foto entfernt.",
+      "undo": "Rückgängig",
+      "takePhoto": "Foto aufnehmen"
+    },
+    "maps": "In Google Maps öffnen"
   },
   "weather": {
     "unknown": "Keine Angabe",
@@ -181,7 +194,21 @@
     "requests": "Anfragen des Teams",
     "noRequests": "Keine offenen Anfragen.",
     "resolve": "Beantworten",
-    "responseNote": "Antwort an das Team"
+    "responseNote": "Antwort an das Team",
+    "empty": {
+      "logTitle": "Noch keine Tagesberichte",
+      "logBody": "Das Team von {sub} berichtet vom Handy. Schicken Sie ihnen den Projektlink, damit sie loslegen.",
+      "logBodyNoSub": "Sobald Sie einen Subunternehmer hinzufügen, sammeln sich hier die Tagesberichte des Teams.",
+      "logShareSubject": "Tagesberichte für das Projekt {project}",
+      "logShareMessage": "Für das Projekt {project} gibt es noch keine Tagesberichte. Öffnen Sie das Projekt in Belin und schicken Sie Ihrem Team den Link zum Berichten.",
+      "photosTitle": "Noch keine Fotos von der Baustelle",
+      "photosBody": "Die Fotos aus den Tagesberichten sammeln sich hier, mit Datum.",
+      "incidentsTitle": "Keine Vorfälle",
+      "incidentsBody": "Das Team meldet einen Vorfall, Regen oder eine Behinderung mit zwei Fingertipps.",
+      "requestsTitle": "Keine offenen Anfragen",
+      "requestsBody": "Wenn das Team etwas braucht, erscheint die Anfrage hier."
+    },
+    "maps": "In Google Maps öffnen"
   },
   "status": {
     "draft": "Entwurf",

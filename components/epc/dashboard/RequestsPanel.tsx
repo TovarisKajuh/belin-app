@@ -3,6 +3,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { RequestRow } from "@/lib/requests-shared";
+import { DashEmpty, IconInbox } from "./DashEmpty";
 import { resolveRequestAction } from "@/app/[locale]/app/[projectId]/actions";
 
 // The office side of the crew's questions.
@@ -49,7 +50,12 @@ export function RequestsPanel({
       <div className="e-sec-h">{t("requests")}</div>
 
       {open.length === 0 ? (
-        <p className="ip-empty">{t("noRequests")}</p>
+        <DashEmpty
+          compact
+          icon={<IconInbox size={20} />}
+          title={t("empty.requestsTitle")}
+          body={t("empty.requestsBody")}
+        />
       ) : (
         <ul className="ip-list">
           {open.map((row) => (
@@ -62,7 +68,7 @@ export function RequestsPanel({
 
               {row.photoUrl ? (
                 <a className="rp-photo" href={row.photoUrl} target="_blank" rel="noreferrer">
-                  <img src={row.photoUrl} alt="" />
+                  <img src={row.photoUrl} alt="" loading="lazy" decoding="async" width={78} height={78} />
                 </a>
               ) : null}
 

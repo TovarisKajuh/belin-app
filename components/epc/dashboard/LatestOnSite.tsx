@@ -49,7 +49,7 @@ export async function LatestOnSite({
           <div className="e-thumbs">
             {latest.photoUrls.map((url) => (
               <span className="e-thumb" key={url}>
-                <img src={url} alt="" />
+                <img src={url} alt="" loading="lazy" decoding="async" width={52} height={52} />
               </span>
             ))}
           </div>

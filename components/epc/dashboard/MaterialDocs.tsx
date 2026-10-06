@@ -27,7 +27,7 @@ export function MaterialDocs({ docs }: { docs: MaterialPanelDoc[] }) {
         {docs.map((d, i) => (
           <div className="mp-doc" key={`${d.url}-${i}`}>
             <button className="mp-doc-img" type="button" onClick={() => setOpen(i)} aria-label={label(d)}>
-              <img src={d.url} alt="" />
+              <img src={d.url} alt="" loading="lazy" decoding="async" width={84} height={84} />
             </button>
             <span className="mp-doc-kind">{label(d)}</span>
           </div>

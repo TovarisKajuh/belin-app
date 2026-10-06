@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import type { IncidentRow } from "@/lib/data/incidents";
 import { ddmm } from "@/lib/dashboard-shared";
 import { IncidentPhotos } from "./IncidentPhotos";
+import { DashEmpty, IconCircleCheck } from "./DashEmpty";
 
 // What went wrong on site, in the EPC's field of view.
 //
@@ -19,7 +20,12 @@ export async function IncidentsPanel({ incidents }: { incidents: IncidentRow[] }
       <div className="e-sec-h">{t("incidents")}</div>
 
       {incidents.length === 0 ? (
-        <p className="ip-empty">{t("noIncidents")}</p>
+        <DashEmpty
+          compact
+          icon={<IconCircleCheck size={20} />}
+          title={t("empty.incidentsTitle")}
+          body={t("empty.incidentsBody")}
+        />
       ) : (
         <ul className="ip-list">
           {incidents.map((incident) => (

@@ -84,7 +84,20 @@
       "hours": "Ure"
     },
     "diaryEmpty": "Na tem gradbišču še ni oddanih poročil.",
-    "diaryToday": "Danes"
+    "diaryToday": "Danes",
+    "report": {
+      "likeYesterday": "Kot včeraj",
+      "likeLast": "Kot zadnjič, {date}",
+      "likeHint": "Število delavcev in količine iz zadnjega poročila",
+      "left": "še {left} {unit}",
+      "done": "Končano",
+      "typeQty": "Vpišite količino: {name}",
+      "removePhoto": "Odstrani fotografijo",
+      "photoRemoved": "Fotografija odstranjena.",
+      "undo": "Razveljavi",
+      "takePhoto": "Fotografiraj"
+    },
+    "maps": "Odpri v Google Zemljevidih"
   },
   "weather": {
     "unknown": "Ni podatka",
@@ -181,7 +194,21 @@
     "requests": "Zahteve ekipe",
     "noRequests": "Ni odprtih zahtev.",
     "resolve": "Odgovori",
-    "responseNote": "Odgovor ekipi"
+    "responseNote": "Odgovor ekipi",
+    "empty": {
+      "logTitle": "Še ni dnevnih poročil",
+      "logBody": "Ekipa podizvajalca {sub} poroča s telefona. Pošljite jim povezavo do projekta, da začnejo.",
+      "logBodyNoSub": "Ko dodate podizvajalca, se tukaj zbirajo dnevna poročila ekipe.",
+      "logShareSubject": "Dnevna poročila za projekt {project}",
+      "logShareMessage": "Na projektu {project} še ni dnevnih poročil. Odprite projekt v Belinu in ekipi pošljite povezavo za poročanje.",
+      "photosTitle": "Še ni fotografij s terena",
+      "photosBody": "Fotografije iz dnevnih poročil se zberejo tukaj, z datumom.",
+      "incidentsTitle": "Ni zapletov",
+      "incidentsBody": "Ekipa zaplet, dež ali oviro prijavi z dvema dotikoma.",
+      "requestsTitle": "Ni odprtih zahtev",
+      "requestsBody": "Ko ekipa nekaj potrebuje, se zahteva pokaže tukaj."
+    },
+    "maps": "Odpri v Google Zemljevidih"
   },
   "status": {
     "draft": "Osnutek",

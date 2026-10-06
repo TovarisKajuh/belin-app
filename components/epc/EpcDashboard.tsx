@@ -18,21 +18,28 @@ import { RevealController } from "@/components/epc/dashboard/RevealController";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { projectTopic } from "@/lib/realtime-shared";
 import { ddmm } from "@/lib/dashboard-shared";
+import { mapsUrl } from "@/lib/maps";
+import { IconMapPin } from "@/components/epc/dashboard/DashEmpty";
 
-// The dark EPC dashboard: the shell and hero, then the path to completion,
-// the scope by phase, the headline numbers, the newest report, the day by day
-// log and the site photos. Everything below the hero reveals on scroll.
+// The dark EPC dashboard: the shell and hero, then what the site did (the
+// newest report, the tempo, the scope by phase, the photos and the day by day
+// log), then what needs the EPC (requests, incidents), then the reference
+// panels. The material panel comes first when it is the news. Everything below
+// the hero reveals on scroll.
 export async function EpcDashboard({
   token,
   projectId,
   data,
   locale,
+  beforeHero = null,
 }: {
   /** Null on a signed-in session; the link token otherwise. */
   token: string | null;
   projectId: string;
   data: EpcDashboardData;
   locale: string;
+  /** Rendered first inside the page column, under the sticky bar (the "add a subcontractor" panel). */
+  beforeHero?: React.ReactNode;
 }) {
   const t = await getTranslations("dashboard");
   const core = data.core;
@@ -40,6 +47,23 @@ export async function EpcDashboard({
   const proj = data.projection;
   const finish = ddmm(proj.projectedFinish);
   const facts = [core.kwp != null ? `${core.kwp} kWp` : null, sub].filter(Boolean).join(" · ");
+  const mapUrl = mapsUrl({
+    street: core.addressStreet,
+    zip: core.addressZip,
+    city: core.addressCity,
+    lat: core.lat,
+    lng: core.lng,
+  });
+  const addressLine = [core.addressStreet, [core.addressZip, core.addressCity].filter(Boolean).join(" ")]
+    .filter(Boolean)
+    .join(", ");
+  // Material is the news before the first report (day one: the delivery
+  // check is all there is) and whenever the latest check found a shortfall.
+  const materialFirst =
+    data.reportCount === 0 || (data.material.latest !== null && !data.material.latest.isComplete);
+  const material = (
+    <MaterialPanel token={token} projectId={projectId} country={core.country} material={data.material} />
+  );
 
   return (
     <div className="belin-dark">
@@ -55,6 +79,7 @@ export async function EpcDashboard({
         active="overview"
       />
       <div className="e-wrap">
+        {beforeHero}
         {data.needsReview && sub && <AlertStrip subName={sub} />}
 
         <section className="e-hero">
@@ -64,6 +89,18 @@ export async function EpcDashboard({
               {core.name}
               {facts && <span className="sub">{facts}</span>}
             </h1>
+            {mapUrl && addressLine ? (
+              <a
+                className="e-addr e-fadein e-d2"
+                href={mapUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${addressLine}, ${t("maps")}`}
+              >
+                <IconMapPin size={16} />
+                {addressLine}
+              </a>
+            ) : null}
             <div className="e-chips e-fadein e-d3">
               <div className="e-chip">
                 <div className="l">{t("tempo")}</div>
@@ -99,6 +136,10 @@ export async function EpcDashboard({
           />
         </section>
 
+        {materialFirst && material}
+
+        {data.latest && <LatestOnSite latest={data.latest} subName={sub} />}
+
         <ProjectionPanel
           history={data.history}
           projection={proj}
@@ -109,8 +150,15 @@ export async function EpcDashboard({
 
         <ScopeByPhase scope={data.scope} />
 
-        <RoofPanel roofs={data.roofs} />
-        <MaterialPanel token={token} projectId={projectId} country={core.country} material={data.material} />
+        <PhotoGallery photos={data.gallery} />
+
+        <DailyLogFeed
+          days={data.days}
+          projectId={projectId}
+          projectName={core.name}
+          subName={sub}
+          canShare={token === null}
+        />
 
         <RequestsPanel
           projectId={projectId}
@@ -120,15 +168,13 @@ export async function EpcDashboard({
 
         <IncidentsPanel incidents={data.incidents} />
 
+        {!materialFirst && material}
+
+        <RoofPanel roofs={data.roofs} />
+
         <CompliancePanel docs={data.compliance} subName={sub} />
 
         <StatRow projection={proj} photoCount={data.photoCount} />
-
-        {data.latest && <LatestOnSite latest={data.latest} subName={sub} />}
-
-        <DailyLogFeed days={data.days} />
-
-        <PhotoGallery photos={data.gallery} />
 
         <div className="e-foot">Belin · {t("endOfOverview")}</div>
       </div>

@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import type { DashboardPhoto } from "@/lib/data/epc-dashboard";
 import { ddmm } from "@/lib/dashboard-shared";
 import { Lightbox } from "./Lightbox";
+import { DashEmpty, IconCamera } from "./DashEmpty";
 
 // Every site photo, newest day first, opening into the shared lightbox. Photos
 // are the EPC's evidence, so they are shown full size on demand rather than
@@ -27,12 +28,12 @@ export function PhotoGallery({ photos }: { photos: DashboardPhoto[] }) {
       <div className="e-sec-h">{t("sitePhotos")}</div>
 
       {photos.length === 0 ? (
-        <div className="e-proj-empty">{t("noPhotos")}</div>
+        <DashEmpty icon={<IconCamera size={22} />} title={t("empty.photosTitle")} body={t("empty.photosBody")} />
       ) : (
         <div className="e-gal">
           {photos.map((photo, i) => (
             <button className="e-gi" key={`${photo.url}-${i}`} type="button" onClick={() => setOpen(i)}>
-              <img src={photo.url} alt="" />
+              <img src={photo.url} alt="" loading="lazy" decoding="async" width={300} height={225} />
               <span className="l">{ddmm(photo.date)}</span>
             </button>
           ))}

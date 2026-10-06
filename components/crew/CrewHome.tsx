@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { CrewReportForm } from "./CrewReportForm";
 import { MaterialCheck } from "./MaterialCheck";
 import { IncidentButton } from "./IncidentButton";
@@ -11,6 +11,9 @@ import { LiveRefresh } from "@/components/LiveRefresh";
 import { projectTopic } from "@/lib/realtime-shared";
 import type { CrewHomeData } from "@/lib/data/reports";
 import type { MaterialState } from "@/lib/materials-shared";
+import { previousDay } from "@/lib/reports-shared";
+import { mapsUrl } from "@/lib/maps";
+import { fmtDate, fmtNumber } from "@/lib/format";
 
 /**
  * The roof screen.
@@ -45,12 +48,30 @@ export async function CrewHome({
   // still the form and nothing about filing a report changed.
   const showReport = !nav || nav.active === "report";
   const showOverview = !nav || nav.active === "overview";
+  // Tabbed: the report tab is only the form, so the photo card is on the first
+  // screen; reading (progress, install hint) lives on Pregled. Untabbed (the
+  // legacy link screen) keeps its single column.
+  const readHere = !nav || nav.active === "overview";
+
+  const locale = await getLocale();
+  const mapUrl = mapsUrl({
+    street: data.addressStreet,
+    zip: data.addressZip,
+    city: data.addressCity,
+    lat: data.lat,
+    lng: data.lng,
+  });
+  const likeLabel = data.lastReport
+    ? data.lastReport.date === previousDay(data.todayDate)
+      ? t("report.likeYesterday")
+      : t("report.likeLast", { date: fmtDate(data.lastReport.date, locale, { style: "dayMonth" }) })
+    : null;
 
   const hero = (
     <div className="b-card b-hero">
       <span className="b-label">{t("progress")}</span>
       <div className="b-progress-num">
-        {data.progressPercent}
+        {fmtNumber(data.progressPercent, locale, { maxDecimals: 1 })}
         <span className="b-progress-unit"> %</span>
       </div>
     </div>
@@ -72,38 +93,60 @@ export async function CrewHome({
       />
 
       <div className="b-screen">
-        {address && <p className="b-sub b-addr">{address}</p>}
+        {address && (
+          <p className="b-sub b-addr">
+            {mapUrl ? (
+              <a className="b-addr-link" href={mapUrl} target="_blank" rel="noreferrer" aria-label={`${address}, ${t("maps")}`}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                {address}
+              </a>
+            ) : (
+              address
+            )}
+          </p>
+        )}
 
-        {hero}
+        {readHere && hero}
 
         {/* Shown until the app is on the home screen, then never again. A
             permanent session is only half of "it is an app": the other half is
             not having to find it. */}
-        {showReport && <InstallHint />}
+        {readHere && <InstallHint />}
 
         {showReport && (
           /* OUTSIDE the material gate, deliberately. Rain on day one, before
              the delivery has even arrived, is exactly what this is for, and
              the gate hides everything else until the first check exists. */
-          <div className="cr-quick">
+          <div className="cr-quick cr-quick--compact">
             <IncidentButton token={token} projectId={projectId} />
             <RequestButton token={token} projectId={projectId} />
           </div>
         )}
 
-        {/* On BOTH tabs. It is a gate before the first check, and a status card
-            after it, and neither is something a tab should be able to hide. */}
+        {/* A gate before the first check on both tabs. After it, Pregled shows
+            the status card and Poročaj shows it only when something changed
+            and needs a recheck, so the form stays on the first screen. */}
         <MaterialCheck
           token={token}
           projectId={projectId}
           country={data.country}
           material={material}
+          mode={nav && nav.active === "report" && !material.needsFirstCheck ? "alertOnly" : "full"}
         />
 
         {showReport && !material.needsFirstCheck && (
           <>
-            <h2 className="b-h b-sec">{t("todayReport")}</h2>
-            <CrewReportForm token={token} projectId={projectId} scope={data.scope} />
+            {!nav && <h2 className="b-h b-sec">{t("todayReport")}</h2>}
+            <CrewReportForm
+              token={token}
+              projectId={projectId}
+              scope={data.scope}
+              lastReport={data.lastReport}
+              likeLabel={likeLabel}
+            />
           </>
         )}
 
