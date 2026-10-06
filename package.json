@@ -36,7 +36,8 @@
     "marketing:de": "node scripts/marketing/pipeline.mjs de",
     "marketing:salzburg": "node scripts/marketing/salzburg.mjs",
     "marketing:vloga": "node scripts/marketing/vloga.mjs",
-    "marketing:workflow": "node scripts/marketing/workflow.mjs"
+    "marketing:workflow": "node scripts/marketing/workflow.mjs",
+    "marketing:potek": "node scripts/marketing/potek.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
