@@ -84,7 +84,20 @@
       "hours": "Hours"
     },
     "diaryEmpty": "No reports have been filed on this site yet.",
-    "diaryToday": "Today"
+    "diaryToday": "Today",
+    "report": {
+      "likeYesterday": "Same as yesterday",
+      "likeLast": "Same as last time, {date}",
+      "likeHint": "Headcount and quantities from the last report",
+      "left": "{left} {unit} left",
+      "done": "Done",
+      "typeQty": "Enter quantity: {name}",
+      "removePhoto": "Remove photo",
+      "photoRemoved": "Photo removed.",
+      "undo": "Undo",
+      "takePhoto": "Take photo"
+    },
+    "maps": "Open in Google Maps"
   },
   "weather": {
     "unknown": "No data",

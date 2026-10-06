@@ -28,12 +28,19 @@ export function MaterialCheck({
   projectId,
   country,
   material,
+  mode = "full",
 }: {
   /** Null on a signed-in session; the link token otherwise. */
   token: string | null;
   projectId: string;
   country: string | null;
   material: MaterialState;
+  /**
+   * "alertOnly" (the crew report tab): after the first check, render only when
+   * something changed and needs a recheck, so the form stays on the first
+   * screen. The settled status card lives on Pregled.
+   */
+  mode?: "full" | "alertOnly";
 }) {
   const key = token ?? projectId;
   const requestMaterialDocTargets = token
@@ -206,6 +213,9 @@ export function MaterialCheck({
       </div>
     );
   };
+
+  // After every hook: an early return above one would break the rules of hooks.
+  if (mode === "alertOnly" && !gate && material.uncoveredOrChanged === 0 && !expanded) return null;
 
   return (
     <section aria-live="polite">

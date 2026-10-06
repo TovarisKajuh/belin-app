@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { CameraTabLink } from "./CameraTabLink";
 
 export type CrewTab = "overview" | "report" | "diary" | "hours";
 
@@ -43,19 +44,28 @@ export async function CrewTabs({
 
   return (
     <nav className="cr-tabs" aria-label={t("tabs.label")}>
-      {items.map((item) => (
-        <Link
-          key={item.key}
-          href={item.href}
-          className={`cr-tab${item.key === "report" ? " cr-tab--go" : ""}`}
-          aria-current={item.key === active ? "page" : undefined}
-        >
-          <span className="cr-tab-i" aria-hidden>
-            {item.icon}
-          </span>
-          <span className="cr-tab-l">{item.label}</span>
-        </Link>
-      ))}
+      {items.map((item) =>
+        item.key === "report" ? (
+          <CameraTabLink key={item.key} href={item.href} active={active === "report"}>
+            <span className="cr-tab-i" aria-hidden>
+              {item.icon}
+            </span>
+            <span className="cr-tab-l">{item.label}</span>
+          </CameraTabLink>
+        ) : (
+          <Link
+            key={item.key}
+            href={item.href}
+            className="cr-tab"
+            aria-current={item.key === active ? "page" : undefined}
+          >
+            <span className="cr-tab-i" aria-hidden>
+              {item.icon}
+            </span>
+            <span className="cr-tab-l">{item.label}</span>
+          </Link>
+        )
+      )}
     </nav>
   );
 }

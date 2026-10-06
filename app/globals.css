@@ -3044,3 +3044,80 @@ body:has(.b-tabbed) .dm-switch { bottom: calc(68px + 96px + env(safe-area-inset-
   height: 150px; border-radius: 12px; border: 1px dashed var(--e-line);
   color: var(--e-ok); font-weight: 700; font-size: 14px;
 }
+
+/* === 5.9: Crew report under 30 seconds === */
+/* The --fs-* tokens arrive with Task 5.1a; the fallbacks are their values. */
+.belin-dark .cr-quick--compact { gap: 8px; }
+.belin-dark .cr-quick--compact > * { margin-bottom: 12px; }
+.belin-dark .cr-quick--compact :is(.ic-cta, .rq-cta) { padding: 12px; font-size: var(--fs-14, 14px); }
+.belin-dark .cr-like { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.belin-dark .cr-like-l { margin-bottom: 0; }
+.belin-dark .cr-chip {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 14px;
+  border-radius: 999px; border: 1px solid rgba(255,210,26,.40); background: rgba(255,210,26,.10);
+  color: var(--e-gold-2); font: inherit; font-size: var(--fs-14, 14px); font-weight: 700; font-variant-numeric: tabular-nums;
+  white-space: nowrap; touch-action: manipulation;
+}
+.belin-dark .cr-chip:active:not(:disabled) { background: rgba(255,210,26,.20); }
+.belin-dark .cr-chip:disabled { opacity: .45; }
+.belin-dark .cr-qrow { padding: 14px 0; border-top: 1px solid var(--e-line); }
+.belin-dark .cr-qrow:first-of-type { border-top: 0; }
+.belin-dark .cr-qhead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.belin-dark .cr-qname { min-width: 0; overflow-wrap: anywhere; font-size: var(--fs-16, 16px); font-weight: 700; color: var(--e-ink); }
+.belin-dark .cr-qleft { flex: none; font-size: var(--fs-13, 13px); color: var(--e-ink2); font-variant-numeric: tabular-nums; }
+.belin-dark .cr-qctl { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.belin-dark .cr-qchips { display: flex; gap: 8px; }
+.belin-dark .cr-qrow--done { opacity: .6; }
+.belin-dark .cr-qrow--done .cr-qhead { margin-bottom: 0; }
+.belin-dark .cr-done { font-size: var(--fs-13, 13px); font-weight: 700; color: var(--e-ok); }
+.belin-dark button.b-step-val {
+  min-height: 52px; padding: 0 6px; border-radius: 12px; border: 1px dashed rgba(255,255,255,.22);
+  background: transparent; color: var(--e-ink); font: inherit; font-size: var(--fs-24, 24px); font-weight: 800;
+  font-variant-numeric: tabular-nums; touch-action: manipulation;
+}
+.belin-dark input.b-step-val {
+  width: 84px; min-height: 52px; text-align: center; border-radius: 12px; outline: none;
+  border: 1px solid rgba(255,210,26,.55); background: rgba(4,9,16,.75); box-shadow: 0 0 0 3px rgba(255,210,26,.13);
+  color: var(--e-ink); font: inherit; font-size: var(--fs-24, 24px); font-weight: 800; font-variant-numeric: tabular-nums;
+}
+/* A quantity row keeps its stepper and both chips on one line at 390 and
+   360 (measured): slightly smaller steppers than the headcount's, and the
+   field the value turns into is exactly as wide as the value, so typing never
+   reflows the row. */
+.belin-dark .cr-qctl .b-stepper { gap: 8px; }
+.belin-dark .cr-qctl .b-step-btn { width: 48px; height: 48px; }
+.belin-dark .cr-qctl button.b-step-val { min-width: 60px; min-height: 48px; }
+.belin-dark .cr-qctl input.b-step-val { width: 60px; min-height: 48px; font-size: 22px; }
+.belin-dark .cr-qctl .cr-chip { padding: 0 12px; }
+@media (max-width: 380px) {
+  .belin-dark input.b-step-val { width: 64px; }
+  .belin-dark .cr-qctl .b-stepper { gap: 6px; }
+  .belin-dark .cr-qctl .b-step-btn { width: 44px; height: 44px; }
+  .belin-dark .cr-qctl button.b-step-val { min-width: 56px; min-height: 44px; }
+  .belin-dark .cr-qctl input.b-step-val { width: 56px; min-height: 44px; }
+  .belin-dark .cr-qctl .cr-qchips { gap: 6px; }
+  .belin-dark .cr-qctl .cr-chip { padding: 0 10px; }
+}
+/* The remove button of a photo tile: a 44 px target with a small visible dot,
+   on every surface that takes photos (not only the dark crew screen). */
+.b-photo-x {
+  position: absolute; top: 0; right: 0; width: 44px; height: 44px; padding: 6px;
+  display: flex; align-items: flex-start; justify-content: flex-end; border: 0; background: transparent; color: #fff;
+  touch-action: manipulation;
+}
+.b-photo-x span {
+  display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 999px;
+  background: rgba(5,9,15,.78); border: 1px solid rgba(255,255,255,.35);
+}
+.b-photo-undo {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px;
+  padding: 4px 4px 4px 14px; border-radius: 12px; background: rgba(5,9,15,.86); color: #f4f1ea;
+  border: 1px solid rgba(255,255,255,.14); font-size: 14px;
+}
+.b-photo-undo button {
+  min-height: 44px; padding: 0 14px; border: 0; border-radius: 10px; background: transparent;
+  color: #ffe488; font: inherit; font-weight: 700; touch-action: manipulation;
+}
+.belin-dark .b-addr { margin-bottom: 8px; }
+.belin-dark .b-addr-link { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; color: var(--e-ink2); text-decoration: none; }
+.belin-dark .b-addr-link svg { flex: none; color: var(--e-gold-2); }

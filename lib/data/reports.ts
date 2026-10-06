@@ -5,7 +5,12 @@ import type { Json } from "@/lib/database.types";
 import { fetchWeatherSnapshot } from "@/lib/weather";
 import { projectToday } from "@/lib/project-time";
 import { getSignedPhotoUrlMap } from "@/lib/storage";
-import { summarizeTodayPosts, type TodayPost } from "@/lib/reports-shared";
+import {
+  summarizeLastReport,
+  summarizeTodayPosts,
+  type LastReport,
+  type TodayPost,
+} from "@/lib/reports-shared";
 import { getProjectCore, type ScopeItemStatus } from "@/lib/data/project-core";
 import { emitEventDeferred } from "@/lib/notify";
 import type { ProjectStatus } from "@/lib/project-status";
@@ -25,6 +30,10 @@ export interface CrewHomeData {
   scope: ScopeItemStatus[];
   todayDate: string;
   todayPosts: TodayPost[];
+  lat: number | null;
+  lng: number | null;
+  /** The last reported day before today: headcount and quantities for "Kot včeraj". */
+  lastReport: LastReport | null;
 }
 
 // entryDate is no longer accepted from the client; the server computes the
@@ -46,7 +55,7 @@ export async function getCrewHome(actor: ProjectActor): Promise<CrewHomeData | n
 
   // Today's entries, quantities and photos are all keyed by (project, date),
   // known from core, so they run in one parallel batch (audit finding M9).
-  const [entriesRes, qtyRes, photoRes] = await Promise.all([
+  const [entriesRes, qtyRes, photoRes, priorRes] = await Promise.all([
     db
       .from("daily_entries")
       .select("id, note, headcount, created_at")
@@ -64,9 +73,17 @@ export async function getCrewHome(actor: ProjectActor): Promise<CrewHomeData | n
       .eq("daily_entries.project_id", actor.projectId)
       .eq("daily_entries.entry_date", today)
       .order("sort_order"),
+    // The days before today, newest first: the last one prefills the form.
+    db
+      .from("daily_entries")
+      .select("id, entry_date, headcount")
+      .eq("project_id", actor.projectId)
+      .lt("entry_date", today)
+      .order("entry_date", { ascending: false })
+      .limit(10),
   ]);
 
-  if (entriesRes.error || qtyRes.error || photoRes.error) return null;
+  if (entriesRes.error || qtyRes.error || photoRes.error || priorRes.error) return null;
 
   const scopeById: Record<string, { name: string; unit: string }> = {};
   for (const s of core.scope) scopeById[s.id] = { name: s.name, unit: s.unit };
@@ -94,6 +111,21 @@ export async function getCrewHome(actor: ProjectActor): Promise<CrewHomeData | n
     scopeById
   );
 
+  const prior = priorRes.data ?? [];
+  const lastDate = prior[0]?.entry_date ?? null;
+  const lastDay = prior.filter((e) => e.entry_date === lastDate);
+  const lastQty = lastDay.length
+    ? await db
+        .from("entry_quantities")
+        .select("entry_id, scope_item_id, qty")
+        .in("entry_id", lastDay.map((e) => e.id))
+    : { data: [] as { entry_id: string; scope_item_id: string; qty: number }[], error: null };
+  if (lastQty.error) return null;
+  const lastReport = summarizeLastReport(
+    lastDay,
+    (lastQty.data ?? []).map((q) => ({ ...q, qty: Number(q.qty) }))
+  );
+
   return {
     projectId: core.id,
     projectName: core.name,
@@ -106,6 +138,9 @@ export async function getCrewHome(actor: ProjectActor): Promise<CrewHomeData | n
     scope: core.scope,
     todayDate: today,
     todayPosts,
+    lat: core.lat,
+    lng: core.lng,
+    lastReport,
   };
 }
 

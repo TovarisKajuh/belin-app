@@ -64,6 +64,11 @@ const SHORT: Record<AppLocale, Intl.DateTimeFormatOptions> = {
   en: { day: "2-digit", month: "2-digit", year: "numeric" },
 };
 const LONG: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" };
+const DAY_MONTH: Record<AppLocale, Intl.DateTimeFormatOptions> = {
+  sl: { day: "numeric", month: "numeric" },
+  de: { day: "2-digit", month: "2-digit" },
+  en: { day: "2-digit", month: "2-digit" },
+};
 
 /**
  * A "yyyy-mm-dd" value is a calendar day (an entry date, a deadline, a
@@ -73,7 +78,7 @@ const LONG: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: 
 export function fmtDate(
   value: string | Date,
   locale: string,
-  options: { style?: "short" | "long"; timeZone?: string } = {},
+  options: { style?: "short" | "long" | "dayMonth"; timeZone?: string } = {},
 ): string {
   const l = asAppLocale(locale);
   const calendarDay = typeof value === "string" && DATE_ONLY.test(value);
@@ -81,7 +86,7 @@ export function fmtDate(
     value instanceof Date ? value : new Date(calendarDay ? `${value}T00:00:00Z` : value);
   if (Number.isNaN(date.getTime())) return "";
   return new Intl.DateTimeFormat(INTL[l], {
-    ...(options.style === "long" ? LONG : SHORT[l]),
+    ...(options.style === "long" ? LONG : options.style === "dayMonth" ? DAY_MONTH[l] : SHORT[l]),
     timeZone: calendarDay ? "UTC" : (options.timeZone ?? DEFAULT_ZONE),
   }).format(date);
 }

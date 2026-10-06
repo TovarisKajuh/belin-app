@@ -84,7 +84,20 @@
       "hours": "Stunden"
     },
     "diaryEmpty": "Auf dieser Baustelle wurden noch keine Berichte abgegeben.",
-    "diaryToday": "Heute"
+    "diaryToday": "Heute",
+    "report": {
+      "likeYesterday": "Wie gestern",
+      "likeLast": "Wie zuletzt, {date}",
+      "likeHint": "Personenzahl und Mengen aus dem letzten Bericht",
+      "left": "noch {left} {unit}",
+      "done": "Fertig",
+      "typeQty": "Menge eingeben: {name}",
+      "removePhoto": "Foto entfernen",
+      "photoRemoved": "Foto entfernt.",
+      "undo": "Rückgängig",
+      "takePhoto": "Foto aufnehmen"
+    },
+    "maps": "In Google Maps öffnen"
   },
   "weather": {
     "unknown": "Keine Angabe",

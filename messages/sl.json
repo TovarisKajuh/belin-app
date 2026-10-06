@@ -84,7 +84,20 @@
       "hours": "Ure"
     },
     "diaryEmpty": "Na tem gradbišču še ni oddanih poročil.",
-    "diaryToday": "Danes"
+    "diaryToday": "Danes",
+    "report": {
+      "likeYesterday": "Kot včeraj",
+      "likeLast": "Kot zadnjič, {date}",
+      "likeHint": "Število delavcev in količine iz zadnjega poročila",
+      "left": "še {left} {unit}",
+      "done": "Končano",
+      "typeQty": "Vpišite količino: {name}",
+      "removePhoto": "Odstrani fotografijo",
+      "photoRemoved": "Fotografija odstranjena.",
+      "undo": "Razveljavi",
+      "takePhoto": "Fotografiraj"
+    },
+    "maps": "Odpri v Google Zemljevidih"
   },
   "weather": {
     "unknown": "Ni podatka",
