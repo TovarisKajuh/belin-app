@@ -90,7 +90,7 @@ export async function ProjectList({
 
               <ul className="pl-list">
                 {portfolio.projects.map((p) => {
-                  const facts = [p.city, p.kwp !== null ? fmtKwp(p.kwp, locale) : null, p.subName]
+                  const facts = [p.city, p.kwp !== null ? fmtKwp(p.kwp, locale) : null, p.partyName]
                     .filter(Boolean)
                     .join(" · ");
 
