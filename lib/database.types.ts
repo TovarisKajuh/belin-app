@@ -1182,6 +1182,7 @@ export type Database = {
           created_at: string
           iban: string | null
           id: string
+          is_demo: boolean
           logo_path: string | null
           name: string
           type: string
@@ -1197,6 +1198,7 @@ export type Database = {
           created_at?: string
           iban?: string | null
           id?: string
+          is_demo?: boolean
           logo_path?: string | null
           name: string
           type: string
@@ -1212,6 +1214,7 @@ export type Database = {
           created_at?: string
           iban?: string | null
           id?: string
+          is_demo?: boolean
           logo_path?: string | null
           name?: string
           type?: string

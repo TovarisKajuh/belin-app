@@ -5,6 +5,8 @@ import {
   DECISION_WORKING_DAYS,
   effectiveStatus,
   HOLIDAYS,
+  subtractWorkingDays,
+  isWorkingDay,
   workingDaysLeft,
 } from "@/lib/hours-shared";
 
@@ -141,5 +143,26 @@ describe("workingDaysLeft", () => {
 
   it("clamps to zero once the deadline has passed", () => {
     expect(workingDaysLeft("2026-08-10", new Date("2026-08-20T09:00:00.000Z"), "de")).toBe(0);
+  });
+});
+
+describe("subtractWorkingDays", () => {
+  it("is six Werktage before the Thursday deadline: the Thursday before", () => {
+    expect(subtractWorkingDays("2026-10-08", 6, "si")).toBe("2026-10-01");
+  });
+
+  it("skips Sundays and holidays on the way back", () => {
+    // 01.11 is a Sunday holiday and 31.10 a Saturday holiday in Slovenia.
+    expect(subtractWorkingDays("2026-11-02", 6, "si")).toBe("2026-10-24");
+  });
+
+  it("is the exact inverse of addWorkingDays on every working day of 2026 and 2027", () => {
+    const failures: string[] = [];
+    for (let t = Date.parse("2026-01-03T00:00:00Z"); t < Date.parse("2027-12-01T00:00:00Z"); t += 86400000) {
+      const day = new Date(t).toISOString().slice(0, 10);
+      if (!isWorkingDay(day, "si")) continue;
+      if (addWorkingDays(subtractWorkingDays(day, 6, "si"), 6, "si") !== day) failures.push(day);
+    }
+    expect(failures).toEqual([]);
   });
 });

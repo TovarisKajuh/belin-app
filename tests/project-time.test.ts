@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { projectToday, projectZone } from "@/lib/project-time";
+import { projectToday, projectZone, zonedInstant } from "@/lib/project-time";
 
 describe("projectZone", () => {
   it("maps country to its IANA zone and defaults to Ljubljana", () => {
@@ -21,5 +21,21 @@ describe("projectToday", () => {
 
   it("formats as yyyy-mm-dd", () => {
     expect(projectToday("si", new Date("2026-01-05T12:00:00Z"))).toBe("2026-01-05");
+  });
+});
+
+describe("zonedInstant", () => {
+  it("composes a summer wall clock time in Ljubljana", () => {
+    expect(zonedInstant("2026-10-06", "07:15", "si")).toBe("2026-10-06T05:15:00.000Z");
+  });
+  it("composes a winter wall clock time", () => {
+    expect(zonedInstant("2026-11-03", "07:15", "si")).toBe("2026-11-03T06:15:00.000Z");
+  });
+  it("lands on the right side of the October clock change", () => {
+    expect(zonedInstant("2026-10-25", "12:00", "si")).toBe("2026-10-25T11:00:00.000Z");
+  });
+  it("refuses malformed input", () => {
+    expect(() => zonedInstant("6.10.2026", "07:15", "si")).toThrow();
+    expect(() => zonedInstant("2026-10-06", "7:15", "si")).toThrow();
   });
 });
