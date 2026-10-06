@@ -906,11 +906,17 @@
       "declaration": "Bitte wählen Sie die Abnahmeerklärung.",
       "signatures": "Die Unterschrift einer Seite fehlt.",
       "signerNames": "Bitte tragen Sie die Namen beider Unterzeichner ein.",
-      "signature": "Die Unterschrift konnte nicht gespeichert werden."
+      "signature": "Die Unterschrift konnte nicht gespeichert werden.",
+      "refusedNeedsDefects": "Bei einer verweigerten Abnahme mindestens einen Mangel eintragen, der die Verweigerung begründet.",
+      "reservationsNeedDefects": "Bei einer Abnahme unter Vorbehalt mindestens einen Mangel eintragen, auf den sich der Vorbehalt bezieht.",
+      "warrantyBeforeAcceptance": "Die Gewährleistung kann nicht vor dem Tag der Abnahme beginnen."
     },
     "noAcceptance": "Die Abnahme ist noch nicht begonnen.",
     "acceptanceByClient": "Die Abnahme führt der Auftraggeber durch.",
-    "acceptanceSignedShort": "Die Abnahme ist durchgeführt."
+    "acceptanceSignedShort": "Die Abnahme ist durchgeführt.",
+    "warrantyHint": "Standard ist der Tag der Abnahme. Früher kann die Gewährleistung nicht beginnen.",
+    "needsDefect": "Bei dieser Erklärung mindestens einen Mangel eintragen.",
+    "startFinal": "Schlussabnahme beginnen"
   },
   "invoice": {
     "title": "Rechnung",

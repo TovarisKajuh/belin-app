@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { SignaturePad } from "@/components/SignaturePad";
 import { DECLARATIONS, type AcceptanceView, type Declaration } from "@/lib/acceptance-view";
+import { fmtDate } from "@/lib/format";
 import {
   addDefectAction,
   removeDefectAction,
@@ -44,6 +45,7 @@ export function AcceptanceFlow({
   defaultSubSignerName: string | null;
 }) {
   const t = useTranslations("final");
+  const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -142,8 +144,8 @@ export function AcceptanceFlow({
       <div className="b-card fn-card">
         <span className="b-label">{t("acceptanceCard")}</span>
         <p className="fn-state ok">
-          {acceptance.conductedAt
-            ? t("acceptanceSigned", { date: acceptance.conductedAt.slice(0, 10) })
+          {acceptance.conductedDay
+            ? t("acceptanceSigned", { date: fmtDate(acceptance.conductedDay, locale) })
             : t("acceptanceOpen")}
         </p>
         <p className="fn-note">
@@ -158,6 +160,21 @@ export function AcceptanceFlow({
         >
           {t("downloadProtocol")}
         </a>
+        {/* A partial acceptance is followed by the final one, and a refused one
+            by another attempt once the defects are fixed (flows M2). */}
+        {acceptance.kind === "partial" || acceptance.declaration === "refused" ? (
+          <div className="hr-actions">
+            <button
+              type="button"
+              className="rp-open"
+              disabled={pending}
+              onClick={() => run(() => startAcceptanceAction(projectId, "final"))}
+            >
+              {t("startFinal")}
+            </button>
+          </div>
+        ) : null}
+        {error ? <p className="ic-error">{error}</p> : null}
       </div>
     );
   }
@@ -260,17 +277,32 @@ export function AcceptanceFlow({
             </button>
           ))}
         </div>
+        {(acceptance.declaration === "refused" || acceptance.declaration === "with_reservations") &&
+        acceptance.defects.length === 0 ? (
+          <p className="fn-note">{t("needsDefect")}</p>
+        ) : null}
       </div>
 
-      <label className="hr-f">
-        <span className="b-label">{t("warranty")}</span>
-        <input
-          className="b-field"
-          type="date"
-          defaultValue={acceptance.warrantyStart ?? ""}
-          onBlur={(e) => save({ warrantyStart: e.target.value })}
-        />
-      </label>
+      {/* A refusal starts no warranty, so it asks for no start day. */}
+      {acceptance.declaration !== "refused" ? (
+        <div>
+          <label className="hr-f">
+            <span className="b-label">{t("warranty")}</span>
+            <input
+              className="b-field"
+              type="date"
+              min={acceptance.siteToday}
+              defaultValue={acceptance.warrantyStart ?? acceptance.siteToday}
+              onBlur={(e) => {
+                if (e.target.value && e.target.value !== (acceptance.warrantyStart ?? acceptance.siteToday)) {
+                  save({ warrantyStart: e.target.value });
+                }
+              }}
+            />
+          </label>
+          <p className="fn-note">{t("warrantyHint")}</p>
+        </div>
+      ) : null}
 
       <div className="ac-penalty">
         <label className="po-check">

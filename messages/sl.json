@@ -906,11 +906,17 @@
       "declaration": "Izberite izjavo o prevzemu.",
       "signatures": "Manjka podpis ene od strani.",
       "signerNames": "Vpišite imeni obeh podpisnikov.",
-      "signature": "Podpisa ni bilo mogoče shraniti."
+      "signature": "Podpisa ni bilo mogoče shraniti.",
+      "refusedNeedsDefects": "Pri zavrnitvi prevzema vpišite vsaj eno pomanjkljivost, zaradi katere prevzem zavračate.",
+      "reservationsNeedDefects": "Pri prevzemu s pridržki vpišite vsaj eno pomanjkljivost, na katero se pridržek nanaša.",
+      "warrantyBeforeAcceptance": "Garancijska doba ne more začeti pred dnem prevzema."
     },
     "noAcceptance": "Prevzem še ni začet.",
     "acceptanceByClient": "Prevzem izvede naročnik.",
-    "acceptanceSignedShort": "Prevzem je opravljen."
+    "acceptanceSignedShort": "Prevzem je opravljen.",
+    "warrantyHint": "Privzeto je dan prevzema. Garancijska doba ne more začeti prej.",
+    "needsDefect": "Pri tej izjavi vpišite vsaj eno pomanjkljivost.",
+    "startFinal": "Začni končni prevzem"
   },
   "invoice": {
     "title": "Račun",

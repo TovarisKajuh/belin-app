@@ -5,7 +5,9 @@ import { isUuid } from "@/lib/actor-shared";
 import { requireOfficeActor, requireProjectActor, type Actor } from "@/lib/actor";
 import { emitEventDeferred } from "@/lib/notify";
 import { getSignedPhotoUrlMap, readObjectFresh, storeReportPdf } from "@/lib/storage";
-import { isPng } from "@/lib/acceptance-rules";
+import { isPng, signingProblem, startDecision } from "@/lib/acceptance-rules";
+import { projectToday, projectZone } from "@/lib/project-time";
+import { fmtDate } from "@/lib/format";
 import { renderDocument } from "@/lib/pdf/theme";
 import { loadIssuer } from "@/lib/pdf/issuer";
 import { AbnahmeDocument } from "@/lib/pdf/abnahme";
@@ -62,6 +64,11 @@ export async function getAcceptance(
     .maybeSingle();
   if (!data) return null;
 
+  // The site's calendar, not the server's: the warranty may not start before
+  // the acceptance day where the roof is (L4).
+  const { data: project } = await db.from("projects").select("country").eq("id", projectId).maybeSingle();
+  const country = project?.country ?? null;
+
   const defects = (data.acceptance_defects ?? []).sort((a, b) => a.sort_order - b.sort_order);
   const signed = await getSignedPhotoUrlMap(
     defects.map((defect) => defect.photo_path).filter((path): path is string => Boolean(path)),
@@ -88,6 +95,8 @@ export async function getAcceptance(
       agreement: defect.agreement as "agreed" | "disputed",
       photoUrl: defect.photo_path ? (signed[defect.photo_path] ?? null) : null,
     })),
+    siteToday: projectToday(country),
+    conductedDay: data.conducted_at ? projectToday(country, new Date(data.conducted_at)) : null,
   };
 }
 
@@ -107,10 +116,14 @@ export async function startAcceptance(
   const db = createAdminClient();
 
   // One draft at a time. A second protocol for the same handover is two
-  // versions of one event, and only one of them can be the truth.
+  // versions of one event, and only one of them can be the truth. A signed
+  // PARTIAL or a REFUSED acceptance is followed by a new one (flows M2).
   const existing = await getAcceptance(actor, projectId);
-  if (existing && existing.status === "draft") return existing.id;
-  if (existing && existing.status === "signed") throw new Error("final.alreadySigned");
+  const decision = startDecision(
+    existing ? { status: existing.status, kind: existing.kind, declaration: existing.declaration } : null,
+  );
+  if (decision === "reuse" && existing) return existing.id;
+  if (decision === "alreadySigned") throw new Error("final.alreadySigned");
 
   const { data, error } = await db
     .from("acceptances")
@@ -138,6 +151,21 @@ export async function saveAcceptanceStep(
   requireOfficeActor(actor, { allowBauleiter: true });
   if (projectActor.role !== "epc") throw new Error("Forbidden.");
   if (!isUuid(acceptanceId)) throw new Error("Invalid acceptance id");
+
+  // The warranty clock cannot start before the acceptance day at the site.
+  if (payload.warrantyStart) {
+    const { data: project } = await createAdminClient()
+      .from("projects")
+      .select("country")
+      .eq("id", projectId)
+      .maybeSingle();
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(payload.warrantyStart) ||
+      payload.warrantyStart < projectToday(project?.country ?? null)
+    ) {
+      throw new Error("final.err.warrantyBeforeAcceptance");
+    }
+  }
 
   // Typed rather than a loose bag: the update below is the only writer of
   // these columns, and a typo in a key name would otherwise be a silent no-op.
@@ -286,6 +314,8 @@ export async function saveSignature(
  * one party is not an acceptance, it is a note. The declaration is required for
  * the same reason: "accepted", "accepted with reservations" and "refused" have
  * three different legal consequences and the document must say which happened.
+ * A refusal or a reservation needs at least one named defect, and the warranty
+ * cannot start before the acceptance day (signingProblem).
  */
 export async function signAcceptance(
   actor: Actor,
@@ -301,37 +331,81 @@ export async function signAcceptance(
   const { data: row } = await db
     .from("acceptances")
     .select(
-      "id, status, declaration, epc_signer_name, sub_signer_name, epc_signature_path, sub_signature_path",
+      "id, kind, status, declaration, warranty_start, epc_signer_name, sub_signer_name, epc_signature_path, sub_signature_path, acceptance_defects (id)",
     )
     .eq("id", acceptanceId)
     .eq("project_id", projectId)
     .maybeSingle();
-
   if (!row || row.status !== "draft") throw new Error(CONFLICT);
-  if (!row.declaration) throw new Error("final.err.declaration");
-  if (!row.epc_signature_path || !row.sub_signature_path) throw new Error("final.err.signatures");
-  if (!row.epc_signer_name?.trim() || !row.sub_signer_name?.trim()) {
-    throw new Error("final.err.signerNames");
-  }
+
+  const { data: project } = await db
+    .from("projects")
+    .select("status, country, language")
+    .eq("id", projectId)
+    .maybeSingle();
+  const today = projectToday(project?.country ?? null);
+  // The warranty starts with the acceptance unless the parties set a later
+  // day. A refusal starts nothing.
+  const warrantyStart = row.declaration === "refused" ? null : (row.warranty_start ?? today);
+
+  const problem = signingProblem({
+    declaration: row.declaration as Declaration | null,
+    defectCount: (row.acceptance_defects ?? []).length,
+    warrantyStart,
+    today,
+    hasEpcSignature: Boolean(row.epc_signature_path),
+    hasSubSignature: Boolean(row.sub_signature_path),
+    epcSignerName: row.epc_signer_name,
+    subSignerName: row.sub_signer_name,
+  });
+  if (problem) throw new Error(problem);
+
+  // THE DOCUMENT FIRST, THEN THE STATUS, as sendPo does. A protocol that is
+  // "signed" with no file behind it is a legal record nobody can produce, and
+  // a failed render must leave the draft open for another try (flows M1).
+  const conductedAt = new Date().toISOString();
+  const path = await renderAndStoreProtocol(projectId, acceptanceId, { conductedAt, warrantyStart });
 
   const { data: signed, error } = await db
     .from("acceptances")
-    .update({ status: "signed", conducted_at: new Date().toISOString() })
+    .update({
+      status: "signed",
+      conducted_at: conductedAt,
+      warranty_start: warrantyStart,
+      report_pdf_path: path,
+    })
     .eq("id", acceptanceId)
     .eq("status", "draft")
     .select("id")
     .maybeSingle();
   if (error || !signed) throw new Error(CONFLICT);
 
-  const path = await renderAndStoreProtocol(projectId, acceptanceId);
-
-  await db.from("acceptances").update({ report_pdf_path: path }).eq("id", acceptanceId);
   await db.from("generated_documents").insert({
     project_id: projectId,
     kind: "abnahmeprotokoll",
-    language: await projectLanguage(projectId),
+    language: localeOf(project?.language ?? null),
     storage_path: path,
   });
+
+  // Finishing a project happens HERE and nowhere else (D10): the job is done
+  // when the client has accepted it, not when somebody picks a menu item.
+  if (row.kind === "final" && row.declaration !== "refused" && project) {
+    const { data: moved } = await db
+      .from("projects")
+      .update({ status: "finished" })
+      .eq("id", projectId)
+      .in("status", ["active", "paused", "reviewing"])
+      .select("id")
+      .maybeSingle();
+    if (moved) {
+      await db.from("activity").insert({
+        project_id: projectId,
+        kind: "project_updated",
+        payload: { from: project.status, to: "finished", by: "epc", via: "acceptance" },
+        actor_person: person.personId,
+      });
+    }
+  }
 
   await emitEventDeferred({
     projectId,
@@ -341,23 +415,22 @@ export async function signAcceptance(
   });
 }
 
-async function projectLanguage(projectId: string): Promise<string> {
-  const { data } = await createAdminClient()
-    .from("projects")
-    .select("language")
-    .eq("id", projectId)
-    .maybeSingle();
-  return data?.language ?? "sl";
-}
-
-/** Renders the signed protocol and stores it. Reads the row as it now stands. */
-async function renderAndStoreProtocol(projectId: string, acceptanceId: string): Promise<string> {
+/**
+ * Renders the protocol as it is about to be signed and stores it at a NEW
+ * path. The two values the signing itself decides (the moment and the
+ * warranty start) are passed in, because the row does not hold them yet.
+ */
+async function renderAndStoreProtocol(
+  projectId: string,
+  acceptanceId: string,
+  at: { conductedAt: string; warrantyStart: string | null },
+): Promise<string> {
   const db = createAdminClient();
 
   const { data: project } = await db
     .from("projects")
     .select(
-      "name, language, epc_org_id, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)",
+      "name, language, country, epc_org_id, address_street, address_zip, address_city, epc:epc_org_id (name), sub:sub_org_id (name)",
     )
     .eq("id", projectId)
     .maybeSingle();
@@ -365,26 +438,28 @@ async function renderAndStoreProtocol(projectId: string, acceptanceId: string): 
   const { data: row } = await db
     .from("acceptances")
     .select(
-      "id, kind, conducted_at, attendees, declaration, penalty_reserved, warranty_start, epc_signer_name, sub_signer_name, epc_signature_path, sub_signature_path, note, acceptance_defects (description, due_date, agreement, sort_order)",
+      "id, kind, attendees, declaration, penalty_reserved, epc_signer_name, sub_signer_name, epc_signature_path, sub_signature_path, note, acceptance_defects (description, due_date, agreement, sort_order)",
     )
     .eq("id", acceptanceId)
     .maybeSingle();
   if (!row || !project) throw new Error("Acceptance not found");
 
   const locale = localeOf(project.language);
+  const zone = projectZone(project.country);
   const t = (key: string) => docString(locale, key);
+  // A yyyy-mm-dd day (warranty, due date) never shifts; an instant is shown in
+  // the site's zone, so a protocol signed after midnight UTC is still dated
+  // the day it was signed on the roof (L4).
+  const day = (value: string | null) => (value ? fmtDate(value, locale, { timeZone: zone }) : null);
 
-  // Read through a cache-busted signed URL, never storage.download(): download()
-  // can hand back an earlier version of the object (docs/known-issues.md entry 2).
-  const signature = async (path: string | null): Promise<Buffer | null> =>
-    path ? readObjectFresh("signatures", path) : null;
-
-  const dateFmt = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : locale, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-  const day = (value: string | null) => (value ? dateFmt.format(new Date(value)) : null);
+  // Read through a cache-busted signed URL, never storage.download(): a
+  // signature somebody just redrew must be the one on the paper
+  // (docs/known-issues.md entry 2).
+  const [epcImage, subImage] = await Promise.all([
+    row.epc_signature_path ? readObjectFresh("signatures", row.epc_signature_path) : null,
+    row.sub_signature_path ? readObjectFresh("signatures", row.sub_signature_path) : null,
+  ]);
+  if (!epcImage || !subImage) throw new Error("final.err.signatures");
 
   const buffer = await renderDocument(
     AbnahmeDocument({
@@ -396,11 +471,11 @@ async function renderAndStoreProtocol(projectId: string, acceptanceId: string): 
           .filter((part) => part && part.trim())
           .join(", ") || null,
       kindLabel: t(`final.kind${row.kind === "partial" ? "Partial" : "Final"}`),
-      conductedOn: day(row.conducted_at),
+      conductedOn: day(at.conductedAt),
       attendees: row.attendees,
       declarationLabel: row.declaration ? t(`final.decl.${row.declaration}`) : "",
       penaltyReserved: row.penalty_reserved,
-      warrantyStart: day(row.warranty_start),
+      warrantyStart: day(at.warrantyStart),
       note: row.note,
       defects: (row.acceptance_defects ?? [])
         .sort((a, b) => a.sort_order - b.sort_order)
@@ -409,12 +484,14 @@ async function renderAndStoreProtocol(projectId: string, acceptanceId: string): 
           dueDate: day(defect.due_date),
           agreementLabel: t(`final.${defect.agreement === "disputed" ? "disputed" : "agreed"}`),
         })),
-      epcSigner: { name: row.epc_signer_name ?? "", image: await signature(row.epc_signature_path) },
-      subSigner: { name: row.sub_signer_name ?? "", image: await signature(row.sub_signature_path) },
+      epcSigner: { name: row.epc_signer_name ?? "", image: epcImage },
+      subSigner: { name: row.sub_signer_name ?? "", image: subImage },
       issuer: await loadIssuer(db, project.epc_org_id),
       s: abnahmeStrings(locale),
     }),
   );
 
-  return storeReportPdf(`${projectId}/final/abnahme-${acceptanceId}.pdf`, buffer);
+  // A new path for every render: a retry after a failed sign must never meet
+  // the bytes of the previous attempt (docs/known-issues.md entry 2).
+  return storeReportPdf(`${projectId}/final/abnahme-${acceptanceId}-${randomUUID()}.pdf`, buffer);
 }

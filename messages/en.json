@@ -906,11 +906,17 @@
       "declaration": "Please choose the acceptance declaration.",
       "signatures": "One side's signature is missing.",
       "signerNames": "Please enter the names of both signers.",
-      "signature": "The signature could not be saved."
+      "signature": "The signature could not be saved.",
+      "refusedNeedsDefects": "To refuse the acceptance, enter at least one defect that is the reason for the refusal.",
+      "reservationsNeedDefects": "To accept with reservations, enter at least one defect the reservation covers.",
+      "warrantyBeforeAcceptance": "The warranty cannot start before the day of acceptance."
     },
     "noAcceptance": "The acceptance has not started yet.",
     "acceptanceByClient": "The acceptance is carried out by the client.",
-    "acceptanceSignedShort": "The acceptance is done."
+    "acceptanceSignedShort": "The acceptance is done.",
+    "warrantyHint": "The default is the day of acceptance. The warranty cannot start earlier.",
+    "needsDefect": "With this declaration, enter at least one defect.",
+    "startFinal": "Start the final acceptance"
   },
   "invoice": {
     "title": "Invoice",
