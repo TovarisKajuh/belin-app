@@ -28,6 +28,12 @@ export async function ProjectList({
   const tSettings = await getTranslations("settings");
   const tLanding = await getTranslations("landing");
   const isEpc = actor.orgType === "epc";
+  // "245,7 kWp" and "58,3 %" in Slovenian, not the dot of a JavaScript number.
+  // Local because lib/format.ts (Task 1.11) was deferred past the 06.10 meeting.
+  const numberFormat = new Intl.NumberFormat(locale === "de" ? "de-DE" : locale === "en" ? "en-GB" : "sl-SI", {
+    maximumFractionDigits: 1,
+  });
+  const num = (n: number) => numberFormat.format(n);
 
   // Ahead, behind, or exactly on the promised day. Three sentences rather than a
   // signed number, because "-2" on a card is a puzzle and "2 delovna dneva
@@ -84,7 +90,7 @@ export async function ProjectList({
 
               <ul className="pl-list">
                 {portfolio.projects.map((p) => {
-                  const facts = [p.city, p.kwp !== null ? `${p.kwp} kWp` : null, p.subName]
+                  const facts = [p.city, p.kwp !== null ? `${num(p.kwp)} kWp` : null, p.subName]
                     .filter(Boolean)
                     .join(" · ");
 
@@ -101,7 +107,10 @@ export async function ProjectList({
                     <li key={p.id} className="pl-item">
                       <Link href={`/${locale}/app/${p.id}`} className="pl-link pl-link--rich">
                         <div className="pl-main">
-                          <div className="pl-name">{p.name}</div>
+                          <div className="pl-top">
+                            <div className="pl-name">{p.name}</div>
+                            <span className={`pl-status s-${p.status}`}>{t(`status.${p.status}`)}</span>
+                          </div>
                           {facts && <div className="pl-facts">{facts}</div>}
                           {waiting.length > 0 ? (
                             <div className="pl-waiting">{waiting.join(" · ")}</div>
@@ -110,13 +119,11 @@ export async function ProjectList({
 
                         <div className="pl-figure">
                           <span className="pl-pct">
-                            {p.progressPercent}
+                            {num(p.progressPercent)}
                             <span className="pl-pct-u"> %</span>
                           </span>
                           <ScheduleBar days={p.scheduleDays} label={scheduleLabel(p.scheduleDays)} />
                         </div>
-
-                        <div className={`pl-status s-${p.status}`}>{t(`status.${p.status}`)}</div>
                       </Link>
                     </li>
                   );

@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { formatCapacity } from "@/lib/portfolio-shared";
 import type { PortfolioData } from "@/lib/data/portfolio";
 
@@ -17,6 +17,16 @@ import type { PortfolioData } from "@/lib/data/portfolio";
 // chart of four unrelated numbers would take longer to read than the numbers.
 export async function PortfolioHeader({ data }: { data: PortfolioData }) {
   const t = await getTranslations("portfolio");
+  const locale = await getLocale();
+  // In the reader's format: "1,0 MWp" and "491 kWp" in Slovenian, not "1 MWp"
+  // beside "245.7". Local because lib/format.ts (Task 1.11) was deferred past
+  // the 06.10 meeting; swap for fmtNumber when it lands.
+  const intl = locale === "de" ? "de-DE" : locale === "en" ? "en-GB" : "sl-SI";
+  const show = (c: { value: number; unit: "kWp" | "MWp" }) =>
+    new Intl.NumberFormat(
+      intl,
+      c.unit === "MWp" ? { minimumFractionDigits: 1, maximumFractionDigits: 1 } : { maximumFractionDigits: 0 },
+    ).format(c.value);
 
   const installed = formatCapacity(data.kwpInstalled);
   const running = formatCapacity(data.kwpInProgress);
@@ -41,7 +51,7 @@ export async function PortfolioHeader({ data }: { data: PortfolioData }) {
         <div key={tile.label} className="pf-tile">
           <span className="pf-tile-l">{tile.label}</span>
           <span className="pf-tile-v">
-            {tile.value}
+            {show(tile)}
             <span className="pf-tile-u"> {tile.unit}</span>
           </span>
           <span className="pf-tile-s">{tile.sub}</span>

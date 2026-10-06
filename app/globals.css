@@ -2966,3 +2966,19 @@ body:has(.b-tabbed) .lp-logout--raised { bottom: calc(68px + 96px + env(safe-are
   display: inline-flex; margin-left: 10px; padding: 2px 9px; border-radius: 999px; vertical-align: middle;
   background: rgba(255,210,26,.14); color: var(--e-gold-2); font-size: 11px; letter-spacing: .04em; text-transform: none;
 }
+
+/* === 5.6: Portfolio repairs === */
+/* Caption under the number ("1 MWp4 zaključeni projekti" ran together), status
+   chip beside the name instead of a stretched grid cell, equal card heights. */
+.belin-dark .pf-tile-v { display: block; }
+.belin-dark .pf-tile-s { display: block; margin-top: 6px; }
+.belin-dark .pl-item { display: flex; }
+.belin-dark .pl-link--rich { flex: 1; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto 1fr; align-items: start; }
+.belin-dark .pl-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.belin-dark .pl-top .pl-name { min-width: 0; margin-bottom: 0; }
+.belin-dark .pl-status { flex: none; align-self: flex-start; white-space: nowrap; }
+.belin-dark .pl-figure { align-self: center; }
+@container (max-width: 430px) {
+  .belin-dark .pl-link--rich { grid-template-columns: minmax(0, 1fr); }
+  .belin-dark .pl-figure { grid-column: 1; align-self: end; justify-content: space-between; }
+}
