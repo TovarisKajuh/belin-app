@@ -3056,3 +3056,6 @@ body:has(.b-tabbed) .dm-switch { bottom: calc(68px + 96px + env(safe-area-inset-
   border-top: 1px solid var(--line); border-radius: 0 0 10px 10px; margin-top: 4px;
 }
 .belin-dark .b-status-opt.b-status-link { color: var(--e-muted); border-top-color: var(--e-line); }
+
+/* === 4.5d: plan drop === */
+.belin-dark .wz-drop.wz-drop-over { outline: 2px dashed var(--e-gold); outline-offset: 4px; }

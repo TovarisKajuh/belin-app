@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { createProjectAction, uploadPlanAction } from "@/app/[locale]/app/new/actions";
@@ -74,8 +74,21 @@ export function Wizard({
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [created, setCreated] = useState<{ projectId: string; epcToken: string } | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // A file dropped beside the box, or on any later step, must not navigate
+  // the tab away from the wizard: Chrome opens a dropped PDF in place.
+  useEffect(() => {
+    const stop = (e: DragEvent) => e.preventDefault();
+    window.addEventListener("dragover", stop);
+    window.addEventListener("drop", stop);
+    return () => {
+      window.removeEventListener("dragover", stop);
+      window.removeEventListener("drop", stop);
+    };
+  }, []);
 
   function set<K extends keyof ProjectDraft>(key: K, value: ProjectDraft[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
@@ -214,7 +227,22 @@ export function Wizard({
 
         {step === "plan" && (
           <section className="e-sec">
-            <div className="wz-drop">
+            <div
+              className={dragOver ? "wz-drop wz-drop-over" : "wz-drop"}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "copy";
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                if (busy) return;
+                const f = e.dataTransfer.files?.[0];
+                if (f) void onFile(f);
+              }}
+            >
               <h1 className="wz-h1">{t("uploadPlan")}</h1>
               <p className="wz-hint">{t("uploadHint")}</p>
               <input
